@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login da Empresa</title>
+  <style>
+  :root {
+    --escala: 3;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+
+  .login-card {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    color: #fff;
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+    color: #fff;
+  }
+
+  label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    color: #eee;
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    box-sizing: border-box;
+  }
+
+  input::placeholder {
+    color: #ddd;
+  }
+
+  button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: background 0.3s ease, border 0.3s ease;
+}
+
+/* Remove fundo colorido fixo */
+.btn-login,
+.btn-cadastrar {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Hover transparente para todos */
+button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+
+  .btn-login:hover {
+    background: rgba(56, 142, 60, 0.9);
+  }
+
+  .btn-cadastrar:hover {
+    background: rgba(21, 101, 192, 0.9);
+  }
+
+  .mensagem {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .logo-lib {
+  width: 140px;         /* você pode alterar esse valor */
+  max-width: 100%;
+  margin: 0 auto 30px;
+  display: block;
+}
+
+</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+  <div class="login-card">
+    <img src="https://i.imgur.com/OX6pgts.png" alt="Logo Lib" class="logo-lib">
+
+    <form id="formLogin">
+      <label>Email</label>
+      <input type="email" name="email" required />
+      <label>Senha</label>
+      <input type="password" name="senha" required />
+      
+      <button type="submit" class="btn-login">Entrar</button>
+      <button type="button" class="btn-cadastrar" id="btnCadastrarRestaurante">Cadastrar Restaurante</button>
+      <button type="button" class="btn-cadastrar" id="btnCadastrarTerceirizada">Cadastrar Empresa de Entrega</button>
+      
+      <div id="mensagem" class="mensagem"></div>
+    </form>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxToqnLsodbyjgOyL9Po0CaxrY2Fs7lwS30-AFXWez6OeilevBcr5LFPHyC487XI96y/exec";
+
+  // ✅ Verificação imediata: se já está logado, redireciona antes de exibir o login
+  const empresa_id = localStorage.getItem("empresa_id");
+  const empresa_nome = localStorage.getItem("empresa_nome");
+
+  document.addEventListener("DOMContentLoaded", () => {
+  const empresa_id = localStorage.getItem("empresa_id");
+  const empresa_nome = localStorage.getItem("empresa_nome");
+
+  if (empresa_id && empresa_nome && WEB_APP_URL) {
+    window.location.href = `${WEB_APP_URL}?pagina=selecionar_terceirizada`;
+  }
+});
+
+  function md5(str) {
+    return CryptoJS.MD5(str).toString();
+  }
+
+  document.getElementById("formLogin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const email = form.email.value.trim();
+    const senha = md5(form.senha.value.trim());
+    const msg = document.getElementById("mensagem");
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
+      method: "GET",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const dados = await res.json();
+
+    if (dados.length === 1) {
+      const empresa_id = dados[0].id;
+      const empresa_nome = dados[0].nome;
+
+      // Salva login no navegador
+      localStorage.setItem("empresa_id", empresa_id);
+      localStorage.setItem("empresa_nome", empresa_nome);
+
+      // Verifica se já tem contrato com terceirizada
+      const contratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`
+        }
+      });
+
+      const resposta = await contratos.json();
+
+      if (resposta.length === 0) {
+        window.location.href = `${WEB_APP_URL}?pagina=selecionar_terceirizada`;
+      } else {
+        window.location.href = `${WEB_APP_URL}?pagina=painel_empresa`;
+      }
+
+    } else {
+      msg.textContent = "❌ Login ou senha inválidos.";
+      msg.style.color = "red";
+    }
+  });
+
+  document.getElementById("btnCadastrarRestaurante").addEventListener("click", () => {
+    window.location.href = `${WEB_APP_URL}?pagina=cadastroEmpresaSupabase`;
+  });
+
+  document.getElementById("btnCadastrarTerceirizada").addEventListener("click", () => {
+    window.location.href = `${WEB_APP_URL}?pagina=cadastroTerceirizada`;
+  });
+</script>
+</body>
+</html>
