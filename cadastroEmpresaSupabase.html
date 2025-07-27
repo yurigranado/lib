@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Empresa</title>
+  <style>
+    :root {
+      --escala: 3;
+      --largura: 95%;
+    }
+
+    body {
+      margin: 0;
+      padding: 5vw;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: calc(var(--escala) * 9px);
+      margin-bottom: 30px;
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .card {
+      background: white;
+      max-width: 800px;
+      margin: 5vh auto;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .linha {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .coluna {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      color: #333;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px 20px;
+      margin-top: 8px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      justify-items: start;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    .turno-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .turno-item input {
+      flex: 1;
+    }
+
+    .turno-item button {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .add-turno {
+      margin-top: 10px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button[type="submit"] {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      background: #43a047;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: 600;
+    }
+
+    button[type="submit"]:hover {
+      background: #388e3c;
+      transform: scale(1.02);
+    }
+
+    #mensagem {
+      margin-top: 16px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+    <h1>Cadastro de Empresa</h1>
+  <div class="card">
+    <form id="formEmpresa">
+    
+      <div class="linha">
+        <div class="coluna">
+          <label>Nome da Empresa</label>
+          <input type="text" name="nome" required />
+        </div>
+        <div class="coluna">
+          <label>Email</label>
+          <input type="email" name="email" required />
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Senha</label>
+          <input type="password" name="senha" required />
+        </div>
+        <div class="coluna">
+          <label>CNPJ</label>
+          <input type="text" name="cnpj" />
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>WhatsApp</label>
+          <input type="tel" name="whatsapp" placeholder="(16) 99123-4567" />
+        </div>
+        <div class="coluna">
+          <label>Cidade</label>
+          <input type="text" name="cidade" required />
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Estado</label>
+          <input type="text" name="estado" maxlength="2" required />
+        </div>
+        <div class="coluna">
+          <label>Entregas por Dia</label>
+          <input type="number" name="entregas_dia" required />
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Entregas Fim de Semana</label>
+          <input type="number" name="entregas_fds" required />
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Tipos de Venda</label>
+          <div class="checkbox-group" id="tiposVenda">
+            <label><input type="checkbox" value="iFood" /> iFood</label>
+            <label><input type="checkbox" value="Whatsapp" /> WhatsApp</label>
+            <label><input type="checkbox" value="Goomer" /> Goomer</label>
+            <label><input type="checkbox" value="AnotaAi" /> AnotaAi</label>
+            <label><input type="checkbox" value="Cardapio Web" /> CardápioWeb</label>
+            <label><input type="checkbox" value="Outro" /> Outros</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Dias de Funcionamento</label>
+          <div class="checkbox-group" id="diasSemana">
+            <label><input type="checkbox" value="Segunda" /> Seg</label>
+            <label><input type="checkbox" value="Terça" /> Ter</label>
+            <label><input type="checkbox" value="Quarta" /> Qua</label>
+            <label><input type="checkbox" value="Quinta" /> Qui</label>
+            <label><input type="checkbox" value="Sexta" /> Sex</label>
+            <label><input type="checkbox" value="Sábado" /> Sáb</label>
+            <label><input type="checkbox" value="Domingo" /> Dom</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="linha">
+        <div class="coluna">
+          <label>Turnos de Funcionamento</label>
+          <div id="turnosContainer"></div>
+          <button type="button" class="add-turno" onclick="adicionarTurno()">+ Adicionar Turno</button>
+        </div>
+      </div>
+
+      <button type="submit">Salvar Empresa</button>
+      <div id="mensagem"></div>
+    </form>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script>
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+  
+  function adicionarTurno() {
+    const container = document.getElementById("turnosContainer");
+    const div = document.createElement("div");
+    div.className = "turno-item";
+    div.innerHTML = `
+      <input type="text" placeholder="Nome do Turno" class="nome-turno" required />
+      <input type="time" class="hora-inicio" required />
+      <input type="time" class="hora-fim" required />
+      <button type="button" onclick="this.parentElement.remove()">🗑️</button>
+    `;
+    container.appendChild(div);
+  }
+
+  function md5(str) {
+    return CryptoJS.MD5(str).toString();
+  }
+
+  // Máscara de CNPJ enquanto digita
+const cnpjInput = document.querySelector('input[name="cnpj"]');
+cnpjInput.addEventListener("input", () => {
+  let value = cnpjInput.value.replace(/\D/g, "");
+  if (value.length > 14) value = value.slice(0, 14);
+  value = value.replace(/^(\d{2})(\d)/, "$1.$2");
+  value = value.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+  value = value.replace(/\.(\d{3})(\d)/, ".$1/$2");
+  value = value.replace(/(\d{4})(\d)/, "$1-$2");
+  cnpjInput.value = value;
+});
+
+// Máscara de WhatsApp enquanto digita
+const whatsappInput = document.querySelector('input[name="whatsapp"]');
+whatsappInput.addEventListener("input", () => {
+  let value = whatsappInput.value.replace(/\D/g, "");
+  if (value.length > 11) value = value.slice(0, 11);
+  value = value.replace(/^(\d{2})(\d)/, "($1) $2");
+  value = value.replace(/(\d{5})(\d)/, "$1-$2");
+  whatsappInput.value = value;
+});
+
+  document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = document.getElementById("mensagem");
+
+    const tipos = [...document.querySelectorAll("#tiposVenda input:checked")].map(cb => cb.value);
+    const dias = [...document.querySelectorAll("#diasSemana input:checked")].map(cb => cb.value);
+    const turnos = [...document.querySelectorAll(".turno-item")].map(t => ({
+      nome: t.querySelector(".nome-turno").value,
+      inicio: t.querySelector(".hora-inicio").value,
+      fim: t.querySelector(".hora-fim").value
+    }));
+
+    const cnpjLimpo = form.cnpj.value.replace(/\D/g, "");
+    const empresaData = {
+  nome: form.nome.value,
+  cnpj: cnpjLimpo,
+  cidade: form.cidade.value,
+  estado: form.estado.value,
+  whatsapp: form.whatsapp.value.replace(/\D/g, ""),
+  entregas_dia: Number(form.entregas_dia.value),
+  entregas_fds: Number(form.entregas_fds.value),
+  email: form.email.value,
+  senha: md5(form.senha.value)
+};
+
+    // 🛡️ Verificar duplicidade
+    const jaExiste = await fetch(`${SUPABASE_URL}/rest/v1/empresas?or=(cnpj.eq.${cnpjLimpo},email.eq.${empresaData.email})`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
+      }
+    });
+    const resultados = await jaExiste.json();
+    if (resultados.length > 0) {
+      msg.textContent = "❌ Já existe uma empresa com este CNPJ ou Email.";
+      msg.style.color = "red";
+      return;
+    }
+
+    // ✅ Salvar empresa
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/restaurantes`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify(empresaData)
+    });
+
+    const dados = await res.json();
+    const id = dados[0]?.id;
+    if (!id) {
+      msg.textContent = "Erro ao salvar empresa.";
+      msg.style.color = "red";
+      return;
+    }
+
+    // 🔄 Salvar extras
+    const salvar = async (tabela, array) => {
+      if (!array.length) return;
+      const registros = array.map(item =>
+        item.tipo === "dia"
+          ? { empresa_id: id, dia: item.valor }
+          : item.tipo === "canal"
+            ? { empresa_id: id, canal: item.valor }
+            : { empresa_id: id, nome_turno: item.nome, horario_inicio: item.inicio, horario_fim: item.fim }
+      );
+
+      await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(registros)
+      });
+    };
+
+    await salvar("empresa_dias_semana", dias.map(d => ({ tipo: "dia", valor: d })));
+    await salvar("empresa_tipos_venda", tipos.map(c => ({ tipo: "canal", valor: c })));
+    await salvar("empresa_turnos", turnos);
+
+    msg.textContent = "✅ Empresa cadastrada com sucesso!";
+    msg.style.color = "green";
+    form.reset();
+    document.getElementById("turnosContainer").innerHTML = "";
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minhas Empresas de Entrega</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2f2f2;
+      padding: 5vw;
+      margin: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .botao-adicionar {
+      display: block;
+      margin: 0 auto 40px;
+      padding: 12px 24px;
+      font-weight: bold;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .botao-adicionar:hover {
+      background: #1565c0;
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-conteudo {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+
+    .empresa-card {
+      background: #f9f9f9;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .empresa-card h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .empresa-card p {
+      margin: 4px 0;
+      color: #555;
+    }
+
+    .empresa-card button {
+      margin-top: 12px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .empresa-card button:hover {
+      background: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Minhas Empresas de Entrega</h1>
+  <button class="botao-adicionar" onclick="abrirModal()">+ Adicionar Nova Empresa</button>
+
+  <!-- 🔳 MODAL -->
+  <div id="modalEmpresas" class="modal" onclick="fecharModalFora(event)">
+    <div class="modal-conteudo" id="listaEmpresas">
+      <p>Carregando empresas...</p>
+    </div>
+  </div>
+
+<script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+    
+  // 🔐 Verifica login de forma segura após carregamento
+  document.addEventListener("DOMContentLoaded", () => {
+    const empresa_id = localStorage.getItem("empresa_id");
+    const empresa_nome = localStorage.getItem("empresa_nome");
+
+    if (!empresa_id || !empresa_nome) {
+      const urlBase = window.location.origin + window.location.pathname;
+      window.location.href = `${urlBase}?pagina=login_lib`;
+      return;
+    }
+
+    // Armazena como variável global se logado
+    window.empresa_id = empresa_id;
+    window.empresa_nome = empresa_nome;
+
+    // Se estiver logado, carrega as empresas
+    carregarEmpresas();
+  });
+
+  function abrirModal() {
+    document.getElementById("modalEmpresas").style.display = "flex";
+  }
+
+  function fecharModal() {
+    document.getElementById("modalEmpresas").style.display = "none";
+  }
+
+  function fecharModalFora(e) {
+    if (e.target.id === "modalEmpresas") fecharModal();
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") fecharModal();
+  });
+
+  async function carregarEmpresas() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?select=id,nome,cnpj,email`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
+      }
+    });
+
+    const empresas = await res.json();
+    const container = document.getElementById("listaEmpresas");
+
+    if (!empresas.length) {
+      container.innerHTML = "<p>Nenhuma empresa disponível.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+    empresas.forEach(empresa => {
+      const div = document.createElement("div");
+      div.className = "empresa-card";
+      div.innerHTML = `
+        <h2>${empresa.nome}</h2>
+        <p>CNPJ: ${empresa.cnpj}</p>
+        <p>Email: ${empresa.email}</p>
+        <button onclick="solicitarContrato('${empresa.id}')">Solicitar Contrato</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  async function solicitarContrato(terceirizada_id) {
+    const payload = {
+      empresa_id: window.empresa_id,
+      terceirizada_id,
+      status: "pendente",
+      data_solicitacao: new Date().toISOString()
+    };
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      alert("Solicitação enviada com sucesso!");
+      fecharModal();
+    } else {
+      alert("Erro ao solicitar. Tente novamente.");
+    }
+  }
+</script>
+</body>
+</html>

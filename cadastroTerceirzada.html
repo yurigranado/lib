@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Terceirizada</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 5vw;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #f5f7fa, #c3cfe2);
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 14px;
+      font-size: 17px;
+      background: #43a047;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #mensagem {
+      margin-top: 16px;
+      text-align: center;
+      font-weight: bold;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+  <h1>Cadastro de Terceirizada</h1>
+  <div class="card">
+    <form id="formTerceirizada">
+      <label>Nome da Empresa</label>
+      <input type="text" name="nome" required />
+
+      <label>Nome do Proprietário</label>
+      <input type="text" name="proprietario" required />
+
+      <label>CNPJ</label>
+      <input type="text" name="cnpj" />
+
+      <label>Email</label>
+      <input type="email" name="email" required />
+
+      <label>Senha</label>
+      <input type="password" name="senha" required />
+
+      <label>WhatsApp</label>
+      <input type="tel" name="whatsapp" placeholder="(16) 99123-4567" />
+
+      <label>Cidade</label>
+      <input type="text" name="cidade" required />
+
+      <label>Estado (UF)</label>
+      <input type="text" name="estado" maxlength="2" required />
+
+      <label>Sobre a Empresa</label>
+      <textarea name="sobre"></textarea>
+
+      <label>Logomarca (imagem JPG ou PNG)</label>
+      <input type="file" name="logomarca" accept="image/*" />
+
+      <button type="submit">Salvar Cadastro</button>
+      <div id="mensagem"></div>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+  
+    const STORAGE_BUCKET = "logos-terceirizadas";
+
+    function md5(str) {
+      return CryptoJS.MD5(str).toString();
+    }
+
+    // Máscara de CNPJ
+document.querySelector('input[name="cnpj"]').addEventListener("input", e => {
+  let v = e.target.value.replace(/\D/g, "").slice(0, 14);
+  v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+  v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+  v = v.replace(/(\d{4})(\d)/, "$1-$2");
+  e.target.value = v;
+});
+
+// Máscara WhatsApp
+document.querySelector('input[name="whatsapp"]').addEventListener("input", e => {
+  let v = e.target.value.replace(/\D/g, "").slice(0, 11);
+  v = v.replace(/^(\d{2})(\d)/, "($1) $2");
+  v = v.replace(/(\d{5})(\d)/, "$1-$2");
+  e.target.value = v;
+});
+
+    document.getElementById("formTerceirizada").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const msg = document.getElementById("mensagem");
+
+      const file = form.logomarca.files[0];
+      let logoURL = "";
+
+      if (file) {
+        const nomeArquivo = `logo_${Date.now()}_${file.name}`;
+        await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${nomeArquivo}`, {
+          method: "POST",
+          headers: {
+            "apikey": API_KEY,
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": file.type,
+            "x-upsert": "true"
+          },
+          body: file
+        });
+
+        logoURL = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${nomeArquivo}`;
+      }
+
+      const dados = {
+        nome: form.nome.value,
+        proprietario: form.proprietario.value,
+        cnpj: form.cnpj.value.replace(/\D/g, ""),
+        email: form.email.value,
+        senha: md5(form.senha.value),
+        contato: form.whatsapp.value.replace(/\D/g, ""),
+        cidade: form.cidade.value,
+        estado: form.estado.value.toUpperCase(),
+        sobre: form.sobre.value,
+        logomarca_url: logoURL
+      };
+
+      // Verifica duplicidade de email
+      const resVerifica = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${dados.email}`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`
+        }
+      });
+
+      const jaExiste = await resVerifica.json();
+      if (jaExiste.length > 0) {
+        msg.textContent = "❌ Já existe uma empresa com este e-mail.";
+        msg.style.color = "red";
+        return;
+      }
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(dados)
+      });
+
+      const resposta = await res.json();
+      if (resposta[0]?.id) {
+        msg.textContent = "✅ Terceirizada cadastrada com sucesso!";
+        msg.style.color = "green";
+        form.reset();
+      } else {
+        msg.textContent = "Erro ao salvar cadastro.";
+        msg.style.color = "red";
+      }
+    });
+  </script>
+</body>
+</html>
