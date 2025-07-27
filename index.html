@@ -107,12 +107,38 @@ button:hover {
     color: #fff;
   }
 
-  .logo-lib {
-  width: 140px;         /* você pode alterar esse valor */
-  max-width: 100%;
-  margin: 0 auto 30px;
-  display: block;
-}
+    .logo-lib {
+      width: 140px;         /* você pode alterar esse valor */
+      max-width: 100%;
+      margin: 0 auto 30px;
+      display: block;
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 6px solid #fff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
 
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -133,9 +159,12 @@ button:hover {
       
       <div id="mensagem" class="mensagem"></div>
     </form>
-  </div>
+    </div>
+    <div id="loading" class="loading-overlay">
+      <div class="spinner"></div>
+    </div>
 
-<script>
+  <script>
   const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
   const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
@@ -159,21 +188,24 @@ button:hover {
     const email = form.email.value.trim();
     const senha = md5(form.senha.value.trim());
     const msg = document.getElementById("mensagem");
+    const overlay = document.getElementById("loading");
+    overlay.style.display = "flex";
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
-      method: "GET",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      }
-    });
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
+        method: "GET",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
 
-    const dados = await res.json();
+      const dados = await res.json();
 
-    if (dados.length === 1) {
-      const empresa_id = dados[0].id;
-      const empresa_nome = dados[0].nome;
+      if (dados.length === 1) {
+        const empresa_id = dados[0].id;
+        const empresa_nome = dados[0].nome;
 
       // Salva login no navegador
       localStorage.setItem("empresa_id", empresa_id);
@@ -195,9 +227,15 @@ button:hover {
         window.location.href = "painel_empresa.html";
       }
 
-    } else {
-      msg.textContent = "❌ Login ou senha inválidos.";
+      } else {
+        msg.textContent = "❌ Login ou senha inválidos.";
+        msg.style.color = "red";
+        overlay.style.display = "none";
+      }
+    } catch (err) {
+      msg.textContent = "Erro ao conectar.";
       msg.style.color = "red";
+      overlay.style.display = "none";
     }
   });
 
