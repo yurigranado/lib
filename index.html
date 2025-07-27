@@ -138,20 +138,16 @@ button:hover {
 <script>
   const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
   const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxToqnLsodbyjgOyL9Po0CaxrY2Fs7lwS30-AFXWez6OeilevBcr5LFPHyC487XI96y/exec";
 
   // ✅ Verificação imediata: se já está logado, redireciona antes de exibir o login
-  const empresa_id = localStorage.getItem("empresa_id");
-  const empresa_nome = localStorage.getItem("empresa_nome");
-
   document.addEventListener("DOMContentLoaded", () => {
-  const empresa_id = localStorage.getItem("empresa_id");
-  const empresa_nome = localStorage.getItem("empresa_nome");
+    const empresa_id = localStorage.getItem("empresa_id");
+    const empresa_nome = localStorage.getItem("empresa_nome");
 
-  if (empresa_id && empresa_nome && WEB_APP_URL) {
-    window.location.href = `${WEB_APP_URL}?pagina=selecionar_terceirizada`;
-  }
-});
+    if (empresa_id && empresa_nome) {
+      window.location.href = "selecionar_terceirizada.html";
+    }
+  });
 
   function md5(str) {
     return CryptoJS.MD5(str).toString();
@@ -194,9 +190,9 @@ button:hover {
       const resposta = await contratos.json();
 
       if (resposta.length === 0) {
-        window.location.href = `${WEB_APP_URL}?pagina=selecionar_terceirizada`;
+        window.location.href = "selecionar_terceirizada.html";
       } else {
-        window.location.href = `${WEB_APP_URL}?pagina=painel_empresa`;
+        window.location.href = "painel_empresa.html";
       }
 
     } else {
@@ -206,12 +202,13 @@ button:hover {
   });
 
   document.getElementById("btnCadastrarRestaurante").addEventListener("click", () => {
-    window.location.href = `${WEB_APP_URL}?pagina=cadastroEmpresaSupabase`;
+    window.location.href = "cadastroEmpresaSupabase.html";
   });
 
   document.getElementById("btnCadastrarTerceirizada").addEventListener("click", () => {
-    window.location.href = `${WEB_APP_URL}?pagina=cadastroTerceirizada`;
+    window.location.href = "cadastroTerceirizada.html";
   });
 </script>
+
 </body>
 </html>
