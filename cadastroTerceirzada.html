@@ -102,106 +102,105 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-  
-    const STORAGE_BUCKET = "logos-terceirizadas";
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+  const STORAGE_BUCKET = "logos-terceirizadas";
 
-    function md5(str) {
-      return CryptoJS.MD5(str).toString();
-    }
+  function md5(str) {
+    return CryptoJS.MD5(str).toString();
+  }
 
-    // Máscara de CNPJ
-document.querySelector('input[name="cnpj"]').addEventListener("input", e => {
-  let v = e.target.value.replace(/\D/g, "").slice(0, 14);
-  v = v.replace(/^(\d{2})(\d)/, "$1.$2");
-  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-  v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-  v = v.replace(/(\d{4})(\d)/, "$1-$2");
-  e.target.value = v;
-});
+  // Máscara de CNPJ
+  document.querySelector('input[name="cnpj"]').addEventListener("input", e => {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 14);
+    v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+    v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+    v = v.replace(/(\d{4})(\d)/, "$1-$2");
+    e.target.value = v;
+  });
 
-// Máscara WhatsApp
-document.querySelector('input[name="whatsapp"]').addEventListener("input", e => {
-  let v = e.target.value.replace(/\D/g, "").slice(0, 11);
-  v = v.replace(/^(\d{2})(\d)/, "($1) $2");
-  v = v.replace(/(\d{5})(\d)/, "$1-$2");
-  e.target.value = v;
-});
+  // Máscara WhatsApp
+  document.querySelector('input[name="whatsapp"]').addEventListener("input", e => {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 11);
+    v = v.replace(/^(\d{2})(\d)/, "($1) $2");
+    v = v.replace(/(\d{5})(\d)/, "$1-$2");
+    e.target.value = v;
+  });
 
-    document.getElementById("formTerceirizada").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const msg = document.getElementById("mensagem");
+  document.getElementById("formTerceirizada").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = document.getElementById("mensagem");
 
-      const file = form.logomarca.files[0];
-      let logoURL = "";
+    const file = form.logomarca.files[0];
+    let logoURL = "";
 
-      if (file) {
-        const nomeArquivo = `logo_${Date.now()}_${file.name}`;
-        await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${nomeArquivo}`, {
-          method: "POST",
-          headers: {
-            "apikey": API_KEY,
-            "Authorization": `Bearer ${API_KEY}`,
-            "Content-Type": file.type,
-            "x-upsert": "true"
-          },
-          body: file
-        });
-
-        logoURL = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${nomeArquivo}`;
-      }
-
-      const dados = {
-        nome: form.nome.value,
-        proprietario: form.proprietario.value,
-        cnpj: form.cnpj.value.replace(/\D/g, ""),
-        email: form.email.value,
-        senha: md5(form.senha.value),
-        contato: form.whatsapp.value.replace(/\D/g, ""),
-        cidade: form.cidade.value,
-        estado: form.estado.value.toUpperCase(),
-        sobre: form.sobre.value,
-        logomarca_url: logoURL
-      };
-
-      // Verifica duplicidade de email
-      const resVerifica = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${dados.email}`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-
-      const jaExiste = await resVerifica.json();
-      if (jaExiste.length > 0) {
-        msg.textContent = "❌ Já existe uma empresa com este e-mail.";
-        msg.style.color = "red";
-        return;
-      }
-
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas`, {
+    if (file) {
+      const nomeArquivo = `logo_${Date.now()}_${file.name}`;
+      await fetch(`${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${nomeArquivo}`, {
         method: "POST",
         headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=representation"
+          "apikey": API_KEY,
+          "Authorization": `Bearer ${API_KEY}`,
+          "Content-Type": file.type,
+          "x-upsert": "true"
         },
-        body: JSON.stringify(dados)
+        body: file
       });
 
-      const resposta = await res.json();
-      if (resposta[0]?.id) {
-        msg.textContent = "✅ Terceirizada cadastrada com sucesso!";
-        msg.style.color = "green";
-        form.reset();
-      } else {
-        msg.textContent = "Erro ao salvar cadastro.";
-        msg.style.color = "red";
+      logoURL = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${nomeArquivo}`;
+    }
+
+    const dados = {
+      nome: form.nome.value,
+      proprietario: form.proprietario.value,
+      cnpj: form.cnpj.value.replace(/\D/g, ""),
+      email: form.email.value,
+      senha: md5(form.senha.value),
+      contato: form.whatsapp.value.replace(/\D/g, ""),
+      cidade: form.cidade.value,
+      estado: form.estado.value.toUpperCase(),
+      sobre: form.sobre.value,
+      logomarca_url: logoURL
+    };
+
+    // Verifica duplicidade de email
+    const resVerifica = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${dados.email}`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
       }
     });
-  </script>
+
+    const jaExiste = await resVerifica.json();
+    if (jaExiste.length > 0) {
+      msg.textContent = "❌ Já existe uma empresa com este e-mail.";
+      msg.style.color = "red";
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify(dados)
+    });
+
+    const resposta = await res.json();
+    if (resposta[0]?.id) {
+      msg.textContent = "✅ Terceirizada cadastrada com sucesso!";
+      msg.style.color = "green";
+      form.reset();
+    } else {
+      msg.textContent = "Erro ao salvar cadastro.";
+      msg.style.color = "red";
+    }
+  });
+</script>
 </body>
 </html>
