@@ -112,12 +112,13 @@
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
     
   // 🔐 Verifica login de forma segura após carregamento
-  (() => {
+  document.addEventListener("DOMContentLoaded", () => {
     const empresa_id = localStorage.getItem("empresa_id");
     const empresa_nome = localStorage.getItem("empresa_nome");
 
     if (!empresa_id || !empresa_nome) {
-      navigate('login');
+      const urlBase = window.location.origin + window.location.pathname;
+      window.location.href = `${urlBase}?pagina=login_lib`;
       return;
     }
 
@@ -127,7 +128,7 @@
 
     // Se estiver logado, carrega as empresas
     carregarEmpresas();
-  })();
+  });
 
   function abrirModal() {
     document.getElementById("modalEmpresas").style.display = "flex";
@@ -204,7 +205,7 @@
   function deslogar() {
   localStorage.removeItem("empresa_id");
   localStorage.removeItem("empresa_nome");
-  navigate('login');
+  window.location.href = "/";
 }
 </script>
 </body>
