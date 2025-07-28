@@ -140,11 +140,31 @@ button:hover {
       to { transform: rotate(360deg); }
     }
 
+    .tela-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.personagem img {
+  max-height: 500px;
+  width: auto;
+  object-fit: contain;
+}
+
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
-  <div class="login-card">
+  <div class="tela-login">
+    <div class="personagem">
+      <img src="https://i.imgur.com/UkEiJMD.png" alt="Entregador Lib" />
+    </div>
+    <div class="login-card">
     <img src="https://i.imgur.com/OX6pgts.png" alt="Logo Lib" class="logo-lib">
 
     <form id="formLogin">
