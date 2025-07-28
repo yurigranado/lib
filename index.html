@@ -15,6 +15,7 @@
     font-family: 'Segoe UI', sans-serif;
     background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
     background-size: cover;
+    position: relative;
     color: #fff;
     display: flex;
     align-items: center;
@@ -150,10 +151,22 @@ button:hover {
   box-sizing: border-box;
 }
 
-.personagem img {
-  max-height: 500px;
-  width: auto;
-  object-fit: contain;
+.personagem-fundo {
+  position: absolute;
+  left: 40px;
+  bottom: 20px;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.personagem-fundo img {
+  max-height: 420px;
+  filter: blur(0.2px) drop-shadow(0px 4px 8px rgba(0,0,0,0.4));
+}
+
+.login-card {
+  z-index: 2;
+  position: relative;
 }
 
 </style>
@@ -161,8 +174,8 @@ button:hover {
 </head>
 <body>
   <div class="tela-login">
-    <div class="personagem">
-      <img src="https://i.imgur.com/UkEiJMD.png" alt="Entregador Lib" />
+    <div class="personagem-fundo">
+        <img src="https://i.imgur.com/UkEiJMD.png" alt="Entregador Lib" />
     </div>
     <div class="login-card">
     <img src="https://i.imgur.com/OX6pgts.png" alt="Logo Lib" class="logo-lib">
