@@ -241,106 +241,113 @@ async function carregar() {
     container.appendChild(card);
   }
 } // ✅ ESSA linha estava faltando!
-}   
-  function sair() {
+  
+ function sair() {
     localStorage.removeItem("terceirizada_id");
     localStorage.removeItem("terceirizada_nome");
-    localStorage.removeItem("session_token"); // se estiver usando
+    localStorage.removeItem("session_token");
     window.location.href = "index.html";
   }
+
   function formatarTelefone(tel) {
-  if (!tel) return "";
-  const v = tel.replace(/\D/g, "");
-  return v.length === 11
-    ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
-    : v;
-}
-  
-  // Trocar o nome no título do painel
-const nomeEmpresa = localStorage.getItem("terceirizada_nome");
-if (nomeEmpresa) {
-  document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
-}
-async function abrirMinhaConta() {
-  const container = document.getElementById("lista");
-  const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
-  container.innerHTML = html;
-
-  // Aguarda o DOM carregar para executar a função de preenchimento
-  setTimeout(() => {
-    carregarMinhaConta();
-  }, 100);
-}
-
-async function carregarMinhaConta() {
-  const id = localStorage.getItem("terceirizada_id");
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-
-  const dados = (await res.json())[0];
-  if (!dados) return;
-
-  const form = document.getElementById("formMinhaConta");
-  if (!form) return;
-
-  form.nome.value = dados.nome || "";
-  form.proprietario.value = dados.proprietario || "";
-  form.cnpj.value = dados.cnpj || "";
-  form.whatsapp.value = dados.contato || "";
-  form.cidade.value = dados.cidade || "";
-  form.estado.value = dados.estado || "";
-  form.sobre.value = dados.sobre || "";
-
-  if (dados.logomarca_url) {
-    document.getElementById("logo-preview").innerHTML = `
-      <p style="margin-top: 8px;">Logomarca atual:</p>
-      <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
-    `;
+    if (!tel) return "";
+    const v = tel.replace(/\D/g, "");
+    return v.length === 11
+      ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+      : v;
   }
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  // Trocar nome no cabeçalho
+  const nomeEmpresa = localStorage.getItem("terceirizada_nome");
+  if (nomeEmpresa) {
+    document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
+  }
 
-    const payload = {
-      nome: form.nome.value,
-      proprietario: form.proprietario.value,
-      contato: form.whatsapp.value.replace(/\D/g, ""),
-      cidade: form.cidade.value,
-      estado: form.estado.value.toUpperCase(),
-      sobre: form.sobre.value
-    };
+  // 🔄 Função para abrir o HTML da Minha Conta
+  async function abrirMinhaConta() {
+    const container = document.getElementById("lista");
+    const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
+    container.innerHTML = html;
 
-    const file = form.logomarca.files[0];
-    if (file) {
-      const nomeArquivo = `logo_${Date.now()}_${file.name}`;
-      await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
-        method: "POST",
+    setTimeout(() => {
+      carregarMinhaConta();
+    }, 100);
+  }
+
+  // ✏️ Preencher formulário da Minha Conta
+  async function carregarMinhaConta() {
+    const id = localStorage.getItem("terceirizada_id");
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
+      }
+    });
+
+    const dados = (await res.json())[0];
+    if (!dados) return;
+
+    const form = document.getElementById("formMinhaConta");
+    if (!form) return;
+
+    form.nome.value = dados.nome || "";
+    form.proprietario.value = dados.proprietario || "";
+    form.cnpj.value = dados.cnpj || "";
+    form.whatsapp.value = dados.contato || "";
+    form.cidade.value = dados.cidade || "";
+    form.estado.value = dados.estado || "";
+    form.sobre.value = dados.sobre || "";
+
+    if (dados.logomarca_url) {
+      document.getElementById("logo-preview").innerHTML = `
+        <p style="margin-top: 8px;">Logomarca atual:</p>
+        <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+      `;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        nome: form.nome.value,
+        proprietario: form.proprietario.value,
+        contato: form.whatsapp.value.replace(/\D/g, ""),
+        cidade: form.cidade.value,
+        estado: form.estado.value.toUpperCase(),
+        sobre: form.sobre.value
+      };
+
+      const file = form.logomarca.files[0];
+      if (file) {
+        const nomeArquivo = `logo_${Date.now()}_${file.name}`;
+        await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
+          method: "POST",
+          headers: {
+            apikey: API_KEY,
+            Authorization: `Bearer ${API_KEY}`,
+            "Content-Type": file.type,
+            "x-upsert": "true"
+          },
+          body: file
+        });
+        payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
+      }
+
+      await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+        method: "PATCH",
         headers: {
           apikey: API_KEY,
           Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": file.type,
-          "x-upsert": "true"
+          "Content-Type": "application/json"
         },
-        body: file
+        body: JSON.stringify(payload)
       });
-      payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
-    }
 
-    await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-      method: "PATCH",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
+      alert("✅ Dados atualizados com sucesso!");
     });
+  }
 
-    alert("✅ Dados atualizados com sucesso!");
-  });
-}
-  
+  // Atualizar status do contrato
   async function atualizarStatus(id, novoStatus) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
       method: "PATCH",
@@ -349,7 +356,10 @@ async function carregarMinhaConta() {
         Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ status: novoStatus, data_confirmacao: new Date().toISOString() })
+      body: JSON.stringify({
+        status: novoStatus,
+        data_confirmacao: new Date().toISOString()
+      })
     });
 
     if (res.ok) {
@@ -358,6 +368,8 @@ async function carregarMinhaConta() {
       alert("Erro ao atualizar o status.");
     }
   }
+
+  // Iniciar carregamento inicial
   carregar();
 </script>
 </body>
