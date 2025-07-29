@@ -138,83 +138,79 @@
     </div>
   </div>
 
-  <script>
-      // 🔒 Proteção contra acesso direto sem login
+<script>
+  // 🔒 Proteção contra acesso direto sem login
   const id = localStorage.getItem("terceirizada_id");
   const nome = localStorage.getItem("terceirizada_nome");
 
   if (!id || !nome) {
     window.location.href = "index.html"; // Redireciona pro login
-  } 
-    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-    const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id") || "f8f51d2e-73d1-4975-a2ef-0c3f7267f416";
-
-    async function carregarContratos() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email)`, {
-  headers: {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`
   }
-});
-      const contratos = await res.json();
-      const container = document.getElementById("listaContratos");
-      container.innerHTML = "";
 
-      if (!contratos.length) {
-        container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
-        return;
-      }
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // ← use sua chave real
+  const TERCEIRIZADA_ID = id;
 
-      contratos.forEach(c => {
-        const card = document.createElement("div");
-        card.className = "card-contrato";
-        card.innerHTML = `
-          <h3>${c.empresa?.nome || "Empresa"}</h3>
-          <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
-          <p><strong>Status:</strong> ${c.status}</p>
-          <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
-          ${c.status === 'pendente' ? `
-            <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-            <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-          ` : ''}
-        `;
-        container.appendChild(card);
-      });
-    }
+  async function carregarContratos() {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email)`, {
-  headers: {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`
-  }
-});
-    function sair() {
-  localStorage.removeItem("terceirizada_id");
-  localStorage.removeItem("terceirizada_nome");
-  localStorage.removeItem("session_token"); // se estiver usando
-  window.location.href = "index.html";
-  }
-
-    async function atualizarStatus(id, novoStatus) {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
-        method: "PATCH",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ status: novoStatus, data_confirmacao: new Date().toISOString() })
-      });
-
-      if (res.ok) {
-        carregarContratos();
-      } else {
-        alert("Erro ao atualizar o status.");
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
       }
+    });
+
+    const contratos = await res.json();
+    const container = document.getElementById("listaContratos");
+    container.innerHTML = "";
+
+    if (!contratos.length) {
+      container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
+      return;
     }
 
-    carregarContratos();
-  </script>
+    contratos.forEach(c => {
+      const card = document.createElement("div");
+      card.className = "card-contrato";
+      card.innerHTML = `
+        <h3>${c.empresa?.nome || "Empresa"}</h3>
+        <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
+        <p><strong>Status:</strong> ${c.status}</p>
+        <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
+        ${c.status === 'pendente' ? `
+          <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
+          <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
+        ` : ''}
+      `;
+      container.appendChild(card);
+    });
+  }
 
+  function sair() {
+    localStorage.removeItem("terceirizada_id");
+    localStorage.removeItem("terceirizada_nome");
+    localStorage.removeItem("session_token"); // se estiver usando
+    window.location.href = "index.html";
+  }
+
+  async function atualizarStatus(id, novoStatus) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ status: novoStatus, data_confirmacao: new Date().toISOString() })
+    });
+
+    if (res.ok) {
+      carregarContratos();
+    } else {
+      alert("Erro ao atualizar o status.");
+    }
+  }
+
+  carregarContratos();
+</script>
 </body>
 </html>
