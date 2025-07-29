@@ -139,13 +139,13 @@
   </div>
 
   <script>
-    function sair() {
-  localStorage.removeItem("terceirizada_id");
-  localStorage.removeItem("terceirizada_nome");
-  localStorage.removeItem("session_token"); // se estiver usando
-  window.location.href = "index.html";
-}
-    
+      // 🔒 Proteção contra acesso direto sem login
+  const id = localStorage.getItem("terceirizada_id");
+  const nome = localStorage.getItem("terceirizada_nome");
+
+  if (!id || !nome) {
+    window.location.href = "index.html"; // Redireciona pro login
+  } 
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
     const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id") || "f8f51d2e-73d1-4975-a2ef-0c3f7267f416";
@@ -183,6 +183,12 @@
         container.appendChild(card);
       });
     }
+    function sair() {
+  localStorage.removeItem("terceirizada_id");
+  localStorage.removeItem("terceirizada_nome");
+  localStorage.removeItem("session_token"); // se estiver usando
+  window.location.href = "index.html";
+  }
 
     async function atualizarStatus(id, novoStatus) {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
