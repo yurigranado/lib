@@ -239,6 +239,27 @@ setTimeout(() => {
       const html = await fetch("configurar_parceria.html").then(r => r.text());
       container.innerHTML = html;
 
+      // Define manualmente a função esperada pelo HTML carregado
+window.atualizarQtdMotoqueiros = function () {
+  const qtdBox = document.getElementById("qtdMotoqueirosBox");
+  qtdBox.innerHTML = "";
+
+  if (document.querySelector('input[name="turno_almoco"]')?.checked) {
+    qtdBox.innerHTML += `
+      <label>Quantos motoqueiros para Almoço?</label>
+      <input type="number" name="qtd_almoco" min="0" value="0" />
+    `;
+  }
+
+  if (document.querySelector('input[name="turno_jantar"]')?.checked) {
+    qtdBox.innerHTML += `
+      <label>Quantos motoqueiros para Jantar?</label>
+      <input type="number" name="qtd_jantar" min="0" value="0" />
+    `;
+  }
+};
+
+
       // configurar dados dinâmicos
       document.getElementById("empresaNome").textContent = nome;
       document.getElementById("configForm").dataset.empresaId = id;
