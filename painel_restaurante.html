@@ -204,9 +204,9 @@ document.addEventListener("submit", async (e) => {
     config_json: {
   turnos,
   qtdePorTurno,
-  fornece_alimentacao: form.alimentacao.value,
+  fornece_alimentacao: form.fornece_alimentacao.value === "true",
   dia_pagamento: form.dia_pagamento.value,
-  pagamento_outros: form.pagamento_forma_outros?.value || ""
+  pagamento_forma_outros: form.pagamento_forma_outros?.value || ""
 }
   };
 
