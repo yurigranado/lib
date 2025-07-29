@@ -203,12 +203,22 @@ async function carregarContratos() {
       </ul>
 
       <p><strong>Status:</strong> ${c.status}</p>
-      <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
+<p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
 
-      ${c.status === 'pendente' ? `
-        <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-        <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-      ` : ''}
+${c.config_json ? `
+  <p><strong>Turnos Solicitados:</strong> ${c.config_json.turnos?.join(", ") || "-"}</p>
+  <p><strong>Qtd por Turno:</strong> ${
+    Object.entries(c.config_json.qtdePorTurno || {}).map(([turno, qtd]) => `${turno}: ${qtd}`).join(", ")
+  }</p>
+  <p><strong>Alimentação:</strong> ${c.config_json.fornece_alimentacao ? "Sim" : "Não"}</p>
+  <p><strong>Dia Pagamento:</strong> ${c.config_json.dia_pagamento}</p>
+  ${c.config_json.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${c.config_json.pagamento_forma_outros}</p>` : ""}
+` : ""}
+
+${c.status === 'aguardando_aceite_terceirizada' ? `
+  <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
+  <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
+` : ''}
     `;
     container.appendChild(card);
   }
