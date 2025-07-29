@@ -239,12 +239,17 @@
       }
 
       if (c.status === 'aguardando_aceite_terceirizada') {
-        html += `
-          <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-          <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-          <button onclick="abrirRegrasPagamento(${c.id})">⚙️ Editar Regras de Pagamento</button>
-        `;
+      html += `
+      <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
+      <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
+      `;
       }
+
+      if (c.status === 'ativo') {
+      html += `
+      <button onclick="abrirRegrasPagamento(${c.id})">⚙️ Editar Regras de Pagamento</button>
+    `;
+    }
 
       html += `
           </div>
