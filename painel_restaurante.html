@@ -288,10 +288,13 @@ async function abrirFormulario(id, nome) {
 
   // ✅ Força atualizar logo se algum já estiver marcado
   setTimeout(() => {
-    atualizarQtdMotoqueiros();
-    toggleOutroPagamento(document.querySelector("select[name='dia_pagamento']")?.value);
-  }, 100);
-}
+  atualizarQtdMotoqueiros();
+  const checkboxes = document.querySelectorAll('input[name="turnos"]');
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", atualizarQtdMotoqueiros);
+  });
+}, 100);
+  
     function sair() {
       localStorage.clear();
       window.location.href = "index.html";
