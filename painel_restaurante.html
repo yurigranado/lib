@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel do Restaurante</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --cor-principal: #2e7d32;
+      --cor-fundo: #121212;
+      --blur: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: var(--blur);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 30px;
+      z-index: 1000;
+    }
+
+    header h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    nav a {
+      margin: 0 12px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: #90ee90;
+    }
+
+    .conteudo {
+      padding: 100px 5vw 40px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .card h2 {
+      margin-top: 0;
+    }
+
+    .empresa-box {
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 10px 20px;
+      background: #43a047;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    select, input[type="text"], textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    .checkbox-list label {
+      display: block;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lib | Painel do Restaurante</h1>
+    <nav>
+      <a href="#">Terceirizadas</a>
+      <a href="#">Parcerias</a>
+      <a href="#">Minha Conta</a>
+    </nav>
+    <button onclick="sair()">Sair</button>
+  </header>
+
+  <div class="conteudo">
+    <!-- Lista de empresas terceirizadas para contratar -->
+    <div class="card">
+      <h2>📦 Contratar Empresa de Entregas</h2>
+      <div id="listaEmpresas"></div>
+    </div>
+
+    <!-- Formulário de perguntas e respostas -->
+    <div class="card" id="formularioConfig" style="display: none;">
+      <h2>📄 Configurar Parceria com <span id="empresaNome"></span></h2>
+
+      <form id="configForm">
+        <label>Quais turnos você quer oferecer?</label>
+        <div class="checkbox-list" id="turnoBox"></div>
+
+        <div id="qtdMotoqueirosBox"></div>
+
+        <label>Você fornece alimentação para o entregador?</label>
+        <select name="alimentacao">
+          <option value="Sim">Sim</option>
+          <option value="Não">Não</option>
+        </select>
+
+        <label>Dia ideal para pagamento da frequência</label>
+        <select name="dia_pagamento">
+          <option>Segunda</option>
+          <option>Terça</option>
+          <option>Quarta</option>
+          <option>Quinta</option>
+          <option>Sexta</option>
+          <option>Outro</option>
+        </select>
+
+        <div id="outrosPagamentoBox" style="display:none;">
+          <label>Especifique como prefere pagar</label>
+          <input type="text" name="pagamento_outros" />
+        </div>
+
+        <button type="submit">Enviar Configuração</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // coloque sua chave real
+    const empresa_id = localStorage.getItem("empresa_id");
+
+    if (!empresa_id) window.location.href = "index.html";
+
+    async function carregarEmpresas() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?select=id,nome,email,cidade`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`
+        }
+      });
+      const empresas = await res.json();
+      const container = document.getElementById("listaEmpresas");
+
+      empresas.forEach(e => {
+        const box = document.createElement("div");
+        box.className = "empresa-box";
+        box.innerHTML = `
+          <p><strong>${e.nome}</strong> - ${e.cidade}</p>
+          <button onclick="abrirFormulario('${e.id}', '${e.nome}')">Solicitar Parceria</button>
+        `;
+        container.appendChild(box);
+      });
+    }
+
+    function abrirFormulario(id, nome) {
+      document.getElementById("formularioConfig").style.display = "block";
+      document.getElementById("empresaNome").textContent = nome;
+      document.getElementById("configForm").dataset.empresaId = id;
+
+      const turnos = ["Almoço", "Jantar"];
+      const turnoBox = document.getElementById("turnoBox");
+      const qtdBox = document.getElementById("qtdMotoqueirosBox");
+      turnoBox.innerHTML = "";
+      qtdBox.innerHTML = "";
+
+      turnos.forEach(turno => {
+        const idTurno = `turno_${turno}`;
+        turnoBox.innerHTML += `
+          <label><input type="checkbox" name="turnos" value="${turno}" onchange="atualizarQtdMotoqueiros()"> ${turno}</label>
+        `;
+      });
+    }
+
+    function atualizarQtdMotoqueiros() {
+      const selecionados = [...document.querySelectorAll('input[name="turnos"]:checked')];
+      const qtdBox = document.getElementById("qtdMotoqueirosBox");
+      qtdBox.innerHTML = "";
+      selecionados.forEach(t => {
+        qtdBox.innerHTML += `
+          <label>Quantos motoqueiros para ${t.value}?</label>
+          <input type="number" name="qtd_${t.value}" min="1" />
+        `;
+      });
+    }
+
+    document.querySelector('select[name="dia_pagamento"]').addEventListener("change", e => {
+      document.getElementById("outrosPagamentoBox").style.display = e.target.value === "Outro" ? "block" : "none";
+    });
+
+    document.getElementById("configForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const empresaId = form.dataset.empresaId;
+      const turnos = [...form.querySelectorAll('input[name="turnos"]:checked')].map(el => el.value);
+      const qtdePorTurno = {};
+      turnos.forEach(t => {
+        const campo = form.querySelector(`input[name="qtd_${t}"]`);
+        qtdePorTurno[t] = campo ? Number(campo.value) : 0;
+      });
+
+      const payload = {
+        empresa_id: empresa_id,
+        terceirizada_id: empresaId,
+        status: "pendente",
+        data_solicitacao: new Date().toISOString(),
+        config_json: {
+          turnos,
+          qtdePorTurno,
+          fornece_alimentacao: form.alimentacao.value,
+          dia_pagamento: form.dia_pagamento.value,
+          pagamento_outros: form.pagamento_outros?.value || ""
+        }
+      };
+
+      await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      alert("Parceria solicitada com sucesso!");
+      form.reset();
+      document.getElementById("formularioConfig").style.display = "none";
+    });
+
+    function sair() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+
+    carregarEmpresas();
+  </script>
+</body>
+</html>
