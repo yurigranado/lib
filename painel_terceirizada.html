@@ -139,126 +139,131 @@
   </div>
 
 <script>
-  // 🔒 Proteção contra acesso direto sem login
   const id = localStorage.getItem("terceirizada_id");
   const nome = localStorage.getItem("terceirizada_nome");
 
   if (!id || !nome) {
-    window.location.href = "index.html"; // Redireciona pro login
+    window.location.href = "index.html";
   }
 
   const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
   const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
   const TERCEIRIZADA_ID = id;
 
-async function carregar() {
-  const res = await fetch(${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds), {
-    headers: {
-      apikey: API_KEY,
-      Authorization: Bearer ${API_KEY}
+  async function carregar() {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds)`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
+      }
+    });
+
+    const contratos = await res.json();
+    const container = document.getElementById("lista");
+    container.innerHTML = "";
+
+    if (!contratos.length) {
+      container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
+      return;
     }
-  });
 
-  const contratos = await res.json();
-  const container = document.getElementById("lista");
-  container.innerHTML = "";
+    for (const c of contratos) {
+      const diasRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
 
-  if (!contratos.length) {
-    container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
-    return;
+      const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+
+      const configRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+
+      const dias = await diasRes.json();
+      const turnos = await turnosRes.json();
+      const configuracao = (await configRes.json())[0];
+
+      const card = document.createElement("div");
+      card.className = "card-contrato";
+      card.innerHTML = `
+        <h3>${c.empresa?.nome || "Empresa"}</h3>
+        <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
+        <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
+        <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
+        <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
+
+        <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ") || "-"}</p>
+
+        <p><strong>Turnos:</strong></p>
+        <ul style="padding-left: 20px; margin: 0;">
+          ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
+        </ul>
+
+        <p><strong>Status:</strong> ${c.status}</p>
+        <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
+
+        ${configuracao ? `
+          <p><strong>Turnos Solicitados:</strong> ${[
+            configuracao.turno_almoco ? "Almoço" : null,
+            configuracao.turno_jantar ? "Jantar" : null
+          ].filter(Boolean).join(", ") || "-"}</p>
+
+          <p><strong>Qtd por Turno:</strong> ${
+            [
+              configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}` : null,
+              configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : null
+            ].filter(Boolean).join(" | ")
+          }</p>
+
+          <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
+          <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
+          ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
+        ` : ""}
+
+        ${c.status === 'aguardando_aceite_terceirizada' ? `
+          <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
+          <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
+        ` : ""}
+      `;
+      container.appendChild(card);
+    }
   }
 
-  for (const c of contratos) {
-    const diasRes = await fetch(${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}, {
-      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
-    });
-
-    const turnosRes = await fetch(${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}, {
-      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
-    });
-
-    const configRes = await fetch(${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}, {
-      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
-    });
-
-    const dias = await diasRes.json();
-    const turnos = await turnosRes.json();
-    const configuracao = (await configRes.json())[0];
-
-    const card = document.createElement("div");
-    card.className = "card-contrato";
-    card.innerHTML = 
-      <h3>${c.empresa?.nome || "Empresa"}</h3>
-      <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
-      <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
-      <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
-      <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
-
-      <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ") || "-"}</p>
-
-      <p><strong>Turnos:</strong></p>
-      <ul style="padding-left: 20px; margin: 0;">
-        ${turnos.map(t => <li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>).join("")}
-      </ul>
-
-      <p><strong>Status:</strong> ${c.status}</p>
-      <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
-
-      ${configuracao ? 
-        <p><strong>Turnos Solicitados:</strong> ${[
-          configuracao.turno_almoco ? "Almoço" : null,
-          configuracao.turno_jantar ? "Jantar" : null
-        ].filter(Boolean).join(", ") || "-"}</p>
-        <p><strong>Qtd por Turno:</strong> ${
-          [
-            configuracao.turno_almoco ? Almoço: ${configuracao.qtd_almoco} : null,
-            configuracao.turno_jantar ? Jantar: ${configuracao.qtd_jantar} : null
-          ].filter(Boolean).join(" | ")
-        }</p>
-        <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
-        <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
-        ${configuracao.pagamento_forma_outros ? <p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p> : ""}
-       : ""}
-
-      ${c.status === 'aguardando_aceite_terceirizada' ? 
-        <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-        <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-       : ''}
-    ;
-    container.appendChild(card);
-  }
-}
   function sair() {
     localStorage.removeItem("terceirizada_id");
     localStorage.removeItem("terceirizada_nome");
-    localStorage.removeItem("session_token"); // se estiver usando
+    localStorage.removeItem("session_token");
     window.location.href = "index.html";
   }
+
   function formatarTelefone(tel) {
-  if (!tel) return "";
-  const v = tel.replace(/\D/g, "");
-  return v.length === 11
-    ? (${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}
-    : v;
-}
+    if (!tel) return "";
+    const v = tel.replace(/\D/g, "");
+    return v.length === 11
+      ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+      : v;
+  }
+
   async function atualizarStatus(id, novoStatus) {
-    const res = await fetch(${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
       method: "PATCH",
       headers: {
         apikey: API_KEY,
-        Authorization: Bearer ${API_KEY},
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ status: novoStatus, data_confirmacao: new Date().toISOString() })
     });
 
     if (res.ok) {
-      carregarContratos();
+      carregar();
     } else {
       alert("Erro ao atualizar o status.");
     }
   }
-  carregarContratos();
+
+  carregar();
 </script>
 </body>
 </html>
