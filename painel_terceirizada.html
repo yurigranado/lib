@@ -171,8 +171,8 @@
         const card = document.createElement("div");
         card.className = "card-contrato";
         card.innerHTML = `
-          <h3>${c.empresas?.nome || "Empresa"}</h3>
-          <p><strong>Email:</strong> ${c.empresas?.email || "-"}</p>
+          <h3>${c.empresa?.nome || "Empresa"}</h3>
+          <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
           <p><strong>Status:</strong> ${c.status}</p>
           <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
           ${c.status === 'pendente' ? `
@@ -183,6 +183,12 @@
         container.appendChild(card);
       });
     }
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email)`, {
+  headers: {
+    apikey: API_KEY,
+    Authorization: `Bearer ${API_KEY}`
+  }
+});
     function sair() {
   localStorage.removeItem("terceirizada_id");
   localStorage.removeItem("terceirizada_nome");
