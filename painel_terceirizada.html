@@ -171,8 +171,8 @@
         const card = document.createElement("div");
         card.className = "card-contrato";
         card.innerHTML = `
-          <h3>${c.empresa?.nome || "Empresa"}</h3>
-          <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
+          <h3>${c.empresas?.nome || "Empresa"}</h3>
+          <p><strong>Email:</strong> ${c.empresas?.email || "-"}</p>
           <p><strong>Status:</strong> ${c.status}</p>
           <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
           ${c.status === 'pendente' ? `
