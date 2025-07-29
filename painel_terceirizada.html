@@ -210,15 +210,15 @@ async function carregar() {
     window.location.href = "index.html";
   }
 
-  function formatarTelefone(tel) {
-    if (!tel) return "";
-    const v = tel.replace(/\D/g, "");
-    return v.length === 11 ? (${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)} : v;
-  }
+function formatarTelefone(tel) {
+  if (!tel) return "";
+  const v = tel.replace(/\D/g, "");
+  return v.length === 11 ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}` : v;
+}
 
   const nomeEmpresa = localStorage.getItem("terceirizada_nome");
   if (nomeEmpresa) {
-    document.getElementById("tituloPainel").textContent = ${nomeEmpresa} | Painel;
+document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
   }
 
   function abrirMinhaConta() {
@@ -249,9 +249,10 @@ async function carregar() {
     form.sobre.value = dados.sobre || "";
 
     if (dados.logomarca_url) {
-      document.getElementById("logo-preview").innerHTML = 
-        <p style="margin-top: 8px;">Logomarca atual:</p>
-        <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">;
+document.getElementById("logo-preview").innerHTML = `
+  <p style="margin-top: 8px;">Logomarca atual:</p>
+  <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+`;
     }
 
     form.addEventListener("submit", async (e) => {
