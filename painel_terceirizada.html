@@ -152,7 +152,7 @@
   const TERCEIRIZADA_ID = id;
 
   async function carregarContratos() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds,empresa_dias_semana(dia),empresa_turnos(nome_turno,horario_inicio,horario_fim)) `, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds,empresa_dias_semana(dia),empresa_turnos(nome_turno,horario_inicio,horario_fim))`, {
       headers: {
         apikey: API_KEY,
         Authorization: `Bearer ${API_KEY}`
