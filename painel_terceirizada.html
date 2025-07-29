@@ -55,7 +55,14 @@
       cursor: pointer;
     }
     .card-contrato button.recusar { background: #e53935; margin-left: 10px; }
-    
+
+    .card-contrato form {
+  background: rgba(255,255,255,0.04);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.2);
+  margin-top: 16px;
+}    
     .card form label {
   margin-top: 8px;
   display: block;
@@ -251,7 +258,7 @@ function abrirRegrasInline(contratoId) {
   }
 
   container.innerHTML = `
-    <div class="card" style="margin-top:20px;">
+<div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
       <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div style="grid-column:span 2;">
           <label>Modelo de Pagamento</label>
