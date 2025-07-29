@@ -204,6 +204,13 @@
     window.location.href = "index.html";
   }
 
+  function formatarTelefone(tel) {
+  if (!tel) return "";
+  const v = tel.replace(/\D/g, "");
+  return v.length === 11
+    ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+    : v;
+}
   async function atualizarStatus(id, novoStatus) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
       method: "PATCH",
