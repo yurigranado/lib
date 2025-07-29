@@ -1,3 +1,4 @@
+<!-- minha_conta_terceirizada.html -->
 <div class="card" style="max-width: 700px; margin: 0 auto; background: rgba(255,255,255,0.08); padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); backdrop-filter: blur(10px); color: white;">
 
   <h2 style="margin-bottom: 20px; text-align: center;">
@@ -56,3 +57,79 @@
     <button onclick="confirmarExcluirConta()" style="background: #e53935; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">❌ Excluir Conta</button>
   </div>
 </div>
+<script>
+async function carregarMinhaConta() {
+  const id = localStorage.getItem("terceirizada_id");
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const dados = (await res.json())[0];
+  if (!dados) return;
+
+  const form = document.getElementById("formMinhaConta");
+  form.nome.value = dados.nome || "";
+  form.proprietario.value = dados.proprietario || "";
+  form.cnpj.value = dados.cnpj || "";
+  form.whatsapp.value = dados.contato || "";
+  form.cidade.value = dados.cidade || "";
+  form.estado.value = dados.estado || "";
+  form.sobre.value = dados.sobre || "";
+}
+
+document.getElementById("formMinhaConta").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const id = localStorage.getItem("terceirizada_id");
+
+  const payload = {
+    nome: form.nome.value,
+    proprietario: form.proprietario.value,
+    contato: form.whatsapp.value.replace(/\D/g, ""),
+    cidade: form.cidade.value,
+    estado: form.estado.value.toUpperCase(),
+    sobre: form.sobre.value
+  };
+
+  // logomarca opcional
+  const file = form.logomarca.files[0];
+  if (file) {
+    const nomeArquivo = `logo_${Date.now()}_${file.name}`;
+    await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": file.type,
+        "x-upsert": "true"
+      },
+      body: file
+    });
+    payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
+  }
+
+  await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  alert("✅ Dados atualizados com sucesso!");
+});
+
+// Placeholder para ações futuras
+function abrirTrocarSenha() {
+  alert("🔒 Aqui você poderá trocar sua senha.");
+}
+function confirmarExcluirConta() {
+  const ok = confirm("Tem certeza que deseja excluir sua conta?");
+  if (!ok) return;
+  // Aqui entraria a lógica real de exclusão
+  alert("🚫 Conta excluída (exemplo)");
+}
+
+carregarMinhaConta();
+</script>
