@@ -55,6 +55,18 @@
       cursor: pointer;
     }
     .card-contrato button.recusar { background: #e53935; margin-left: 10px; }
+    
+    .card form label {
+  margin-top: 8px;
+  display: block;
+}
+.card form input, .card form select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+}
+
   </style>
 </head>
 <body>
@@ -320,25 +332,6 @@ async function salvarRegrasPagamento(event, contratoId) {
 
   return false;
 }
-
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
-    method: "POST",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (res.ok) {
-    alert("✅ Regras salvas com sucesso!");
-    voltarLista();
-    carregar(); // atualiza a lista de contratos
-  } else {
-    alert("Erro ao salvar as regras.");
-  }
-});
 
   async function carregarMinhaConta() {
     const id = localStorage.getItem("terceirizada_id");
