@@ -107,59 +107,6 @@
     </div>
   </div>
 </div>
-  <div id="regrasPagamentoContainer" style="display:none;">
-  <div class="card" style="max-width:800px;margin:0 auto;background:rgba(255,255,255,0.08);padding:30px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.3);backdrop-filter:blur(10px);color:white;">
-    <h2 style="text-align:center;margin-bottom:20px;">
-      <span style="margin-right:6px;">💰</span>Regras de Pagamento
-    </h2>
-    <form id="formPagamento" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-      <input type="hidden" name="contrato_id">
-      
-      <div style="grid-column:span 2;">
-        <label>Modelo de Pagamento</label>
-        <select name="modelo_pagamento" required onchange="alternarModeloPagamento(this.value)" style="width:100%;">
-          <option value="">Selecione</option>
-          <option value="fixo">Fixo + Adicionais</option>
-          <option value="dinamico">Dinâmico + Fixo</option>
-        </select>
-      </div>
-
-      <div id="camposFixo" style="grid-column:span 2;display:none;">
-        <div><label>Valor Fixo (R$)</label><input name="valor_fixo" type="number" step="0.01"></div>
-        <div><label>Valor por Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01"></div>
-        <div><label>Valor por Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01"></div>
-      </div>
-
-      <div id="camposDinamico" style="grid-column:span 2;display:none;">
-        <div><label>Corridas Mínimas</label><input name="corridas_minimas" type="number"></div>
-        <div><label>Valor Fixo Base (R$)</label><input name="valor_fixo_dinamico" type="number" step="0.01"></div>
-        <div><label>Valor Extra por Corrida Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01"></div>
-        <div><label>Valor Extra por Corrida Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01"></div>
-      </div>
-
-      <div style="grid-column:span 2;">
-        <label>Taxa da Terceirizada (opcional)</label>
-        <input name="taxa_terceirizada" type="number" step="0.01">
-      </div>
-
-      <div style="grid-column:span 2;">
-        <label><input type="checkbox" name="paga_alimentacao"> Pagar Alimentação</label>
-        <input name="valor_alimentacao" type="number" step="0.01" placeholder="Valor da alimentação" />
-      </div>
-
-      <div style="grid-column:span 2;">
-        <label><input type="checkbox" name="adicional_noturno"> Adicional Noturno</label>
-        <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Valor do adicional" />
-      </div>
-
-      <div style="grid-column:span 2;text-align:center;margin-top:20px;">
-        <button type="submit" style="padding:10px 24px;font-weight:bold;">💾 Salvar Regras</button>
-        <button type="button" onclick="voltarLista()" style="margin-left:12px;background:#aaa;color:white;padding:10px 24px;border:none;border-radius:6px;cursor:pointer;">🔙 Voltar</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
   const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
   const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
@@ -238,19 +185,12 @@
         `;
       }
 
-      if (c.status === 'aguardando_aceite_terceirizada') {
-      html += `
-      <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-      <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-      `;
-      }
-
       if (c.status === 'ativo') {
-      html += `
-      <button onclick="abrirRegrasPagamento(${c.id})">⚙️ Editar Regras de Pagamento</button>
-    `;
-    }
-
+  html += `
+    <div id="formularioRegras_${c.id}"></div>
+    <button onclick="abrirRegrasInline(${c.id})">⚙️ Editar Regras de Pagamento</button>
+  `;
+}
       html += `
           </div>
         </div>
@@ -291,42 +231,95 @@
   document.getElementById("camposFixo").style.display = modelo === "fixo" ? "grid" : "none";
   document.getElementById("camposDinamico").style.display = modelo === "dinamico" ? "grid" : "none";
 }
+function abrirRegrasInline(contratoId) {
+  const container = document.getElementById(`formularioRegras_${contratoId}`);
+  if (container.innerHTML) {
+    container.innerHTML = ""; // esconde se já estiver aberto
+    return;
+  }
 
-function abrirRegrasPagamento(contratoId) {
-  document.getElementById("lista").style.display = "none";
-  document.getElementById("minhaContaContainer").style.display = "none";
-  document.getElementById("regrasPagamentoContainer").style.display = "block";
+  container.innerHTML = `
+    <div class="card" style="margin-top:20px;">
+      <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div style="grid-column:span 2;">
+          <label>Modelo de Pagamento</label>
+          <select name="modelo_pagamento" required onchange="alternarCamposRegras(this, ${contratoId})">
+            <option value="">Selecione</option>
+            <option value="fixo">Fixo + Adicionais</option>
+            <option value="dinamico">Dinâmico + Fixo</option>
+          </select>
+        </div>
 
-  const form = document.getElementById("formPagamento");
-  form.reset();
-  form.contrato_id.value = contratoId;
+        <div id="fixo_${contratoId}" style="display:none;grid-column:span 2;">
+          <div><label>Valor Fixo</label><input name="valor_fixo" type="number" step="0.01"></div>
+          <div><label>Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01"></div>
+          <div><label>Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01"></div>
+        </div>
+
+        <div id="dinamico_${contratoId}" style="display:none;grid-column:span 2;">
+          <div><label>Corridas Mínimas</label><input name="corridas_minimas" type="number"></div>
+          <div><label>Valor Fixo Base</label><input name="valor_fixo_dinamico" type="number" step="0.01"></div>
+          <div><label>Extra Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01"></div>
+          <div><label>Extra Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01"></div>
+        </div>
+
+        <div style="grid-column:span 2;"><label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01"></div>
+        <div style="grid-column:span 2;"><label><input type="checkbox" name="paga_alimentacao"> Alimentação</label><input name="valor_alimentacao" type="number" step="0.01"></div>
+        <div style="grid-column:span 2;"><label><input type="checkbox" name="adicional_noturno"> Noturno</label><input name="valor_adicional_noturno" type="number" step="0.01"></div>
+        <div style="grid-column:span 2;text-align:right;">
+          <button type="submit">💾 Salvar</button>
+        </div>
+      </form>
+    </div>
+  `;
 }
 
-function voltarLista() {
-  document.getElementById("regrasPagamentoContainer").style.display = "none";
-  document.getElementById("minhaContaContainer").style.display = "none";
-  document.getElementById("lista").style.display = "block";
+function alternarCamposRegras(select, contratoId) {
+  document.getElementById(`fixo_${contratoId}`).style.display = select.value === "fixo" ? "grid" : "none";
+  document.getElementById(`dinamico_${contratoId}`).style.display = select.value === "dinamico" ? "grid" : "none";
 }
 
-document.getElementById("formPagamento").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.target;
+async function salvarRegrasPagamento(event, contratoId) {
+  event.preventDefault();
+  const form = event.target;
+  const dados = Object.fromEntries(new FormData(form).entries());
+
   const payload = {
-    contrato_id: form.contrato_id.value,
-    modelo_pagamento: form.modelo_pagamento.value,
-    valor_fixo: Number(form.valor_fixo.value) || 0,
-    valor_por_corrida_simples: Number(form.valor_por_corrida_simples.value) || 0,
-    valor_por_corrida_dupla: Number(form.valor_por_corrida_dupla.value) || 0,
-    corridas_minimas: Number(form.corridas_minimas.value) || 0,
-    valor_fixo_dinamico: Number(form.valor_fixo_dinamico.value) || 0,
-    valor_extra_corrida_simples: Number(form.valor_extra_corrida_simples.value) || 0,
-    valor_extra_corrida_dupla: Number(form.valor_extra_corrida_dupla.value) || 0,
-    taxa_terceirizada: Number(form.taxa_terceirizada.value) || 0,
-    paga_alimentacao: form.paga_alimentacao.checked,
-    valor_alimentacao: Number(form.valor_alimentacao.value) || 0,
-    adicional_noturno: form.adicional_noturno.checked,
-    valor_adicional_noturno: Number(form.valor_adicional_noturno.value) || 0
+    contrato_id: contratoId,
+    modelo_pagamento: dados.modelo_pagamento,
+    valor_fixo: Number(dados.valor_fixo) || 0,
+    valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
+    valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
+    corridas_minimas: Number(dados.corridas_minimas) || 0,
+    valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
+    valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
+    valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
+    taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
+    paga_alimentacao: dados.paga_alimentacao === "on",
+    valor_alimentacao: Number(dados.valor_alimentacao) || 0,
+    adicional_noturno: dados.adicional_noturno === "on",
+    valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0
   };
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.ok) {
+    alert("✅ Regras salvas!");
+    document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
+  } else {
+    alert("❌ Erro ao salvar.");
+  }
+
+  return false;
+}
 
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
