@@ -1,200 +1,36 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <title>Painel do Restaurante</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    :root {
-      --cor-principal: #2e7d32;
-      --cor-fundo: #121212;
-      --blur: rgba(255, 255, 255, 0.06);
-    }
+<div class="card">
+  <h2>📄 Configurar Parceria com <span id="empresaNome"></span></h2>
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: var(--blur);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 30px;
-      z-index: 1000;
-    }
-
-    header h1 {
-      font-size: 22px;
-      margin: 0;
-    }
-
-    nav a {
-      margin: 0 12px;
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    nav a:hover {
-      color: #90ee90;
-    }
-
-    .conteudo {
-      padding: 100px 5vw 40px;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 14px;
-      padding: 24px;
-      margin-bottom: 30px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-
-    .card h2 {
-      margin-top: 0;
-    }
-
-    .empresa-box {
-      background: rgba(255,255,255,0.05);
-      padding: 12px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-    }
-
-    button {
-      margin-top: 12px;
-      padding: 10px 20px;
-      background: #43a047;
-      border: none;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    select, input[type="text"], textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 10px;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 15px;
-    }
-  </style>
-</head>
-<body>
-
-  <header>
-    <h1>Lib | Painel do Restaurante</h1>
-    <nav>
-      <a href="#">Terceirizadas</a>
-      <a href="#">Parcerias</a>
-      <a href="#">Minha Conta</a>
-    </nav>
-    <button onclick="sair()">Sair</button>
-  </header>
-
-  <div class="conteudo">
-    <div class="card">
-      <h2>📦 Contratar Empresa de Entregas</h2>
-      <div id="listaEmpresas"></div>
+  <form id="configForm">
+    <label>Quais turnos você quer oferecer?</label>
+    <div class="checkbox-list" id="turnoBox">
+      <label><input type="checkbox" name="turnos" value="Almoço" onchange="atualizarQtdMotoqueiros()"> Almoço</label>
+      <label><input type="checkbox" name="turnos" value="Jantar" onchange="atualizarQtdMotoqueiros()"> Jantar</label>
     </div>
 
-    <div id="formularioConfig"></div>
-  </div>
+    <div id="qtdMotoqueirosBox"></div>
 
-  <script>
-    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-    const empresa_id = localStorage.getItem("empresa_id");
-    if (!empresa_id) window.location.href = "index.html";
+    <label>Você fornece alimentação para o entregador?</label>
+    <select name="alimentacao">
+      <option value="Sim">Sim</option>
+      <option value="Não">Não</option>
+    </select>
 
-    async function carregarEmpresas() {
-      const empresasRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?select=id,nome,email,cidade`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-      const empresas = await empresasRes.json();
+    <label>Dia ideal para pagamento da frequência</label>
+    <select name="dia_pagamento" onchange="toggleOutroPagamento(this.value)">
+      <option>Segunda</option>
+      <option>Terça</option>
+      <option>Quarta</option>
+      <option>Quinta</option>
+      <option>Sexta</option>
+      <option>Outro</option>
+    </select>
 
-      const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-      const contratos = await contratosRes.json();
+    <div id="outrosPagamentoBox" style="display:none;">
+      <label>Especifique como prefere pagar</label>
+      <input type="text" name="pagamento_outros" />
+    </div>
 
-      const container = document.getElementById("listaEmpresas");
-      container.innerHTML = "";
-
-      empresas.forEach(e => {
-        const box = document.createElement("div");
-        box.className = "empresa-box";
-        const contratoExistente = contratos.find(ct => ct.terceirizada_id === e.id);
-
-        box.innerHTML = `<p><strong>${e.nome}</strong> - ${e.cidade}</p>`;
-
-        if (contratoExistente) {
-          const status = contratoExistente.status;
-          const statusLabel = {
-            pendente: "Solicitação enviada",
-            em_negociacao: "Em negociação",
-            aguardando_configuracao_empresa: "Aguardando preenchimento do formulário",
-            aguardando_aceite_terceirizada: "Aguardando aceite da empresa",
-            ativo: "✅ Ativo",
-            recusado: "❌ Recusado"
-          }[status] || "⏳ Aguardando";
-
-          box.innerHTML += `<p style="color: orange;"><strong>Status:</strong> ${statusLabel}</p>`;
-
-          if (status === "aguardando_configuracao_empresa") {
-            box.innerHTML += `<button onclick=\"abrirFormulario('${e.id}', '${e.nome}')\">Responder Formulário</button>`;
-          }
-        } else {
-          box.innerHTML += `<button onclick="abrirFormulario('${e.id}', '${e.nome}')">Solicitar Parceria</button>`;
-        }
-
-        container.appendChild(box);
-      });
-    }
-
-    async function abrirFormulario(id, nome) {
-      const container = document.getElementById("formularioConfig");
-      const html = await fetch("configurar_parceria.html").then(r => r.text());
-      container.innerHTML = html;
-
-      document.getElementById("empresaNome").textContent = nome;
-      document.getElementById("configForm").dataset.empresaId = id;
-    }
-
-    function sair() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-
-    carregarEmpresas();
-  </script>
-</body>
-</html>
+    <button type="submit">Enviar Configuração</button>
+  </form>
+</div>
