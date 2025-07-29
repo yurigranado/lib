@@ -234,36 +234,46 @@ setTimeout(() => {
   });
 }, 50);
 
-    async function abrirFormulario(id, nome) {
-      const container = document.getElementById("formularioConfig");
-      const html = await fetch("configurar_parceria.html").then(r => r.text());
-      container.innerHTML = html;
+async function abrirFormulario(id, nome) {
+  const container = document.getElementById("formularioConfig");
+  const html = await fetch("configurar_parceria.html").then(r => r.text());
+  container.innerHTML = html;
 
-      // Define manualmente a função esperada pelo HTML carregado
-window.atualizarQtdMotoqueiros = function () {
-  const qtdBox = document.getElementById("qtdMotoqueirosBox");
-  qtdBox.innerHTML = "";
+  document.getElementById("empresaNome").textContent = nome;
+  document.getElementById("configForm").dataset.empresaId = id;
 
-  if (document.querySelector('input[name="turno_almoco"]')?.checked) {
-    qtdBox.innerHTML += `
-      <label>Quantos motoqueiros para Almoço?</label>
-      <input type="number" name="qtd_almoco" min="0" value="0" />
-    `;
-  }
+  // ✅ Define as funções esperadas globalmente
+  window.atualizarQtdMotoqueiros = function () {
+    const qtdBox = document.getElementById("qtdMotoqueirosBox");
+    qtdBox.innerHTML = "";
 
-  if (document.querySelector('input[name="turno_jantar"]')?.checked) {
-    qtdBox.innerHTML += `
-      <label>Quantos motoqueiros para Jantar?</label>
-      <input type="number" name="qtd_jantar" min="0" value="0" />
-    `;
-  }
-};
-
-
-      // configurar dados dinâmicos
-      document.getElementById("empresaNome").textContent = nome;
-      document.getElementById("configForm").dataset.empresaId = id;
+    if (document.querySelector('input[name="turno_almoco"]')?.checked) {
+      qtdBox.innerHTML += `
+        <label>Quantos motoqueiros para Almoço?</label>
+        <input type="number" name="qtd_almoco" min="0" value="0" />
+      `;
     }
+
+    if (document.querySelector('input[name="turno_jantar"]')?.checked) {
+      qtdBox.innerHTML += `
+        <label>Quantos motoqueiros para Jantar?</label>
+        <input type="number" name="qtd_jantar" min="0" value="0" />
+      `;
+    }
+  };
+
+  window.toggleOutroPagamento = function (valor) {
+    const outroBox = document.getElementById("outrosPagamentoBox");
+    outroBox.style.display = valor === "Outro" ? "block" : "none";
+  };
+
+  // ✅ Força atualizar logo se algum já estiver marcado
+  setTimeout(() => {
+    atualizarQtdMotoqueiros();
+    toggleOutroPagamento(document.querySelector("select[name='dia_pagamento']")?.value);
+  }, 100);
+}
+};
 
     function sair() {
       localStorage.clear();
