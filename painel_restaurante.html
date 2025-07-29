@@ -262,24 +262,27 @@ async function abrirFormulario(id, nome) {
   document.getElementById("configForm").dataset.empresaId = id;
 
   // ✅ Define as funções esperadas globalmente
-  window.atualizarQtdMotoqueiros = function () {
-    const qtdBox = document.getElementById("qtdMotoqueirosBox");
-    qtdBox.innerHTML = "";
+window.atualizarQtdMotoqueiros = function () {
+  const qtdBox = document.getElementById("qtdMotoqueirosBox");
+  qtdBox.innerHTML = "";
 
-    if (document.querySelector('input[name="turno_almoco"]')?.checked) {
-      qtdBox.innerHTML += `
-        <label>Quantos motoqueiros para Almoço?</label>
-        <input type="number" name="qtd_almoco" min="0" value="0" />
-      `;
-    }
+  const turnosSelecionados = [...document.querySelectorAll('input[name="turnos"]:checked')]
+    .map(cb => cb.value);
 
-    if (document.querySelector('input[name="turno_jantar"]')?.checked) {
-      qtdBox.innerHTML += `
-        <label>Quantos motoqueiros para Jantar?</label>
-        <input type="number" name="qtd_jantar" min="0" value="0" />
-      `;
-    }
-  };
+  if (turnosSelecionados.includes("almoco")) {
+    qtdBox.innerHTML += `
+      <label>Quantos motoqueiros para Almoço?</label>
+      <input type="number" name="qtd_almoco" min="0" value="0" />
+    `;
+  }
+
+  if (turnosSelecionados.includes("jantar")) {
+    qtdBox.innerHTML += `
+      <label>Quantos motoqueiros para Jantar?</label>
+      <input type="number" name="qtd_jantar" min="0" value="0" />
+    `;
+  }
+};
 
   window.toggleOutroPagamento = function (valor) {
     const outroBox = document.getElementById("outrosPagamentoBox");
