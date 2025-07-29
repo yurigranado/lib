@@ -1,60 +1,27 @@
 <!-- minha_conta_terceirizada.html -->
-<div class="card" style="max-width: 700px; margin: 0 auto; background: rgba(255,255,255,0.08); padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); backdrop-filter: blur(10px); color: white;">
-
-  <h2 style="margin-bottom: 20px; text-align: center;">
-    <span style="margin-right: 6px;">👤</span>Minha Conta
+<div class="card" style="max-width:700px;margin:0 auto;background:rgba(255,255,255,0.08);padding:30px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.3);backdrop-filter:blur(10px);color:white;">
+  <h2 style="text-align:center;margin-bottom:20px;">
+    <span style="margin-right:6px;">👤</span>Minha Conta
   </h2>
-
-  <form id="formMinhaConta" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-
-    <div>
-      <label>Nome da Empresa</label>
-      <input type="text" name="nome" required style="width: 100%;" />
-    </div>
-
-    <div>
-      <label>Proprietário</label>
-      <input type="text" name="proprietario" required style="width: 100%;" />
-    </div>
-
-    <div>
-      <label>CNPJ</label>
-      <input type="text" name="cnpj" disabled style="width: 100%; background-color: rgba(255,255,255,0.1); color: #ccc;" />
-    </div>
-
-    <div>
-      <label>WhatsApp</label>
-      <input type="tel" name="whatsapp" style="width: 100%;" />
-    </div>
-
-    <div>
-      <label>Cidade</label>
-      <input type="text" name="cidade" style="width: 100%;" />
-    </div>
-
-    <div>
-      <label>Estado</label>
-      <input type="text" name="estado" maxlength="2" style="width: 100%;" />
-    </div>
-
-    <div style="grid-column: span 2;">
-      <label>Sobre a Empresa</label>
-      <textarea name="sobre" style="width: 100%; min-height: 80px;"></textarea>
-    </div>
-
-    <div style="grid-column: span 2;">
+  <form id="formMinhaConta" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div><label>Nome da Empresa</label><input name="nome" type="text" required style="width:100%;"></div>
+    <div><label>Proprietário</label><input name="proprietario" type="text" required style="width:100%;"></div>
+    <div><label>CNPJ</label><input name="cnpj" type="text" disabled style="width:100%;background:rgba(255,255,255,0.1);color:#ccc;"></div>
+    <div><label>WhatsApp</label><input name="whatsapp" type="tel" style="width:100%;"></div>
+    <div><label>Cidade</label><input name="cidade" type="text" style="width:100%;"></div>
+    <div><label>Estado</label><input name="estado" type="text" maxlength="2" style="width:100%;"></div>
+    <div style="grid-column:span 2;"><label>Sobre a Empresa</label><textarea name="sobre" style="width:100%;min-height:80px;"></textarea></div>
+    <div style="grid-column:span 2;">
       <label>Logomarca</label>
-      <input type="file" name="logomarca" accept="image/*" style="width: 100%;" />
-      <div id="logo-preview" style="margin-top: 12px;"></div>
+      <input name="logomarca" type="file" accept="image/*" style="width:100%;">
+      <div id="logo-preview" style="margin-top:12px;"></div>
     </div>
-
-    <div style="grid-column: span 2; text-align: center; margin-top: 10px;">
-      <button type="submit" style="padding: 10px 24px; font-weight: bold;">💾 Salvar Alterações</button>
+    <div style="grid-column:span 2;text-align:center;margin-top:10px;">
+      <button type="submit" style="padding:10px 24px;font-weight:bold;">💾 Salvar Alterações</button>
     </div>
   </form>
-
-  <div style="grid-column: span 2; margin-top: 20px; display: flex; justify-content: center; gap: 16px;">
-    <button onclick="abrirTrocarSenha()" style="background: #1976d2; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">🔒 Trocar Senha</button>
-    <button onclick="confirmarExcluirConta()" style="background: #e53935; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">❌ Excluir Conta</button>
+  <div style="margin-top:20px;display:flex;justify-content:center;gap:16px;">
+    <button onclick="alert('🔒 Trocar senha');" style="background:#1976d2;color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">🔒 Trocar Senha</button>
+    <button onclick="if(confirm('Excluir conta?'))alert('Conta excluída');" style="background:#e53935;color:white;padding:10px 20px;border:none;border-radius:6px;cursor:pointer;">❌ Excluir Conta</button>
   </div>
 </div>
