@@ -10,11 +10,7 @@
       --cor-fundo: #121212;
       --blur: rgba(255, 255, 255, 0.06);
     }
-
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -22,355 +18,238 @@
       background-size: cover;
       color: white;
     }
-
     header {
       position: fixed;
-      top: 0;
-      width: 100%;
+      top: 0; width: 100%;
       background: var(--blur);
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 30px;
-      z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 30px; z-index: 1000;
     }
-
-    header h1 {
-      font-size: 22px;
-      margin: 0;
-    }
-
+    header h1 { font-size: 22px; margin: 0; }
     nav a {
-      margin: 0 12px;
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-      transition: 0.3s;
+      margin: 0 12px; color: white; text-decoration: none; font-weight: 500;
+      transition: .3s;
     }
-
-    nav a:hover {
-      color: #90ee90;
-    }
-
-    .conteudo {
-      padding: 100px 5vw 40px;
-    }
-
-    .titulo-secao {
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #fff;
-      font-weight: 600;
-    }
-
+    nav a:hover { color: #90ee90; }
+    .conteudo { padding: 100px 5vw 40px; }
+    .titulo-secao { font-size: 24px; margin-bottom: 20px; color: #fff; font-weight: 600; }
     .grid- {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
     }
-
     .card-contrato {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255,255,255,0.06);
       border-radius: 12px;
       padding: 20px;
       backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
     }
-
-    .card-contrato h3 {
-      margin: 0 0 10px;
-    }
-
-    .card-contrato p {
-      margin: 4px 0;
-      color: #ccc;
-    }
-
+    .card-contrato h3 { margin: 0 0 10px; }
+    .card-contrato p { margin: 4px 0; color: #ccc; }
     .card-contrato button {
-      margin-top: 12px;
-      padding: 10px 16px;
-      background: #43a047;
-      border: none;
-      color: white;
-      font-weight: bold;
-      border-radius: 8px;
+      margin-top: 12px; padding: 10px 16px; background: #43a047;
+      border: none; color: white; font-weight: bold; border-radius: 8px;
       cursor: pointer;
     }
-
-    .card-contrato button.recusar {
-      background: #e53935;
-      margin-left: 10px;
-    }
+    .card-contrato button.recusar { background: #e53935; margin-left: 10px; }
   </style>
 </head>
 <body>
 
   <header>
-  <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
-  <nav>
-    <a href="#"></a>
-    <a href="#">Entregadores</a>
-    <a href="#">Escalas</a>
-    <a href="#">Dashboard</a>
-    <a href="#" onclick="abrirMinhaConta()">Minha Conta</a>
-  </nav>
-  <button onclick="sair()" style="
-    margin-left: 20px;
-    background: #e53935;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-  ">
-    Sair
-  </button>
-</header>
+    <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
+    <nav>
+      <a href="#">Entregadores</a>
+      <a href="#">Escalas</a>
+      <a href="#">Dashboard</a>
+      <a href="#" onclick="abrirMinhaConta()">Minha Conta</a>
+    </nav>
+    <button onclick="sair()" style="
+      background: #e53935; color: white; border: none;
+      padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;
+    ">Sair</button>
+  </header>
 
   <div class="conteudo">
-    <div class="titulo-secao">📄  Recebidos</div>
+    <div class="titulo-secao">📄 Recebidos</div>
     <div class="grid-" id="lista">
       <p>Carregando ...</p>
     </div>
   </div>
 
-<script>
-  // 🔒 Proteção contra acesso direto sem login
-  const id = localStorage.getItem("terceirizada_id");
-  const nome = localStorage.getItem("terceirizada_nome");
-
-  if (!id || !nome) {
-    window.location.href = "index.html"; // Redireciona pro login
-  }
-
-  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-  const TERCEIRIZADA_ID = id;
-
-async function carregar() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds)`, {
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`
-    }
-  });
-
-  const contratos = await res.json();
-  const container = document.getElementById("lista");
-  container.innerHTML = "";
-
-  if (!contratos.length) {
-    container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
-    return;
-  }
-
-  for (const c of contratos) {
-    const diasRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-
-    const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-
-    const configRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-
-    const dias = await diasRes.json();
-    const turnos = await turnosRes.json();
-    const configuracao = (await configRes.json())[0];
-
-    const card = document.createElement("div");
-    card.className = "card-contrato";
-
-    let html = `
-      <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 260px;">
-          <h3>${c.empresa?.nome || "Empresa"}</h3>
-          <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
-          <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
-          <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
-          <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
-          <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ") || "-"}</p>
-          <p><strong>Turnos:</strong></p>
-          <ul style="padding-left: 20px; margin: 0;">
-            ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
-          </ul>
-        </div>
-        <div style="flex: 1; min-width: 260px;">
-          <p><strong>Status:</strong> ${c.status}</p>
-          <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
-    `;
-
-    if (configuracao) {
-      html += `
-        <p><strong>Turnos Solicitados:</strong> ${[
-          configuracao.turno_almoco ? "Almoço" : null,
-          configuracao.turno_jantar ? "Jantar" : null
-        ].filter(Boolean).join(", ") || "-"}</p>
-
-        <p><strong>Qtd por Turno:</strong><br>
-          ${configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}<br>` : ""}
-          ${configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : ""}
-        </p>
-
-        <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
-        <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
-        ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
-      `;
+  <script>
+    // proteção
+    const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id");
+    const nomeTer = localStorage.getItem("terceirizada_nome");
+    if (!TERCEIRIZADA_ID || !nomeTer) {
+      window.location.href = "index.html";
     }
 
-    if (c.status === 'aguardando_aceite_terceirizada') {
-      html += `
-        <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
-        <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-      `;
-    }
+    // cabeçalho
+    document.getElementById("tituloPainel").textContent = `${nomeTer} | Painel`;
 
-    html += `
-        </div>
-      </div>
-    `;
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY     = "eyJh..."; // sua KEY
 
-    card.innerHTML = html;
-    container.appendChild(card);
-  }
-} // ✅ ESSA linha estava faltando!
-  
- function sair() {
-    localStorage.removeItem("terceirizada_id");
-    localStorage.removeItem("terceirizada_nome");
-    localStorage.removeItem("session_token");
-    window.location.href = "index.html";
-  }
-
-  function formatarTelefone(tel) {
-    if (!tel) return "";
-    const v = tel.replace(/\D/g, "");
-    return v.length === 11
-      ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
-      : v;
-  }
-
-  // Trocar nome no cabeçalho
-  const nomeEmpresa = localStorage.getItem("terceirizada_nome");
-  if (nomeEmpresa) {
-    document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
-  }
-
-  // 🔄 Função para abrir o HTML da Minha Conta
-  async function abrirMinhaConta() {
-    const container = document.getElementById("lista");
-    const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
-    container.innerHTML = html;
-
-    setTimeout(() => {
-      carregarMinhaConta();
-    }, 100);
-  }
-
-  // ✏️ Preencher formulário da Minha Conta
-  async function carregarMinhaConta() {
-    const id = localStorage.getItem("terceirizada_id");
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
-    });
-
-    const dados = (await res.json())[0];
-    if (!dados) return;
-
-    const form = document.getElementById("formMinhaConta");
-    if (!form) return;
-
-    form.nome.value = dados.nome || "";
-    form.proprietario.value = dados.proprietario || "";
-    form.cnpj.value = dados.cnpj || "";
-    form.whatsapp.value = dados.contato || "";
-    form.cidade.value = dados.cidade || "";
-    form.estado.value = dados.estado || "";
-    form.sobre.value = dados.sobre || "";
-
-    if (dados.logomarca_url) {
-      document.getElementById("logo-preview").innerHTML = `
-        <p style="margin-top: 8px;">Logomarca atual:</p>
-        <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
-      `;
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const payload = {
-        nome: form.nome.value,
-        proprietario: form.proprietario.value,
-        contato: form.whatsapp.value.replace(/\D/g, ""),
-        cidade: form.cidade.value,
-        estado: form.estado.value.toUpperCase(),
-        sobre: form.sobre.value
-      };
-
-      const file = form.logomarca.files[0];
-      if (file) {
-        const nomeArquivo = `logo_${Date.now()}_${file.name}`;
-        await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
-          method: "POST",
-          headers: {
-            apikey: API_KEY,
-            Authorization: `Bearer ${API_KEY}`,
-            "Content-Type": file.type,
-            "x-upsert": "true"
-          },
-          body: file
-        });
-        payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
-      }
-
-      await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-        method: "PATCH",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+    // função principal de listagem
+    async function carregar() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds)`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
       });
+      const contratos = await res.json();
+      const container = document.getElementById("lista");
+      container.innerHTML = "";
+      if (!contratos.length) {
+        container.innerHTML = "<p>Nenhum contrato recebido ainda.</p>";
+        return;
+      }
+      for (const c of contratos) {
+        // busca dias, turnos e config
+        const [dias, turnos, cfg] = await Promise.all([
+          fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }}).then(r=>r.json()),
+          fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`,     { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }}).then(r=>r.json()),
+          fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`,     { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }}).then(r=>r.json()).then(a=>a[0])
+        ]);
+        const card = document.createElement("div");
+        card.className = "card-contrato";
+        // bloco flex (empresa ↔ resposta)
+        let html = `
+          <div style="display:flex; gap:24px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:260px;">
+              <h3>${c.empresa?.nome}</h3>
+              <p><strong>Email:</strong> ${c.empresa?.email}</p>
+              <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp)}</p>
+              <p><strong>Entregas/dia:</strong> ${c.empresa?.entregas_dia}</p>
+              <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds}</p>
+              <p><strong>Dias:</strong> ${dias.map(d=>d.dia).join(", ")}</p>
+              <p><strong>Turnos:</strong></p>
+              <ul>${turnos.map(t=>`<li>${t.nome_turno}: ${t.horario_inicio}–${t.horario_fim}</li>`).join("")}</ul>
+            </div>
+            <div style="flex:1; min-width:260px;">
+              <p><strong>Status:</strong> ${c.status}</p>
+              <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>`;
+        if (cfg) {
+          html += `
+              <p><strong>Turnos Sol.:</strong> ${[
+                  cfg.turno_almoco?"Almoço":null,
+                  cfg.turno_jantar?"Jantar":null
+                ].filter(Boolean).join(", ")}</p>
+              <p><strong>Qtd/Turno:</strong><br>
+                ${cfg.turno_almoco?`Almoço: ${cfg.qtd_almoco}<br>`:""}
+                ${cfg.turno_jantar?`Jantar: ${cfg.qtd_jantar}`:""}
+              </p>
+              <p><strong>Alimentação:</strong> ${cfg.fornece_alimentacao?"Sim":"Não"}</p>
+              <p><strong>Dia Pagamento:</strong> ${cfg.dia_pagamento}</p>
+              ${cfg.pagamento_forma_outros?`<p><strong>Forma:</strong> ${cfg.pagamento_forma_outros}</p>`:""}`;
+        }
+        if (c.status==="aguardando_aceite_terceirizada") {
+          html += `
+              <button onclick="atualizarStatus(${c.id},'ativo')">Aceitar</button>
+              <button class="recusar" onclick="atualizarStatus(${c.id},'recusado')">Recusar</button>`;
+        }
+        html += `
+            </div>
+          </div>`;
+        card.innerHTML = html;
+        container.appendChild(card);
+      }
+    } // fim carregar
 
-      alert("✅ Dados atualizados com sucesso!");
-    });
-  }
-
-  // Atualizar status do contrato
-  async function atualizarStatus(id, novoStatus) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
-      method: "PATCH",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        status: novoStatus,
-        data_confirmacao: new Date().toISOString()
-      })
-    });
-
-    if (res.ok) {
-      carregar();
-    } else {
-      alert("Erro ao atualizar o status.");
+    // helper formatar
+    function formatarTelefone(t) {
+      if (!t) return "-";
+      const v = t.replace(/\D/g,"");
+      return v.length===11
+        ? `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`
+        : v;
     }
-  }
 
-  // Iniciar carregamento inicial
-  carregar();
-</script>
+    // logout
+    function sair(){
+      localStorage.clear();
+      window.location.href="index.html";
+    }
+
+    // abre Minha Conta
+    async function abrirMinhaConta(){
+      const cont = document.getElementById("lista");
+      const tpl = await fetch("minha_conta_terceirizada.html").then(r=>r.text());
+      cont.innerHTML = tpl;
+      setTimeout(carregarMinhaConta, 100);
+    }
+
+    // preenche o formulário de Minha Conta
+    async function carregarMinhaConta(){
+      const id = TERCEIRIZADA_ID;
+      const dados = (await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+        headers:{apikey:API_KEY,Authorization:`Bearer ${API_KEY}`}
+      }).then(r=>r.json()))[0];
+      if(!dados) return;
+      const f = document.getElementById("formMinhaConta");
+      f.nome.value = dados.nome;
+      f.proprietario.value = dados.proprietario;
+      f.cnpj.value = dados.cnpj;
+      f.whatsapp.value = dados.contato;
+      f.cidade.value = dados.cidade;
+      f.estado.value = dados.estado;
+      f.sobre.value = dados.sobre;
+      if(dados.logomarca_url){
+        document.getElementById("logo-preview").innerHTML = 
+          `<p>Logomarca atual:</p>
+           <img src="${dados.logomarca_url}" style="max-width:160px;border-radius:8px;">`;
+      }
+      f.onsubmit = async e=>{
+        e.preventDefault();
+        const payload = {
+          nome: f.nome.value,
+          proprietario: f.proprietario.value,
+          contato: f.whatsapp.value.replace(/\D/g,""),
+          cidade: f.cidade.value,
+          estado: f.estado.value.toUpperCase(),
+          sobre: f.sobre.value
+        };
+        // upload opcional
+        if(f.logomarca.files[0]){
+          const file = f.logomarca.files[0];
+          const name = `logo_${Date.now()}_${file.name}`;
+          await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${name}`, {
+            method:"POST",
+            headers:{
+              apikey:API_KEY,
+              Authorization:`Bearer ${API_KEY}`,
+              "Content-Type":file.type,
+              "x-upsert":"true"
+            },
+            body:file
+          });
+          payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${name}`;
+        }
+        await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+          method:"PATCH",
+          headers:{apikey:API_KEY,Authorization:`Bearer ${API_KEY}`, "Content-Type":"application/json"},
+          body:JSON.stringify(payload)
+        });
+        alert("Dados atualizados com sucesso!");
+      };
+    }
+
+    // atualiza status
+    async function atualizarStatus(id,status){
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`,{
+        method:"PATCH",
+        headers:{apikey:API_KEY,Authorization:`Bearer ${API_KEY}`, "Content-Type":"application/json"},
+        body:JSON.stringify({status,data_confirmacao:new Date().toISOString()})
+      });
+      if(res.ok) carregar();
+      else alert("Erro ao atualizar status");
+    }
+
+    // dispara carregamento inicial
+    carregar();
+  </script>
+
 </body>
 </html>
