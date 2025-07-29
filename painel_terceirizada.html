@@ -109,13 +109,13 @@
 <body>
 
   <header>
-  <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
+  <h1>Lib | Painel da Terceirizada</h1>
   <nav>
     <a href="#"></a>
     <a href="#">Entregadores</a>
     <a href="#">Escalas</a>
     <a href="#">Dashboard</a>
-    <a href="#" onclick="abrirMinhaConta()">Minha Conta</a>
+    <a href="#">Minha Conta</a>
   </nav>
   <button onclick="sair()" style="
     margin-left: 20px;
@@ -152,10 +152,10 @@
   const TERCEIRIZADA_ID = id;
 
 async function carregar() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds)`, {
+  const res = await fetch(${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=*,empresa:empresas(id,nome,email,whatsapp,entregas_dia,entregas_fds), {
     headers: {
       apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`
+      Authorization: Bearer ${API_KEY}
     }
   });
 
@@ -169,16 +169,16 @@ async function carregar() {
   }
 
   for (const c of contratos) {
-    const diasRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    const diasRes = await fetch(${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}, {
+      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
     });
 
-    const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    const turnosRes = await fetch(${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}, {
+      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
     });
 
-    const configRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    const configRes = await fetch(${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}, {
+      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
     });
 
     const dias = await diasRes.json();
@@ -187,48 +187,44 @@ async function carregar() {
 
     const card = document.createElement("div");
     card.className = "card-contrato";
-card.innerHTML = `
-  <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 260px;">
+    card.innerHTML = 
       <h3>${c.empresa?.nome || "Empresa"}</h3>
       <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
       <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
       <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
       <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
+
       <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ") || "-"}</p>
+
       <p><strong>Turnos:</strong></p>
       <ul style="padding-left: 20px; margin: 0;">
-        ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
+        ${turnos.map(t => <li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>).join("")}
       </ul>
-    </div>
 
-    <div style="flex: 1; min-width: 260px;">
       <p><strong>Status:</strong> ${c.status}</p>
       <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
 
-      ${configuracao ? `
+      ${configuracao ? 
         <p><strong>Turnos Solicitados:</strong> ${[
           configuracao.turno_almoco ? "Almoço" : null,
           configuracao.turno_jantar ? "Jantar" : null
         ].filter(Boolean).join(", ") || "-"}</p>
-
-        <p><strong>Qtd por Turno:</strong><br>
-          ${configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}<br>` : ""}
-          ${configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : ""}
-        </p>
-
+        <p><strong>Qtd por Turno:</strong> ${
+          [
+            configuracao.turno_almoco ? Almoço: ${configuracao.qtd_almoco} : null,
+            configuracao.turno_jantar ? Jantar: ${configuracao.qtd_jantar} : null
+          ].filter(Boolean).join(" | ")
+        }</p>
         <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
         <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
-        ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
-      ` : ""}
-      
-      ${c.status === 'aguardando_aceite_terceirizada' ? `
+        ${configuracao.pagamento_forma_outros ? <p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p> : ""}
+       : ""}
+
+      ${c.status === 'aguardando_aceite_terceirizada' ? 
         <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
         <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-      ` : ''}
-    </div>
-  </div>
-`;
+       : ''}
+    ;
     container.appendChild(card);
   }
 }
@@ -242,116 +238,15 @@ card.innerHTML = `
   if (!tel) return "";
   const v = tel.replace(/\D/g, "");
   return v.length === 11
-    ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
+    ? (${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}
     : v;
 }
-  
-  // Trocar o nome no título do painel
-const nomeEmpresa = localStorage.getItem("terceirizada_nome");
-if (nomeEmpresa) {
-  document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
-}
-async function abrirMinhaConta() {
-  const container = document.getElementById("lista");
-  const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
-  container.innerHTML = html;
-
-async function carregarMinhaConta() {
-  const id = localStorage.getItem("terceirizada_id");
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const dados = (await res.json())[0];
-  if (!dados) return;
-
-  const form = document.getElementById("formMinhaConta");
-  if (!form) return;
-
-  form.nome.value = dados.nome || "";
-  form.proprietario.value = dados.proprietario || "";
-  form.cnpj.value = dados.cnpj || "";
-  form.whatsapp.value = dados.contato || "";
-  form.cidade.value = dados.cidade || "";
-  form.estado.value = dados.estado || "";
-  form.sobre.value = dados.sobre || "";
-
-  if (dados.logomarca_url) {
-    document.getElementById("logo-preview").innerHTML = `
-      <p style="margin-top: 8px;">Logomarca atual:</p>
-      <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
-    `;
-  }
-
-  // adiciona o listener apenas após o HTML estar no DOM
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const payload = {
-      nome: form.nome.value,
-      proprietario: form.proprietario.value,
-      contato: form.whatsapp.value.replace(/\D/g, ""),
-      cidade: form.cidade.value,
-      estado: form.estado.value.toUpperCase(),
-      sobre: form.sobre.value
-    };
-
-    const file = form.logomarca.files[0];
-    if (file) {
-      const nomeArquivo = `logo_${Date.now()}_${file.name}`;
-      await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
-        method: "POST",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": file.type,
-          "x-upsert": "true"
-        },
-        body: file
-      });
-      payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
-    }
-
-    await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-      method: "PATCH",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    alert("✅ Dados atualizados com sucesso!");
-  });
-}
-
-function abrirTrocarSenha() {
-  alert("🔒 Aqui você poderá trocar sua senha.");
-}
-
-function confirmarExcluirConta() {
-  const ok = confirm("Tem certeza que deseja excluir sua conta?");
-  if (!ok) return;
-  alert("🚫 Conta excluída (exemplo)");
-}
-
-// Após injetar o HTML da conta:
-async function abrirMinhaConta() {
-  const container = document.getElementById("lista");
-  const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
-  container.innerHTML = html;
-
-  setTimeout(() => {
-    carregarMinhaConta();
-  }, 100);
-}
-
-  
   async function atualizarStatus(id, novoStatus) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
+    const res = await fetch(${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}, {
       method: "PATCH",
       headers: {
         apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: Bearer ${API_KEY},
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ status: novoStatus, data_confirmacao: new Date().toISOString() })
@@ -363,7 +258,7 @@ async function abrirMinhaConta() {
       alert("Erro ao atualizar o status.");
     }
   }
-  carregar();
+  carregarContratos();
 </script>
 </body>
 </html>
