@@ -181,6 +181,51 @@
     container.appendChild(box);
   });
 }
+
+    // Captura o submit do form carregado dinamicamente
+document.addEventListener("submit", async (e) => {
+  if (e.target.id !== "configForm") return;
+
+  e.preventDefault();
+  const form = e.target;
+  const empresaId = form.dataset.empresaId;
+  const turnos = [...form.querySelectorAll('input[name="turnos"]:checked')].map(el => el.value);
+  const qtdePorTurno = {};
+  turnos.forEach(t => {
+    const campo = form.querySelector(`input[name="qtd_${t}"]`);
+    qtdePorTurno[t] = campo ? Number(campo.value) : 0;
+  });
+
+  const payload = {
+    empresa_id: empresa_id,
+    terceirizada_id: empresaId,
+    status: "aguardando_aceite_terceirizada",
+    data_solicitacao: new Date().toISOString(),
+    config_json: {
+      turnos,
+      qtdePorTurno,
+      fornece_alimentacao: form.alimentacao.value,
+      dia_pagamento: form.dia_pagamento.value,
+      pagamento_outros: form.pagamento_outros?.value || ""
+    }
+  };
+
+  await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  alert("Parceria solicitada com sucesso!");
+  form.reset();
+  document.getElementById("formularioConfig").innerHTML = "";
+  carregarEmpresas(); // atualiza a lista
+});
+
     async function abrirFormulario(id, nome) {
       const container = document.getElementById("formularioConfig");
       const html = await fetch("configurar_parceria.html").then(r => r.text());
