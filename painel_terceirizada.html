@@ -257,6 +257,7 @@ async function abrirMinhaConta() {
   const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
   container.innerHTML = html;
 
+  // Aguarda o DOM carregar para executar a função de preenchimento
   setTimeout(() => {
     carregarMinhaConta();
   }, 100);
@@ -267,6 +268,7 @@ async function carregarMinhaConta() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
+
   const dados = (await res.json())[0];
   if (!dados) return;
 
@@ -290,6 +292,7 @@ async function carregarMinhaConta() {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const payload = {
       nome: form.nome.value,
       proprietario: form.proprietario.value,
