@@ -132,24 +132,46 @@
     if (!empresa_id) window.location.href = "index.html";
 
     async function carregarEmpresas() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?select=id,nome,email,cidade`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-      const empresas = await res.json();
-      const container = document.getElementById("listaEmpresas");
-      empresas.forEach(e => {
-        const box = document.createElement("div");
-        box.className = "empresa-box";
-        box.innerHTML = `
-          <p><strong>${e.nome}</strong> - ${e.cidade}</p>
-          <button onclick="abrirFormulario('${e.id}', '${e.nome}')">Solicitar Parceria</button>
-        `;
-        container.appendChild(box);
-      });
+  const empresasRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?select=id,nome,email,cidade`, {
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`
     }
+  });
+  const empresas = await empresasRes.json();
+  const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}`, {
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`
+    }
+  });
+  const contratos = await contratosRes.json();
+  const container = document.getElementById("listaEmpresas");
+  container.innerHTML = "";
+  empresas.forEach(e => {
+    const box = document.createElement("div");
+    box.className = "empresa-box";
+    const contratoExistente = contratos.find(ct => ct.terceirizada_id === e.id);
+    box.innerHTML = `
+      <p><strong>${e.nome}</strong> - ${e.cidade}</p>
+    `;
+    if (contratoExistente) {
+      const status = contratoExistente.status;
+      const statusLabel = {
+        pendente: "Solicitação enviada",
+        em_negociacao: "Em negociação",
+        aguardando_configuracao_empresa: "Aguardando resposta da empresa",
+        ativo: "✅ Ativo",
+        recusado: "❌ Recusado"
+      }[status] || "⏳ Aguardando";
+      box.innerHTML += `<p style="color: orange;"><strong>Status:</strong> ${statusLabel}</p>`;
+    } else {
+      box.innerHTML += `<button onclick="abrirFormulario('${e.id}', '${e.nome}')">Solicitar Parceria</button>`;
+    }
+    container.appendChild(box);
+  });
+}
+
 
     async function abrirFormulario(id, nome) {
       const container = document.getElementById("formularioConfig");
