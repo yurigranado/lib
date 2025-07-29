@@ -19,7 +19,7 @@
 
     <div>
       <label>CNPJ</label>
-      <input type="text" name="cnpj" disabled style="width: 100%;" />
+      <input type="text" name="cnpj" disabled style="width: 100%; background-color: rgba(255,255,255,0.1); color: #ccc;" />
     </div>
 
     <div>
@@ -45,6 +45,7 @@
     <div style="grid-column: span 2;">
       <label>Logomarca</label>
       <input type="file" name="logomarca" accept="image/*" style="width: 100%;" />
+      <div id="logo-preview" style="margin-top: 12px;"></div>
     </div>
 
     <div style="grid-column: span 2; text-align: center; margin-top: 10px;">
@@ -74,8 +75,14 @@ async function carregarMinhaConta() {
   form.cidade.value = dados.cidade || "";
   form.estado.value = dados.estado || "";
   form.sobre.value = dados.sobre || "";
-}
 
+  if (dados.logomarca_url) {
+  document.getElementById("logo-preview").innerHTML = `
+    <p style="margin-top: 8px;">Logomarca atual:</p>
+    <img src="${dados.logomarca_url}" alt="Logomarca atual" style="max-width: 160px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+  `;
+}
+}
 document.getElementById("formMinhaConta").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
