@@ -232,6 +232,7 @@ card.innerHTML = `
     container.appendChild(card);
   }
 }
+  
   function sair() {
     localStorage.removeItem("terceirizada_id");
     localStorage.removeItem("terceirizada_nome");
@@ -255,6 +256,11 @@ async function abrirMinhaConta() {
   const container = document.getElementById("lista");
   const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
   container.innerHTML = html;
+
+  setTimeout(() => {
+    carregarMinhaConta();
+  }, 100);
+}
 
 async function carregarMinhaConta() {
   const id = localStorage.getItem("terceirizada_id");
@@ -282,7 +288,6 @@ async function carregarMinhaConta() {
     `;
   }
 
-  // adiciona o listener apenas após o HTML estar no DOM
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const payload = {
@@ -323,28 +328,6 @@ async function carregarMinhaConta() {
     alert("✅ Dados atualizados com sucesso!");
   });
 }
-
-function abrirTrocarSenha() {
-  alert("🔒 Aqui você poderá trocar sua senha.");
-}
-
-function confirmarExcluirConta() {
-  const ok = confirm("Tem certeza que deseja excluir sua conta?");
-  if (!ok) return;
-  alert("🚫 Conta excluída (exemplo)");
-}
-
-// Após injetar o HTML da conta:
-async function abrirMinhaConta() {
-  const container = document.getElementById("lista");
-  const html = await fetch("minha_conta_terceirizada.html").then(r => r.text());
-  container.innerHTML = html;
-
-  setTimeout(() => {
-    carregarMinhaConta();
-  }, 100);
-}
-
   
   async function atualizarStatus(id, novoStatus) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
