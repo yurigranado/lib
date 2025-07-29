@@ -188,18 +188,21 @@ async function carregar() {
     const card = document.createElement("div");
     card.className = "card-contrato";
     card.innerHTML = `
+  <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 260px;">
       <h3>${c.empresa?.nome || "Empresa"}</h3>
       <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
       <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
       <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
       <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
       <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ") || "-"}</p>
-
       <p><strong>Turnos:</strong></p>
       <ul style="padding-left: 20px; margin: 0;">
         ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
       </ul>
+    </div>
 
+    <div style="flex: 1; min-width: 260px;">
       <p><strong>Status:</strong> ${c.status}</p>
       <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
 
@@ -209,21 +212,23 @@ async function carregar() {
           configuracao.turno_jantar ? "Jantar" : null
         ].filter(Boolean).join(", ") || "-"}</p>
 
-        <p><strong>Qtd por Turno:</strong> ${[
-          configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}` : null,
-          configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : null
-        ].filter(Boolean).join(" | ")}</p>
+        <p><strong>Qtd por Turno:</strong><br>
+          ${configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}<br>` : ""}
+          ${configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : ""}
+        </p>
 
         <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
         <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
         ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
       ` : ""}
-
+      
       ${c.status === 'aguardando_aceite_terceirizada' ? `
         <button onclick="atualizarStatus(${c.id}, 'ativo')">Aceitar</button>
         <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">Recusar</button>
-      ` : ""}
-    `;
+      ` : ''}
+    </div>
+  </div>
+`;
     container.appendChild(card);
   }
 }
