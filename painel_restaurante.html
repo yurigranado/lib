@@ -188,7 +188,7 @@ document.addEventListener("submit", async (e) => {
 
   e.preventDefault();
   const form = e.target;
-  const empresaId = form.dataset.empresaId;
+  const terceirizada_id = form.dataset.empresaId;
   const turnos = [...form.querySelectorAll('input[name="turnos"]:checked')].map(el => el.value);
   const qtdePorTurno = {};
   turnos.forEach(t => {
@@ -196,43 +196,62 @@ document.addEventListener("submit", async (e) => {
     qtdePorTurno[t] = campo ? Number(campo.value) : 0;
   });
 
-  const payload = {
-    empresa_id: empresa_id,
-    terceirizada_id: empresaId,
-    status: "aguardando_aceite_terceirizada",
-    data_solicitacao: new Date().toISOString(),
-    config_json: {
-  turnos,
-  qtdePorTurno,
-  fornece_alimentacao: form.fornece_alimentacao.value === "true",
-  dia_pagamento: form.dia_pagamento.value,
-  pagamento_forma_outros: form.pagamento_forma_outros?.value || ""
-}
+  // 1️⃣ Primeiro: cria o contrato
+  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({
+      empresa_id,
+      terceirizada_id,
+      status: "aguardando_aceite_terceirizada",
+      data_solicitacao: new Date().toISOString()
+    })
+  });
+
+  const contratoCriado = await contratoRes.json();
+  const contrato_id = contratoCriado[0]?.id;
+
+  if (!contrato_id) {
+    alert("Erro ao criar contrato.");
+    return;
+  }
+
+  // 2️⃣ Depois: cria a configuração vinculada ao contrato
+  const configPayload = {
+    contrato_id,
+    turno_almoco: turnos.includes("almoco"),
+    turno_jantar: turnos.includes("jantar"),
+    qtd_almoco: qtdePorTurno["almoco"] || 0,
+    qtd_jantar: qtdePorTurno["jantar"] || 0,
+    fornece_alimentacao: form.fornece_alimentacao.value === "true",
+    dia_pagamento: form.dia_pagamento.value,
+    pagamento_forma_outros: form.pagamento_forma_outros?.value || ""
   };
 
-  await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+  const configRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato`, {
     method: "POST",
     headers: {
       apikey: API_KEY,
       Authorization: `Bearer ${API_KEY}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(configPayload)
   });
 
-  alert("Parceria solicitada com sucesso!");
-  form.reset();
-  document.getElementById("formularioConfig").innerHTML = "";
-  carregarEmpresas(); // atualiza a lista
+  if (configRes.ok) {
+    alert("Parceria solicitada com sucesso!");
+    form.reset();
+    document.getElementById("formularioConfig").innerHTML = "";
+    carregarEmpresas();
+  } else {
+    alert("Erro ao salvar configurações.");
+  }
 });
-    // Reativar comportamento após injeção do HTML
-setTimeout(() => {
-  atualizarQtdMotoqueiros();
-  const checkboxes = document.querySelectorAll('input[name="turno_almoco"], input[name="turno_jantar"]');
-  checkboxes.forEach(cb => {
-    cb.addEventListener("change", atualizarQtdMotoqueiros);
-  });
-}, 50);
 
 async function abrirFormulario(id, nome) {
   const container = document.getElementById("formularioConfig");
