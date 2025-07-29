@@ -267,20 +267,22 @@
       };
 
       const file = form.logomarca.files[0];
-      if (file) {
-        const nomeArquivo = `logo_${Date.now()}_${file.name}`;
-        await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
-          method: "POST",
-          headers: {
-            apikey: API_KEY,
-            Authorization: `Bearer ${API_KEY}`,
-            "Content-Type": file.type,
-            "x-upsert": "true"
-          },
-          body: file
-        });
-        payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
-      }
+if (file) {
+  const nomeArquivo = `logo_${Date.now()}_${file.name}`;
+  const { data, error } = await fetch(`${SUPABASE_URL}/storage/v1/object/logos-terceirizadas/${nomeArquivo}`, {
+    method: "PUT",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": file.type,
+      "x-upsert": "true"
+    },
+    body: file
+  });
+
+  // URL pública correta
+  payload.logomarca_url = `${SUPABASE_URL}/storage/v1/object/public/logos-terceirizadas/${nomeArquivo}`;
+}
 
       await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
         method: "PATCH",
