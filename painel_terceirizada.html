@@ -109,15 +109,27 @@
 <body>
 
   <header>
-    <h1>Lib | Painel da Terceirizada</h1>
-    <nav>
-      <a href="#">Contratos</a>
-      <a href="#">Entregadores</a>
-      <a href="#">Escalas</a>
-      <a href="#">Dashboard</a>
-      <a href="#">Minha Conta</a>
-    </nav>
-  </header>
+  <h1>Lib | Painel da Terceirizada</h1>
+  <nav>
+    <a href="#">Contratos</a>
+    <a href="#">Entregadores</a>
+    <a href="#">Escalas</a>
+    <a href="#">Dashboard</a>
+    <a href="#">Minha Conta</a>
+  </nav>
+  <button onclick="sair()" style="
+    margin-left: 20px;
+    background: #e53935;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+  ">
+    Sair
+  </button>
+</header>
 
   <div class="conteudo">
     <div class="titulo-secao">📄 Contratos Recebidos</div>
@@ -127,6 +139,13 @@
   </div>
 
   <script>
+    function sair() {
+  localStorage.removeItem("terceirizada_id");
+  localStorage.removeItem("terceirizada_nome");
+  localStorage.removeItem("session_token"); // se estiver usando
+  window.location.href = "index.html";
+}
+    
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
     const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id") || "f8f51d2e-73d1-4975-a2ef-0c3f7267f416";
