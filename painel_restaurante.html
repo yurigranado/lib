@@ -225,6 +225,14 @@ document.addEventListener("submit", async (e) => {
   document.getElementById("formularioConfig").innerHTML = "";
   carregarEmpresas(); // atualiza a lista
 });
+    // Reativar comportamento após injeção do HTML
+setTimeout(() => {
+  atualizarQtdMotoqueiros();
+  const checkboxes = document.querySelectorAll('input[name="turno_almoco"], input[name="turno_jantar"]');
+  checkboxes.forEach(cb => {
+    cb.addEventListener("change", atualizarQtdMotoqueiros);
+  });
+}, 50);
 
     async function abrirFormulario(id, nome) {
       const container = document.getElementById("formularioConfig");
