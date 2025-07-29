@@ -109,7 +109,7 @@
 <body>
 
   <header>
-  <h1>Lib | Painel da Terceirizada</h1>
+  <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
   <nav>
     <a href="#"></a>
     <a href="#">Entregadores</a>
@@ -245,6 +245,13 @@ card.innerHTML = `
     ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`
     : v;
 }
+  
+  // Trocar o nome no título do painel
+const nomeEmpresa = localStorage.getItem("terceirizada_nome");
+if (nomeEmpresa) {
+  document.getElementById("tituloPainel").textContent = `${nomeEmpresa} | Painel`;
+}
+
   async function atualizarStatus(id, novoStatus) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${id}`, {
       method: "PATCH",
