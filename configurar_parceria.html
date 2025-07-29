@@ -4,16 +4,16 @@
   <form id="configForm">
     <label>Quais turnos você quer oferecer?</label>
     <div class="checkbox-list" id="turnoBox">
-      <label><input type="checkbox" name="turnos" value="Almoço" onchange="atualizarQtdMotoqueiros()"> Almoço</label>
-      <label><input type="checkbox" name="turnos" value="Jantar" onchange="atualizarQtdMotoqueiros()"> Jantar</label>
+      <label><input type="checkbox" name="turno_almoco" onchange="atualizarQtdMotoqueiros()"> Almoço</label>
+      <label><input type="checkbox" name="turno_jantar" onchange="atualizarQtdMotoqueiros()"> Jantar</label>
     </div>
 
     <div id="qtdMotoqueirosBox"></div>
 
     <label>Você fornece alimentação para o entregador?</label>
-    <select name="alimentacao">
-      <option value="Sim">Sim</option>
-      <option value="Não">Não</option>
+    <select name="fornece_alimentacao">
+      <option value="true">Sim</option>
+      <option value="false">Não</option>
     </select>
 
     <label>Dia ideal para pagamento da frequência</label>
@@ -28,9 +28,92 @@
 
     <div id="outrosPagamentoBox" style="display:none;">
       <label>Especifique como prefere pagar</label>
-      <input type="text" name="pagamento_outros" />
+      <input type="text" name="pagamento_forma_outros" />
     </div>
 
     <button type="submit">Enviar Configuração</button>
   </form>
 </div>
+
+<script>
+  function atualizarQtdMotoqueiros() {
+    const qtdBox = document.getElementById("qtdMotoqueirosBox");
+    qtdBox.innerHTML = "";
+    if (document.querySelector('input[name="turno_almoco"]')?.checked) {
+      qtdBox.innerHTML += `
+        <label>Quantos motoqueiros para Almoço?</label>
+        <input type="number" name="qtd_almoco" min="0" value="0" />
+      `;
+    }
+    if (document.querySelector('input[name="turno_jantar"]')?.checked) {
+      qtdBox.innerHTML += `
+        <label>Quantos motoqueiros para Jantar?</label>
+        <input type="number" name="qtd_jantar" min="0" value="0" />
+      `;
+    }
+  }
+
+  function toggleOutroPagamento(valor) {
+    const outroBox = document.getElementById("outrosPagamentoBox");
+    outroBox.style.display = valor === "Outro" ? "block" : "none";
+  }
+
+  document.addEventListener("submit", async (e) => {
+    if (e.target.id !== "configForm") return;
+
+    e.preventDefault();
+    const form = e.target;
+    const empresaId = form.dataset.empresaId;
+
+    // Etapa 1: cria o contrato (status aguardando aceite)
+    const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        empresa_id: empresa_id,
+        terceirizada_id: empresaId,
+        status: "aguardando_aceite_terceirizada",
+        data_solicitacao: new Date().toISOString()
+      })
+    });
+
+    const contratoCriado = await contratoRes.json();
+    const contrato_id = contratoCriado[0]?.id;
+
+    if (!contrato_id) {
+      alert("Erro ao criar contrato.");
+      return;
+    }
+
+    // Etapa 2: salvar as configurações detalhadas na tabela nova
+    const configPayload = {
+      contrato_id,
+      turno_almoco: form.turno_almoco?.checked || false,
+      turno_jantar: form.turno_jantar?.checked || false,
+      qtd_almoco: Number(form.qtd_almoco?.value || 0),
+      qtd_jantar: Number(form.qtd_jantar?.value || 0),
+      fornece_alimentacao: form.fornece_alimentacao.value === "true",
+      dia_pagamento: form.dia_pagamento.value,
+      pagamento_forma_outros: form.pagamento_forma_outros?.value || ""
+    };
+
+    await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(configPayload)
+    });
+
+    alert("Parceria solicitada com sucesso!");
+    form.reset();
+    document.getElementById("formularioConfig").innerHTML = "";
+    carregarEmpresas();
+  });
+</script>
