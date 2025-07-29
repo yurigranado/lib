@@ -202,12 +202,12 @@ document.addEventListener("submit", async (e) => {
     status: "aguardando_aceite_terceirizada",
     data_solicitacao: new Date().toISOString(),
     config_json: {
-      turnos,
-      qtdePorTurno,
-      fornece_alimentacao: form.alimentacao.value,
-      dia_pagamento: form.dia_pagamento.value,
-      pagamento_outros: form.pagamento_outros?.value || ""
-    }
+  turnos,
+  qtdePorTurno,
+  fornece_alimentacao: form.alimentacao.value,
+  dia_pagamento: form.dia_pagamento.value,
+  pagamento_outros: form.pagamento_forma_outros?.value || ""
+}
   };
 
   await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas`, {
