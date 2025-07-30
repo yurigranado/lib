@@ -104,7 +104,7 @@
       <label for="nome">Nome completo</label>
       <input id="nome" type="text" placeholder="João da Silva" required>
 
-      <label for="cpf">CPF</label>
+      <label for="">CPF</label>
       <input id="cpf" type="text" placeholder="000.000.000-00" required>
 
       <label for="telefone">Telefone</label>
@@ -143,6 +143,14 @@
       v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
       e.target.value = v;
     });
+
+    document.getElementById("telefone").addEventListener("input", (e) => {
+  let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length >= 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+  if (v.length > 10) v = v.replace(/(\d{5})(\d)/, '$1-$2');
+  else if (v.length > 6) v = v.replace(/(\d{4})(\d)/, '$1-$2');
+  e.target.value = v;
+});
 
     document.getElementById("cadastroForm").addEventListener("submit", async (e) => {
       e.preventDefault();
