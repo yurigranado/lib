@@ -176,39 +176,51 @@
       return `XXX.XXX.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
     }
 
-    async function buscarEntregador() {
-      const tipo = document.getElementById("tipoBusca").value;
-      const valor = document.getElementById("valorBusca").value.trim();
-      if (!valor) {carregarVinculados(); return;
-}
+async function buscarEntregador() {
+  const tipo = document.getElementById("tipoBusca").value;
+  const valor = document.getElementById("valorBusca").value.trim();
+  if (!valor) {
+    carregarVinculados();
+    return;
+  }
 
-      const campo = tipo === "cpf" ? "cpf" : tipo === "telefone" ? "telefone" : "nome";
-      const query = `${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf`;
+  const campo = tipo === "cpf" ? "cpf" : tipo === "telefone" ? "telefone" : "nome";
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf`;
 
-      const res = await fetch(query, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const lista = await res.json();
-      const resultado = document.getElementById("resultado");
-      resultado.innerHTML = "";
+  const res = await fetch(query, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const lista = await res.json();
+  const resultado = document.getElementById("resultado");
+  resultado.innerHTML = "";
 
-      if (!lista.length) {
-        resultado.innerHTML = "<p>Nenhum entregador encontrado.</p>";
-        return;
+  if (!lista.length) {
+    resultado.innerHTML = "<p>Nenhum entregador encontrado.</p>";
+    return;
+  }
+
+  for (const ent of lista) {
+    // Verifica se já foi convidado
+    const check = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&entregador_id=eq.${ent.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const vinculo = await check.json();
+
+    const div = document.createElement("div");
+    div.className = "entregador";
+    div.innerHTML = `
+      <p><strong>Nome:</strong> ${ent.nome}</p>
+      <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
+      <p><strong>CPF:</strong> ${mascararCPF(ent.cpf)}</p>
+      ${
+        vinculo.length
+          ? `<p style="color: orange;"><strong>Status:</strong> ${vinculo[0].status}</p>`
+          : `<button onclick="convidarEntregador('${ent.id}', '${ent.nome}')">Convidar</button>`
       }
-
-      lista.forEach(ent => {
-        const div = document.createElement("div");
-        div.className = "entregador";
-        div.innerHTML = `
-          <p><strong>Nome:</strong> ${ent.nome}</p>
-          <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
-          <p><strong>CPF:</strong> ${mascararCPF(ent.cpf)}</p>
-          <button onclick="convidarEntregador('${ent.id}', '${ent.nome}')">Convidar</button>
-        `;
-        resultado.appendChild(div);
-      });
-    }
+    `;
+    resultado.appendChild(div);
+  }
+}
 
     async function convidarEntregador(entregador_id, nome) {
       const payload = {
