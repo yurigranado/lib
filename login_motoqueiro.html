@@ -146,7 +146,7 @@ const cpf = document.getElementById('login').value.replace(/\D/g, '');
     const senha = md5(document.getElementById('senha').value.trim());
     const msg = document.getElementById('msg');
 
-    if (!tel || !senha) {
+    if (!cpf || !senha) {
       msg.innerText = 'Preencha todos os campos.';
       msg.style.display = "block";
       return;
