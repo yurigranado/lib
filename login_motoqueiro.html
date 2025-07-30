@@ -166,7 +166,7 @@ localStorage.setItem("login_motoqueiro", entregador.cpf);
       localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
       window.location.href = "painel.html";
     } else {
-      msg.innerText = "❌ Telefone ou senha inválidos.";
+      msg.innerText = "❌ CPF ou senha inválidos.";
       msg.style.display = "block";
     }
   });
