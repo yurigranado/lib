@@ -124,6 +124,14 @@
       border-radius: 6px;
       border: none;
     }
+
+    .linha .detalhes-escondidos {
+  display: none;
+  transition: all 0.3s ease;
+}
+.linha.aberto .detalhes-escondidos {
+  display: block;
+}
   </style>
 </head>
 <body>
@@ -223,49 +231,51 @@ c.regras_pagamento = regras;
 
 // ⬇️ Começa a montar o card do contrato
 const card = document.createElement("div");
-card.className = "card-contrato";
+card.className = "linha";
 
-    let html = `
-      <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 260px;">
-          <h3>${c.empresa?.nome || "Empresa"}</h3>
-          <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
-          <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
-          <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
-          <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
-          <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ")}</p>
-          <p><strong>Turnos:</strong></p>
-          <ul style="padding-left: 20px; margin: 0;">
-            ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
-          </ul>
-        </div>
-        <div style="flex: 1; min-width: 260px;">
-          <p><strong>Status:</strong> ${c.status}</p>
-          <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
-    `;
+let html = `
+  <div class="resumo" onclick="this.parentElement.classList.toggle('aberto')" style="cursor: pointer; padding: 10px 0;">
+    <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
+  </div>
+  <div class="detalhes-escondidos" style="display: none;">
+    <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 260px;">
+        <p><strong>Email:</strong> ${c.empresa?.email || "-"}</p>
+        <p><strong>WhatsApp:</strong> ${formatarTelefone(c.empresa?.whatsapp) || "-"}</p>
+        <p><strong>Entregas por dia:</strong> ${c.empresa?.entregas_dia || 0}</p>
+        <p><strong>Entregas fim de semana:</strong> ${c.empresa?.entregas_fds || 0}</p>
+        <p><strong>Dias de funcionamento:</strong> ${dias.map(d => d.dia).join(", ")}</p>
+        <p><strong>Turnos:</strong></p>
+        <ul style="padding-left: 20px; margin: 0;">
+          ${turnos.map(t => `<li>${t.nome_turno}: ${t.horario_inicio} - ${t.horario_fim}</li>`).join("")}
+        </ul>
+      </div>
+      <div style="flex: 1; min-width: 260px;">
+        <p><strong>Status:</strong> ${c.status}</p>
+        <p><strong>Solicitado em:</strong> ${new Date(c.data_solicitacao).toLocaleDateString()}</p>
+`;
 
-    if (configuracao) {
-      html += `
-        <p><strong>Turnos Solicitados:</strong> ${[
-          configuracao.turno_almoco ? "Almoço" : null,
-          configuracao.turno_jantar ? "Jantar" : null
-        ].filter(Boolean).join(", ") || "-"}</p>
+if (configuracao) {
+  html += `
+    <p><strong>Turnos Solicitados:</strong> ${[
+      configuracao.turno_almoco ? "Almoço" : null,
+      configuracao.turno_jantar ? "Jantar" : null
+    ].filter(Boolean).join(", ") || "-"}</p>
 
-        <p><strong>Qtd por Turno:</strong><br>
-          ${configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}<br>` : ""}
-          ${configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : ""}
-        </p>
+    <p><strong>Qtd por Turno:</strong><br>
+      ${configuracao.turno_almoco ? `Almoço: ${configuracao.qtd_almoco}<br>` : ""}
+      ${configuracao.turno_jantar ? `Jantar: ${configuracao.qtd_jantar}` : ""}
+    </p>
 
-        <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
-        <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
-        ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
-      `;
-    }
+    <p><strong>Alimentação:</strong> ${configuracao.fornece_alimentacao ? "Sim" : "Não"}</p>
+    <p><strong>Dia Pagamento:</strong> ${configuracao.dia_pagamento}</p>
+    ${configuracao.pagamento_forma_outros ? `<p><strong>Forma de Pagamento:</strong> ${configuracao.pagamento_forma_outros}</p>` : ""}
+  `;
+}
 
-// Fecha o conteúdo visual do card (blocos principais)
 html += `</div></div>`;
 
-// Bloco: aceitar/recusar contrato
+// Botões ou resumo final
 if (c.status === 'aguardando_aceite_terceirizada') {
   html += `
     <div style="margin-top: 20px;">
@@ -275,7 +285,6 @@ if (c.status === 'aguardando_aceite_terceirizada') {
   `;
 }
 
-// Bloco: editar regras (só se contrato estiver ativo)
 if (c.status === 'ativo') {
   html += `
     <div style="margin-top: 20px;">
@@ -289,7 +298,7 @@ if (c.status === 'ativo') {
   `;
 }
 
-// Aplica o HTML final ao card
+html += `</div>`; // fecha .detalhes-escondidos
 card.innerHTML = html;
 container.appendChild(card);
 }
