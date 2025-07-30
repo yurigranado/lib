@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cadastro de Entregador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    :root { --escala: 1.2; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #5fdfb8, #7db7ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      width: calc(var(--escala) * 250px);
+      max-width: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      padding: calc(var(--escala) * 24px);
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo img {
+      width: 250%;
+      height: 250%;
+    }
+
+    label {
+      font-size: 14px;
+      align-self: flex-start;
+      margin-bottom: 4px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-bottom: 2px solid white;
+      background: transparent;
+      color: white;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: bold;
+      background: white;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #msg {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #fff3f3;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo">
+      <img src="https://i.imgur.com/VpQtXGy.png" alt="Logo">
+    </div>
+
+    <form id="cadastroForm">
+      <label for="nome">Nome completo</label>
+      <input id="nome" type="text" placeholder="João da Silva" required>
+
+      <label for="cpf">CPF</label>
+      <input id="cpf" type="text" placeholder="000.000.000-00" required>
+
+      <label for="telefone">Telefone</label>
+      <input id="telefone" type="tel" placeholder="(16) 91234-5678" required>
+
+      <label for="senha">Senha</label>
+      <input id="senha" type="password" placeholder="Digite uma senha" required>
+
+      <label for="cidade">Cidade</label>
+      <input id="cidade" type="text" placeholder="Ribeirão Preto" required>
+
+      <label for="estado">Estado (UF)</label>
+      <input id="estado" type="text" maxlength="2" placeholder="SP" required>
+
+      <button type="submit">Cadastrar</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+
+    function md5(str) {
+      return CryptoJS.MD5(str).toString();
+    }
+
+    document.getElementById("cpf").addEventListener("input", (e) => {
+      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d)/, '$1.$2');
+      v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+      e.target.value = v;
+    });
+
+    document.getElementById("cadastroForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value.trim();
+      const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
+      const tel = document.getElementById("telefone").value.replace(/\D/g, '');
+      const senha = md5(document.getElementById("senha").value.trim());
+      const cidade = document.getElementById("cidade").value.trim();
+      const estado = document.getElementById("estado").value.trim().toUpperCase();
+      const msg = document.getElementById("msg");
+
+      if (!nome || !cpf || !tel || !senha || !cidade || !estado) {
+        msg.innerText = "❌ Preencha todos os campos.";
+        msg.style.display = "block";
+        return;
+      }
+
+      // Verifica duplicidade
+      const check = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?telefone=eq.${tel}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const jaExiste = await check.json();
+      if (jaExiste.length > 0) {
+        msg.innerText = "❌ Já existe um entregador com esse telefone.";
+        msg.style.display = "block";
+        return;
+      }
+
+      const payload = { nome, cpf, telefone: tel, senha, cidade, estado };
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        localStorage.setItem("login_motoqueiro", tel);
+        localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
+        window.location.href = "painel.html";
+      } else {
+        msg.innerText = "❌ Erro ao cadastrar.";
+        msg.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
