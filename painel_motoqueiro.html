@@ -51,37 +51,90 @@
       color: white;
       text-align: center;
     }
+  #modalEmpresas .box {
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    max-width: 380px;
+    width: 90%;
+    color: #003366;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+  }
+
+  #modalEmpresas h3 {
+    margin-top: 0;
+    font-size: 1.4em;
+    color: #003366;
+    margin-bottom: 20px;
+  }
+
+  #listaEmpresasVinculadas p {
+    margin: 0;
+    font-weight: bold;
+    color: #003366;
+  }
+
+  #listaEmpresasVinculadas button {
+    display: inline-block;
+    margin: 10px 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #listaEmpresasVinculadas button:first-of-type {
+    background: #c8f7c5;
+    color: #2e7d32;
+  }
+
+  #listaEmpresasVinculadas button:first-of-type:hover {
+    background: #b3efb0;
+  }
+
+  #listaEmpresasVinculadas button:nth-of-type(2) {
+    background: #ffe1e1;
+    color: #c62828;
+  }
+
+  #listaEmpresasVinculadas button:nth-of-type(2):hover {
+    background: #ffcccc;
+  }
+
+  .cancelar-btn {
+    margin-top: 15px;
+    background: transparent;
+    color: #666;
+    font-size: 0.9em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+
+  .cancelar-btn:hover {
+    background: #f5f5f5;
+  }
     #modalEmpresas {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-    #modalEmpresas .box {
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 400px;
-      width: 90%;
-      color: #003366;
-      text-align: center;
-    }
-    #listaEmpresasVinculadas button {
-      display: block;
-      margin: 8px auto;
-      padding: 10px 20px;
-      background: #e0f7fa;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+  }
   </style>
 </head>
 <body>
@@ -97,12 +150,12 @@
     </div>
 
     <div id="modalEmpresas">
-      <div class="box">
-        <h3>Escolha com qual empresa deseja trabalhar</h3>
-        <div id="listaEmpresasVinculadas">Carregando...</div>
-        <button onclick="fecharModalEmpresas()">Cancelar</button>
-      </div>
-    </div>
+  <div class="box">
+    <h3>👥 Convites Pendentes</h3>
+    <div id="listaEmpresasVinculadas">Carregando...</div>
+    <button class="cancelar-btn" onclick="fecharModalEmpresas()">✖️ Fechar</button>
+  </div>
+</div>
   </div>
   <script>
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
