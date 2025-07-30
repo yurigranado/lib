@@ -255,6 +255,11 @@ async function carregar() {
   document.getElementById("camposFixo").style.display = modelo === "fixo" ? "grid" : "none";
   document.getElementById("camposDinamico").style.display = modelo === "dinamico" ? "grid" : "none";
 }
+  function alternarCamposRegrasAlmoco(select, contratoId) {
+  const valor = select.value;
+  document.getElementById(`fixo_almoco_${contratoId}`).style.display = valor === "fixo" ? "block" : "none";
+  document.getElementById(`dinamico_almoco_${contratoId}`).style.display = valor === "dinamico" ? "block" : "none";
+}
   
 function abrirRegrasInline(contratoId) {
   const container = document.getElementById(`formularioRegras_${contratoId}`);
@@ -302,18 +307,28 @@ function abrirRegrasInline(contratoId) {
         </div>
 
         <!-- Regras Turno Almoço (direita, condicional) -->
-        <div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
-          <h3>☀️ Regras Turno Almoço</h3>
-          <label>Modelo</label>
-          <select name="modelo_almoco">
-            <option value="">Selecione</option>
-            <option value="fixo">Fixo + Adicionais</option>
-            <option value="dinamico">Dinâmico + Fixo</option>
-          </select>
-          <label>Fixo</label><input name="fixo_almoco" type="number" step="0.01">
-          <label>Corrida Simples</label><input name="simples_almoco" type="number" step="0.01">
-          <label>Corrida Dupla</label><input name="dupla_almoco" type="number" step="0.01">
-        </div>
+<div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
+  <h3>☀️ Regras Turno Almoço</h3>
+  <label>Modelo</label>
+  <select name="modelo_almoco" onchange="alternarCamposRegrasAlmoco(this, ${contratoId})">
+    <option value="">Selecione</option>
+    <option value="fixo">Fixo + Adicionais</option>
+    <option value="dinamico">Dinâmico + Fixo</option>
+  </select>
+
+  <div id="fixo_almoco_${contratoId}" style="display: none;">
+    <label>Valor Fixo</label><input name="valor_fixo_almoco" type="number" step="0.01">
+    <label>Corrida Simples</label><input name="valor_corrida_simples_almoco" type="number" step="0.01">
+    <label>Corrida Dupla</label><input name="valor_corrida_dupla_almoco" type="number" step="0.01">
+  </div>
+
+  <div id="dinamico_almoco_${contratoId}" style="display: none;">
+    <label>Corridas Mínimas</label><input name="corridas_minimas_almoco" type="number">
+    <label>Fixo Base</label><input name="valor_fixo_dinamico_almoco" type="number" step="0.01">
+    <label>Extra Simples</label><input name="extra_simples_almoco" type="number" step="0.01">
+    <label>Extra Dupla</label><input name="extra_dupla_almoco" type="number" step="0.01">
+  </div>
+</div>
 
         <div style="width:100%;text-align:right;margin-top:20px;">
           <button type="submit">💾 Salvar</button>
@@ -339,23 +354,34 @@ async function salvarRegrasPagamento(event, contratoId) {
   const form = event.target;
   const dados = Object.fromEntries(new FormData(form).entries());
 
-  const payload = {
-    contrato_id: contratoId,
-    modelo_pagamento: dados.modelo_pagamento,
-    valor_fixo: Number(dados.valor_fixo) || 0,
-    valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
-    valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
-    corridas_minimas: Number(dados.corridas_minimas) || 0,
-    valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
-    valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
-    valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
-    taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
-    paga_alimentacao: dados.paga_alimentacao === "on",
-    valor_alimentacao: Number(dados.valor_alimentacao) || 0,
-    adicional_noturno: dados.adicional_noturno === "on",
-    valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0
-  };
+const payload = {
+  contrato_id: contratoId,
 
+  // 🧾 Regras Padrão (geral ou jantar)
+  modelo_pagamento: dados.modelo_pagamento,
+  valor_fixo: Number(dados.valor_fixo) || 0,
+  valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
+  valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
+  corridas_minimas: Number(dados.corridas_minimas) || 0,
+  valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
+  valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
+  valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
+  taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
+  paga_alimentacao: dados.paga_alimentacao === "on",
+  valor_alimentacao: Number(dados.valor_alimentacao) || 0,
+  adicional_noturno: dados.adicional_noturno === "on",
+  valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
+
+  // ☀️ Regras específicas do turno Almoço
+  modelo_pagamento_almoco: dados.modelo_almoco || "",
+  valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
+  valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
+  valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
+  corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
+  valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
+  extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
+  extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0
+};
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
     headers: {
