@@ -104,7 +104,7 @@
       <label for="nome">Nome completo</label>
       <input id="nome" type="text" placeholder="João da Silva" required>
 
-      <label for="">CPF</label>
+<label for="cpf">CPF</label>
       <input id="cpf" type="text" placeholder="000.000.000-00" required>
 
       <label for="telefone">Telefone</label>
@@ -170,61 +170,61 @@
   e.target.value = v;
 });
 
-    document.getElementById("cadastroForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const nome = document.getElementById("nome").value.trim();
-      const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
-      const tel = document.getElementById("telefone").value.replace(/\D/g, '');
-      const senha = md5(document.getElementById("senha").value.trim());
-      const cidade = document.getElementById("cidade").value.trim();
-      const estado = document.getElementById("estado").value.trim().toUpperCase();
-      const msg = document.getElementById("msg");const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
+   document.getElementById("cadastroForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nome = document.getElementById("nome").value.trim();
+  const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
+  const tel = document.getElementById("telefone").value.replace(/\D/g, '');
+  const senha = md5(document.getElementById("senha").value.trim());
+  const cidade = document.getElementById("cidade").value.trim();
+  const estado = document.getElementById("estado").value.trim().toUpperCase();
+  const msg = document.getElementById("msg");
 
-// ⚠️ Valida o CPF
-if (!cpfValido(cpf)) {
-  msg.innerText = "❌ CPF inválido.";
-  msg.style.display = "block";
-  return;
-}
+  // ⚠️ Valida o CPF
+  if (!cpfValido(cpf)) {
+    msg.innerText = "❌ CPF inválido.";
+    msg.style.display = "block";
+    return;
+  }
 
-      if (!nome || !cpf || !tel || !senha || !cidade || !estado) {
-        msg.innerText = "❌ Preencha todos os campos.";
-        msg.style.display = "block";
-        return;
-      }
+  if (!nome || !cpf || !tel || !senha || !cidade || !estado) {
+    msg.innerText = "❌ Preencha todos os campos.";
+    msg.style.display = "block";
+    return;
+  }
 
-      // Verifica duplicidade
-      const check = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?telefone=eq.${tel}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const jaExiste = await check.json();
-      if (jaExiste.length > 0) {
-        msg.innerText = "❌ Já existe um entregador com esse telefone.";
-        msg.style.display = "block";
-        return;
-      }
+  // Verifica duplicidade
+  const check = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?telefone=eq.${tel}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const jaExiste = await check.json();
+  if (jaExiste.length > 0) {
+    msg.innerText = "❌ Já existe um entregador com esse telefone.";
+    msg.style.display = "block";
+    return;
+  }
 
-      const payload = { nome, cpf, telefone: tel, senha, cidade, estado };
+  const payload = { nome, cpf, telefone: tel, senha, cidade, estado };
 
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores`, {
-        method: "POST",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
 
-      if (res.ok) {
-        localStorage.setItem("login_motoqueiro", tel);
-        localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
-        window.location.href = "painel.html";
-      } else {
-        msg.innerText = "❌ Erro ao cadastrar.";
-        msg.style.display = "block";
-      }
-    });
+  if (res.ok) {
+    localStorage.setItem("login_motoqueiro", cpf);
+    localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
+    window.location.href = "painel.html";
+  } else {
+    msg.innerText = "❌ Erro ao cadastrar.";
+    msg.style.display = "block";
+  }
+});
   </script>
 </body>
 </html>
