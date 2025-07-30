@@ -340,7 +340,7 @@ container.innerHTML = `
       <div style="flex: 1; min-width: 300px;">
         <h3>💼 Regras Jantar</h3>
         <label>Modelo de Pagamento</label>
-        <select name="modelo_pagamento" required onchange="alternarCamposRegrasJantar(this, ${contratoId})">
+<select name="modelo_pagamento" required onchange="alternarCamposRegrasJantar(this, '${contratoId}')">
           <option value="">Selecione</option>
           <option value="fixo">Fixo + Adicionais</option>
           <option value="dinamico">Dinâmico + Fixo</option>
@@ -368,7 +368,7 @@ container.innerHTML = `
       <div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
         <h3>☀️ Regras Turno Almoço</h3>
         <label>Modelo</label>
-        <select name="modelo_almoco" onchange="alternarCamposRegrasAlmoco(this, ${contratoId})">
+<select name="modelo_almoco" onchange="alternarCamposRegrasAlmoco(this, '${contratoId}')">
           <option value="">Selecione</option>
           <option value="fixo">Fixo + Adicionais</option>
           <option value="dinamico">Dinâmico + Fixo</option>
