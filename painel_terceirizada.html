@@ -139,6 +139,7 @@ async function carregar() {
   });
 
   const contratos = await res.json();
+  window.CONTRATOS_ATUAIS = contratos.map(c => ({ ...c, configuracao }));
   const container = document.getElementById("lista");
   container.innerHTML = "";
 
@@ -250,6 +251,7 @@ async function carregar() {
   document.getElementById("camposFixo").style.display = modelo === "fixo" ? "grid" : "none";
   document.getElementById("camposDinamico").style.display = modelo === "dinamico" ? "grid" : "none";
 }
+  
 function abrirRegrasInline(contratoId) {
   const container = document.getElementById(`formularioRegras_${contratoId}`);
   if (container.innerHTML) {
@@ -258,51 +260,69 @@ function abrirRegrasInline(contratoId) {
   }
 
   container.innerHTML = `
-<div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
-      <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div style="grid-column:span 2;">
+    <div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
+      <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display: flex; gap: 40px; flex-wrap: wrap;">
+        <!-- Regras Padrão (esquerda) -->
+        <div style="flex: 1; min-width: 300px;">
+          <h3>💼 Regras Padrão</h3>
           <label>Modelo de Pagamento</label>
           <select name="modelo_pagamento" required onchange="alternarCamposRegras(this, ${contratoId})">
             <option value="">Selecione</option>
             <option value="fixo">Fixo + Adicionais</option>
             <option value="dinamico">Dinâmico + Fixo</option>
           </select>
+
+          <div id="fixo_${contratoId}" style="display:none;">
+            <label>Valor Fixo</label><input name="valor_fixo" type="number" step="0.01">
+            <label>Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01">
+            <label>Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01">
+          </div>
+
+          <div id="dinamico_${contratoId}" style="display:none;">
+            <label>Corridas Mínimas</label><input name="corridas_minimas" type="number">
+            <label>Valor Fixo Base</label><input name="valor_fixo_dinamico" type="number" step="0.01">
+            <label>Extra Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01">
+            <label>Extra Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01">
+          </div>
+
+          <label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01">
+          <label style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" name="paga_alimentacao" /> Alimentação
+          </label>
+          <input name="valor_alimentacao" type="number" step="0.01" placeholder="Valor alimentação">
+
+          <label style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" name="adicional_noturno" /> Noturno
+          </label>
+          <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Valor adicional noturno">
         </div>
 
-        <div id="fixo_${contratoId}" style="display:none;grid-column:span 2;">
-          <div><label>Valor Fixo</label><input name="valor_fixo" type="number" step="0.01"></div>
-          <div><label>Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01"></div>
-          <div><label>Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01"></div>
+        <!-- Regras Turno Almoço (direita, condicional) -->
+        <div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
+          <h3>☀️ Regras Turno Almoço</h3>
+          <label>Modelo</label>
+          <select name="modelo_almoco">
+            <option value="">Selecione</option>
+            <option value="fixo">Fixo + Adicionais</option>
+            <option value="dinamico">Dinâmico + Fixo</option>
+          </select>
+          <label>Fixo</label><input name="fixo_almoco" type="number" step="0.01">
+          <label>Corrida Simples</label><input name="simples_almoco" type="number" step="0.01">
+          <label>Corrida Dupla</label><input name="dupla_almoco" type="number" step="0.01">
         </div>
 
-        <div id="dinamico_${contratoId}" style="display:none;grid-column:span 2;">
-          <div><label>Corridas Mínimas</label><input name="corridas_minimas" type="number"></div>
-          <div><label>Valor Fixo Base</label><input name="valor_fixo_dinamico" type="number" step="0.01"></div>
-          <div><label>Extra Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01"></div>
-          <div><label>Extra Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01"></div>
-        </div>
-
-        <div style="grid-column:span 2;"><label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01"></div>
-<div style="grid-column:span 2;">
-  <label style="display: flex; align-items: center; gap: 8px;">
-    <input type="checkbox" name="paga_alimentacao" />
-    Alimentação
-  </label>
-  <input name="valor_alimentacao" type="number" step="0.01" placeholder="Valor da alimentação" />
-</div>
-<div style="grid-column:span 2;">
-  <label style="display: flex; align-items: center; gap: 8px;">
-    <input type="checkbox" name="adicional_noturno" />
-    Noturno
-  </label>
-  <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Valor do adicional" />
-</div>
-        <div style="grid-column:span 2;text-align:right;">
+        <div style="width:100%;text-align:right;margin-top:20px;">
           <button type="submit">💾 Salvar</button>
         </div>
       </form>
     </div>
   `;
+
+  // 👇 se tiver turno almoço ativado no contrato, exibe a coluna lateral
+  const contrato = window.CONTRATOS_ATUAIS?.find(c => c.id === contratoId);
+  if (contrato?.configuracao?.turno_almoco) {
+    document.getElementById(`blocoRegrasAlmoco_${contratoId}`).style.display = "block";
+  }
 }
 
 function alternarCamposRegras(select, contratoId) {
