@@ -139,7 +139,8 @@
   <header>
     <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
     <nav>
-      <a href="#" onclick="abrirTelaEntregadores()">Entregadores</a>
+      <a href="painel_terceirizada.html">Início</a>
+      <a href="convidar_entregadores.html">Entregadores</a>
       <a href="#">Escalas</a>
       <a href="#">Dashboard</a>
       <a href="#" onclick="abrirMinhaConta()">Minha Conta</a>
@@ -669,18 +670,6 @@ if (file) {
       alert("Erro ao atualizar o status.");
     }
   }
-
-  async function abrirTelaEntregadores() {
-  const res = await fetch("convidar_entregadores.html");
-  const html = await res.text();
-  document.getElementById("conteudoDinamico").innerHTML = html;
-
-  // se o novo HTML depende de alguma inicialização (ex: carregarVinculados), você pode forçar aqui:
-  setTimeout(() => {
-    if (typeof carregarVinculados === "function") carregarVinculados();
-  }, 100);
-}
-
 
   carregar();
 </script>
