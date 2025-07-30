@@ -267,7 +267,7 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
       const t = dadosTerceiro[0];
       localStorage.setItem("terceirizada_id", t.id);
       localStorage.setItem("terceirizada_nome", t.nome);
-      localStorage.setItem("session_token", user.session.access_token);
+      localStorage.setItem("session_token", API_KEY);
       window.location.href = "painel_terceirizada.html";
       return;
     }
