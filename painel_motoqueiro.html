@@ -108,53 +108,72 @@ async function carregarEntregadorId() {
 }
 
 
-    async function abrirSelecaoEmpresa() {
-      const container = document.getElementById("listaEmpresasVinculadas");
-      container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
+async function abrirSelecaoEmpresa() {
+  const container = document.getElementById("listaEmpresasVinculadas");
+  container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
 
-const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const lista = await res.json();
-      container.innerHTML = "";
-
-      if (!lista.length) {
-        container.innerHTML = "<p>Você ainda não está vinculado a nenhuma empresa.</p>";
-        return;
-      }
-
-      for (const item of lista) {
-  const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
-  const empresa = (await empRes.json())[0];
-  const status = item.status;
+  const lista = await res.json();
+  container.innerHTML = "";
 
-  const div = document.createElement("div");
-  div.style.marginBottom = "12px";
-
-  if (status === "ativo") {
-    const btn = document.createElement("button");
-    btn.innerText = `✅ Ativar ${empresa.nome}`;
-    btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
-    div.appendChild(btn);
-  } else if (status === "pendente") {
-    div.innerHTML = `
-      <p><strong>Convite:</strong> ${empresa.nome}</p>
-      <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
-      <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
-    `;
+  if (!lista.length) {
+    container.innerHTML = "<p>Você ainda não está vinculado a nenhuma empresa.</p>";
+    return;
   }
 
-  container.appendChild(div);
+  let temPendente = false;
+
+  for (const item of lista) {
+    const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = (await empRes.json())[0];
+    const status = item.status;
+
+    const div = document.createElement("div");
+    div.style.marginBottom = "12px";
+
+    if (status === "ativo") {
+      const btn = document.createElement("button");
+      btn.innerText = `✅ Ativar ${empresa.nome}`;
+      btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
+      div.appendChild(btn);
+    } else if (status === "pendente") {
+      temPendente = true;
+      div.innerHTML = `
+        <p><strong>Convite:</strong> ${empresa.nome}</p>
+        <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
+        <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
+      `;
+    }
+
+    container.appendChild(div);
+  }
+
+  document.getElementById("modalEmpresas").style.display = "flex";
+
+  // 🔔 Atualiza o botão principal conforme status
+  const botao = document.querySelector(".painel-btn");
+  if (temPendente) {
+    botao.innerText = "📬 Convite Pendente! Verificar";
+    botao.style.background = "#ffd54f";
+    botao.style.color = "#000";
+    botao.style.border = "2px solid #ffa000";
+    botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
+  } else {
+    botao.innerText = "🔄 Escolher Empresa";
+    botao.style.background = "white";
+    botao.style.color = "#000";
+    botao.style.border = "none";
+    botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+  }
 }
 
-      document.getElementById("modalEmpresas").style.display = "flex";
-    }
-
-    function fecharModalEmpresas() {
-      document.getElementById("modalEmpresas").style.display = "none";
-    }
+function fecharModalEmpresas() {
+  document.getElementById("modalEmpresas").style.display = "none";
+}
 
     async function ativarEmpresa(terceirizada_id, nome) {
       await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${login}&ativo=is.true`, {
