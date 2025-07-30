@@ -369,15 +369,17 @@ const payload = {
   valor_alimentacao: Number(dados.valor_alimentacao) || 0,
   valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
 
-  // ☀️ Regras específicas do turno Almoço
-  modelo_pagamento_almoco: dados.modelo_almoco || "",
-  valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
-  valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
-  valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
-  corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
-  valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
-  extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
-  extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0
+// ☀️ Regras específicas do turno Almoço
+modelo_pagamento_almoco: dados.modelo_almoco || "",
+valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
+valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
+valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
+corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
+valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
+extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
+extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0,
+taxa_terceirizada_almoco: Number(dados.taxa_terceirizada_almoco) || 0,
+valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
 };
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
