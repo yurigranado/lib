@@ -10,7 +10,11 @@
       --cor-fundo: #121212;
       --blur: rgba(255, 255, 255, 0.06);
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -18,62 +22,108 @@
       background-size: cover;
       color: white;
     }
+
     header {
       position: fixed;
-      top: 0; width: 100%;
+      top: 0;
+      width: 100%;
       background: var(--blur);
       backdrop-filter: blur(12px);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 30px; z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 30px;
+      z-index: 1000;
     }
-    header h1 { font-size: 22px; margin: 0; }
+
+    header h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
     nav a {
-      margin: 0 12px; color: white; text-decoration: none; font-weight: 500;
-      transition: .3s;
+      margin: 0 12px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
     }
-    nav a:hover { color: #90ee90; }
-    .conteudo { padding: 100px 5vw 40px; }
-    .titulo-secao { font-size: 24px; margin-bottom: 20px; color: #fff; font-weight: 600; }
+
+    nav a:hover {
+      color: #90ee90;
+    }
+
+    .conteudo {
+      padding: 100px 5vw 40px;
+    }
+
+    .titulo-secao {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #fff;
+      font-weight: 600;
+    }
+
     .grid- {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 20px;
     }
+
     .card-contrato {
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       border-radius: 12px;
       padding: 20px;
       backdrop-filter: blur(6px);
-      border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
     }
-    .card-contrato h3 { margin: 0 0 10px; }
-    .card-contrato p { margin: 4px 0; color: #ccc; }
+
+    .card-contrato h3 {
+      margin: 0 0 10px;
+    }
+
+    .card-contrato p {
+      margin: 4px 0;
+      color: #ccc;
+    }
+
     .card-contrato button {
-      margin-top: 12px; padding: 10px 16px; background: #43a047;
-      border: none; color: white; font-weight: bold; border-radius: 8px;
+      margin-top: 12px;
+      padding: 10px 16px;
+      background: #43a047;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
     }
-    .card-contrato button.recusar { background: #e53935; margin-left: 10px; }
+
+    .card-contrato button.recusar {
+      background: #e53935;
+      margin-left: 10px;
+    }
 
     .card-contrato form {
-  background: rgba(255,255,255,0.04);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: inset 0 0 12px rgba(0,0,0,0.2);
-  margin-top: 16px;
-}    
-    .card form label {
-  margin-top: 8px;
-  display: block;
-}
-.card form input, .card form select {
-  width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: none;
-}
+      background: rgba(255, 255, 255, 0.04);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.2);
+      margin-top: 16px;
+    }
 
+    .card form label {
+      margin-top: 8px;
+      display: block;
+    }
+
+    .card form input,
+    .card form select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+    }
   </style>
 </head>
 <body>
