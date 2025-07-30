@@ -253,7 +253,7 @@ async function buscarEntregador() {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
       });
       const vinculados = await res.json();
-      const listaIDs = vinculados.map(v => `'${v.entregador_id}'`).join(",");
+      const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
       if (!listaIDs) {
         document.getElementById("vinculados").innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
