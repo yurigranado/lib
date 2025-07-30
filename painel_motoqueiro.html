@@ -90,7 +90,23 @@
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
-    const login = localStorage.getItem("login_motoqueiro") || '';
+    let login = localStorage.getItem("login_motoqueiro") || '';
+let entregador_id = null;
+
+async function carregarEntregadorId() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const dados = await res.json();
+  if (dados.length > 0) {
+    entregador_id = dados[0].id;
+    document.getElementById("nomeEntregador").innerText = dados[0].nome;
+    verificarEmpresaAtiva();  // só chama depois de obter o ID
+  } else {
+    document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
+  }
+}
+
 
     async function abrirSelecaoEmpresa() {
       const container = document.getElementById("listaEmpresasVinculadas");
@@ -170,26 +186,27 @@ const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregado
       location.reload();
     }
 
-    async function verificarEmpresaAtiva() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${login}&ativo=eq.true&select=terceirizada_id`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const data = await res.json();
+async function verificarEmpresaAtiva() {
+  if (!entregador_id) return;
 
-      if (data.length > 0) {
-        const id = data[0].terceirizada_id;
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
-          headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-        });
-        const empresa = (await r.json())[0];
-        document.getElementById('empresaAtiva').innerText = `Empresa: ${empresa.nome}`;
-        document.getElementById('blocoEscolherEmpresa').style.display = "none";
-      } else {
-        document.getElementById('empresaAtiva').innerText = `Nenhuma empresa ativa no momento`;
-        document.getElementById('blocoEscolherEmpresa').style.display = "block";
-      }
-    }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const data = await res.json();
 
+  if (data.length > 0) {
+    const id = data[0].terceirizada_id;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = (await r.json())[0];
+    document.getElementById('empresaAtiva').innerText = `Empresa: ${empresa.nome}`;
+    document.getElementById('blocoEscolherEmpresa').style.display = "none";
+  } else {
+    document.getElementById('empresaAtiva').innerText = `Nenhuma empresa ativa no momento`;
+    document.getElementById('blocoEscolherEmpresa').style.display = "block";
+  }
+}
     document.addEventListener("DOMContentLoaded", async () => {
   verificarEmpresaAtiva();
 
@@ -242,7 +259,7 @@ async function recusarConvite(terceirizada_id) {
     alert("❌ Erro ao recusar o convite.");
   }
 }
-    document.addEventListener("DOMContentLoaded", verificarEmpresaAtiva);
+    document.addEventListener("DOMContentLoaded", carregarEntregadorId();
   </script>
 </body>
 </html>
