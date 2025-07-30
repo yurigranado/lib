@@ -229,6 +229,17 @@ const regras = (await regrasRes.json())[0];
 c.configuracao = configuracao;
 c.regras_pagamento = regras;
 
+  // ⬇️ AQUI entra o trecho
+  const linha = document.createElement("div");
+  linha.className = "linha card-contrato";
+
+  linha.addEventListener("click", (e) => {
+    if (e.target.closest(".resumo")) {
+      linha.classList.toggle("aberto");
+      console.log("🔁 Expandido:", linha.classList.contains("aberto"));
+    }
+  });
+
 // ⬇️ Começa a montar o card do contrato
 const linha = document.createElement("div");
 linha.className = "linha";
@@ -237,9 +248,8 @@ const card = document.createElement("div");
 card.className = "card-contrato";
 
 let html = `
-<div class="resumo" onclick="toggleResumo(this)" style="cursor: pointer; padding: 10px 0;">
-  <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
-</div>
+  <div class="resumo" style="cursor: pointer; padding: 10px 0;">
+    <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
   </div>
   <div class="detalhes-escondidos" style="display: none;">
     <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
