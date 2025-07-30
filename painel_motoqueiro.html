@@ -102,18 +102,28 @@ async function carregarEntregadorId() {
   if (dados.length > 0) {
     entregador_id = dados[0].id;
     document.getElementById("nomeEntregador").innerText = dados[0].nome;
-    
-    verificarEmpresaAtiva(); // já chama isso como antes
 
-    // 🔄 Verifica se há convite pendente e atualiza botão visual
-    const convitesRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&status=eq.pendente`, {
+    await verificarEmpresaAtiva(); // já atualiza o texto do painel
+
+    // 🔍 Verifica vínculos existentes
+    const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const convites = await convitesRes.json();
+    const vinculos = await vinculosRes.json();
+
+    const botaoContainer = document.getElementById("blocoEscolherEmpresa");
     const botao = document.querySelector(".painel-btn");
 
-    if (botao) {
-      if (convites.length > 0) {
+    if (!vinculos.length) {
+      // ❌ Nenhum vínculo = esconde botão
+      botaoContainer.style.display = "none";
+    } else {
+      // ✅ Tem vínculo: verifica pendente
+      botaoContainer.style.display = "block";
+
+      const temPendente = vinculos.some(v => v.status === "pendente");
+
+      if (temPendente) {
         botao.innerText = "📬 Convite Pendente! Verificar";
         botao.style.background = "#ffd54f";
         botao.style.color = "#000";
@@ -130,8 +140,10 @@ async function carregarEntregadorId() {
 
   } else {
     document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
+    document.getElementById("blocoEscolherEmpresa").style.display = "none";
   }
 }
+
 async function abrirSelecaoEmpresa() {
   const container = document.getElementById("listaEmpresasVinculadas");
   container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
