@@ -295,15 +295,11 @@ function abrirRegrasInline(contratoId) {
           </div>
 
           <label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01">
-          <label style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" name="paga_alimentacao" /> Alimentação
-          </label>
-          <input name="valor_alimentacao" type="number" step="0.01" placeholder="Valor alimentação">
+          <label>Valor Alimentação</label>
+          <input name="valor_alimentacao" type="number" step="0.01" placeholder="Se pagar, informe o valor">
+          <label>Valor Adicional Noturno</label>
+          <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Se pagar, informe o valor">
 
-          <label style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" name="adicional_noturno" /> Noturno
-          </label>
-          <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Valor adicional noturno">
         </div>
 
         <!-- Regras Turno Almoço (direita, condicional) -->
@@ -367,9 +363,7 @@ const payload = {
   valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
   valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
   taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
-  paga_alimentacao: dados.paga_alimentacao === "on",
   valor_alimentacao: Number(dados.valor_alimentacao) || 0,
-  adicional_noturno: dados.adicional_noturno === "on",
   valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
 
   // ☀️ Regras específicas do turno Almoço
