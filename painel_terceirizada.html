@@ -125,7 +125,7 @@
       border: none;
     }
 
-    .linha .detalhes-escondidos {
+.linha .detalhes-escondidos {
   display: none;
   transition: all 0.3s ease;
 }
@@ -230,8 +230,11 @@ for (const c of contratos) {
   c.regras_pagamento = regras;
 
   // ⬇️ Cria a div que agrupa tudo
-  const linha = document.createElement("div");
-  linha.className = "linha card-contrato";
+const linha = document.createElement("div");
+linha.className = "linha";
+
+const card = document.createElement("div");
+card.className = "card-contrato";
 
   linha.addEventListener("click", (e) => {
     if (e.target.closest(".resumo")) {
@@ -306,8 +309,9 @@ if (c.status === 'ativo') {
 }
 
 html += `</div>`; // fecha .detalhes-escondidos
-  linha.innerHTML = html;
-  container.appendChild(linha);
+card.innerHTML = html;
+linha.appendChild(card);
+container.appendChild(linha);
 }
   // ✅ só agora, depois de todos os contratos estarem com a configuração associada
   window.CONTRATOS_ATUAIS = contratos;
