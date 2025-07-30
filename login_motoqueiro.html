@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base target="_top">
+  <title>Login Motoqueiro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <!-- Manifesto PWA -->
+  <link rel="manifest" href="?pagina=manifest">
+  <meta name="theme-color" content="#5fdfb8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3468/3468379.png" type="image/png">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3468/3468379.png">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+<style>
+  :root { --escala: 3.3; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #5fdfb8, #7db7ff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .login-container {
+    width: calc(var(--escala) * 250px);
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    padding: calc(var(--escala) * 24px);
+    border-radius: calc(var(--escala) * 16px);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .logo {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 50%;
+    margin: 30px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .logo img {
+    width: 300%;
+    height: 300%;
+    object-fit: contain;
+  }
+  label {
+    font-size: calc(var(--escala) * 14px);
+    align-self: flex-start;
+    margin-bottom: calc(var(--escala) * 4px);
+    color: white;
+  }
+  input {
+    width: 100%;
+    padding: calc(var(--escala) * 12px);
+    font-size: calc(var(--escala) * 14px);
+    border: none;
+    border-bottom: 2px solid white;
+    background: transparent;
+    color: white;
+    outline: none;
+    margin-bottom: calc(var(--escala) * 16px);
+  }
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+  }
+  button {
+    width: 100%;
+    padding: calc(var(--escala) * 12px);
+    margin-top: calc(var(--escala) * 20px);
+    border: none;
+    border-radius: calc(var(--escala) * 30px);
+    font-size: calc(var(--escala) * 16px);
+    font-weight: bold;
+    background: white;
+    color: #333;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #e1e1e1;
+  }
+  #msg {
+    text-align: center;
+    margin-top: calc(var(--escala) * 16px);
+    font-size: calc(var(--escala) * 14px);
+    color: #fff3f3;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo">
+      <img src="https://i.imgur.com/VpQtXGy.png" alt="Logo Motoqueiro">
+    </div>
+
+    <form id="f">
+      <label for="login">Telefone:</label>
+      <input id="login" type="tel" placeholder="Digite seu telefone" required>
+
+      <label for="senha">Senha:</label>
+      <input id="senha" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="Digite sua senha" required>
+
+      <button type="submit">Entrar</button>
+      <div id="msg"></div>
+    </form>
+  </div>
+
+<script>
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+
+  function md5(str) {
+    return CryptoJS.MD5(str).toString();
+  }
+
+  document.getElementById('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const tel = document.getElementById('login').value.replace(/\D/g, '');
+    const senha = md5(document.getElementById('senha').value.trim());
+    const msg = document.getElementById('msg');
+
+    if (!tel || !senha) {
+      msg.innerText = 'Preencha todos os campos.';
+      msg.style.display = "block";
+      return;
+    }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?telefone=eq.${tel}&senha=eq.${senha}`, {
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`
+      }
+    });
+
+    const dados = await res.json();
+    if (dados.length === 1) {
+      const entregador = dados[0];
+      localStorage.setItem("login_motoqueiro", entregador.telefone);
+      localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
+      window.location.href = "painel.html";
+    } else {
+      msg.innerText = "❌ Telefone ou senha inválidos.";
+      msg.style.display = "block";
+    }
+  });
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const url = new URL(window.location.href);
+    const mensagem = url.searchParams.get("msg");
+    const msg = document.getElementById("msg");
+    if (mensagem === "sessao_expirada") {
+      msg.innerText = "⚠️ Sua sessão expirou. Faça login novamente.";
+      msg.style.display = "block";
+    }
+  });
+</script>
+
+</body>
+</html>
