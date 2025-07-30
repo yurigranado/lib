@@ -96,7 +96,7 @@
       const container = document.getElementById("listaEmpresasVinculadas");
       container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
 
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}&status=eq.ativo`, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}`, {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
       });
       const lista = await res.json();
@@ -108,15 +108,30 @@
       }
 
       for (const item of lista) {
-        const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
-          headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-        });
-        const empresa = (await empRes.json())[0];
-        const btn = document.createElement("button");
-        btn.innerText = `✅ Ativar ${empresa.nome}`;
-        btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
-        container.appendChild(btn);
-      }
+  const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const empresa = (await empRes.json())[0];
+  const status = item.status;
+
+  const div = document.createElement("div");
+  div.style.marginBottom = "12px";
+
+  if (status === "ativo") {
+    const btn = document.createElement("button");
+    btn.innerText = `✅ Ativar ${empresa.nome}`;
+    btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
+    div.appendChild(btn);
+  } else if (status === "pendente") {
+    div.innerHTML = `
+      <p><strong>Convite:</strong> ${empresa.nome}</p>
+      <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
+      <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
+    `;
+  }
+
+  container.appendChild(div);
+}
 
       document.getElementById("modalEmpresas").style.display = "flex";
     }
@@ -188,8 +203,45 @@
     document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
   }
 });
+    async function aceitarConvite(terceirizada_id, nome) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}&terceirizada_id=eq.${terceirizada_id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status: "ativo", data_aceite: new Date().toISOString() })
+  });
 
+  if (res.ok) {
+    alert(`✅ Você aceitou o convite da empresa "${nome}".`);
+    abrirSelecaoEmpresa();
+  } else {
+    alert("❌ Erro ao aceitar o convite.");
+  }
+}
 
+async function recusarConvite(terceirizada_id) {
+  if (!confirm("Deseja recusar o convite desta empresa?")) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}&terceirizada_id=eq.${terceirizada_id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status: "recusado" })
+  });
+
+  if (res.ok) {
+    alert("❌ Convite recusado.");
+    abrirSelecaoEmpresa();
+  } else {
+    alert("❌ Erro ao recusar o convite.");
+  }
+}
     document.addEventListener("DOMContentLoaded", verificarEmpresaAtiva);
   </script>
 </body>
