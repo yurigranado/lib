@@ -139,7 +139,6 @@ async function carregar() {
   });
 
   const contratos = await res.json();
-  window.CONTRATOS_ATUAIS = contratos.map(c => ({ ...c, configuracao }));
   const container = document.getElementById("lista");
   container.innerHTML = "";
 
@@ -164,6 +163,9 @@ async function carregar() {
     const dias = await diasRes.json();
     const turnos = await turnosRes.json();
     const configuracao = (await configRes.json())[0];
+
+    // ✅ adiciona a configuração ao contrato para uso posterior
+    c.configuracao = configuracao;
 
     const card = document.createElement("div");
     card.className = "card-contrato";
@@ -205,7 +207,7 @@ async function carregar() {
       `;
     }
 
-    html += `</div></div>`; // fecha os dois blocos principais (empresa + status)
+    html += `</div></div>`; // fecha blocos principais
 
     if (c.status === 'ativo') {
       html += `
@@ -219,8 +221,10 @@ async function carregar() {
     card.innerHTML = html;
     container.appendChild(card);
   }
-}
 
+  // ✅ só agora, depois de todos os contratos estarem com a configuração associada
+  window.CONTRATOS_ATUAIS = contratos;
+}
   function sair() {
     localStorage.removeItem("terceirizada_id");
     localStorage.removeItem("terceirizada_nome");
