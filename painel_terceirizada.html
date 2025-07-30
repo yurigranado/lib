@@ -207,12 +207,17 @@ async function carregar() {
       }),
       fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      })
+      }),
+        fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato?contrato_id=eq.${c.id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  })
     ]);
 
     const dias = await diasRes.json();
     const turnos = await turnosRes.json();
     const configuracao = (await configRes.json())[0];
+    const regras = (await regrasRes.json())[0];
+    c.regras_pagamento = regras;
 
     // ✅ adiciona a configuração ao contrato para uso posterior
     c.configuracao = configuracao;
@@ -275,9 +280,11 @@ if (c.status === 'ativo') {
   html += `
     <div style="margin-top: 20px;">
       <div id="formularioRegras_${c.id}"></div>
-      <button onclick="abrirRegrasInline('${c.id}')" style="margin-top: 12px;">
-        ⚙️ Editar Regras de Pagamento
-      </button>
+      ${c.regras_pagamento
+        ? formatarResumoRegras(c.regras_pagamento)
+        : `<button onclick="abrirRegrasInline('${c.id}')" style="margin-top: 12px;">
+            ⚙️ Editar Regras de Pagamento
+          </button>`}
     </div>
   `;
 }
@@ -301,6 +308,17 @@ container.appendChild(card);
     const v = tel.replace(/\D/g, "");
     return v.length === 11 ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}` : v;
   }
+
+  function formatarResumoRegras(r) {
+  return `
+    <div style="margin-top: 10px; font-size: 14px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+      <p><strong>Modelo:</strong> ${r.modelo_pagamento || "-"}</p>
+      <p><strong>Corrida Simples:</strong> R$ ${r.valor_por_corrida_simples?.toFixed(2) || "0,00"}</p>
+      <p><strong>Corrida Dupla:</strong> R$ ${r.valor_por_corrida_dupla?.toFixed(2) || "0,00"}</p>
+      <p><strong>Alimentação:</strong> R$ ${r.valor_alimentacao?.toFixed(2) || "0,00"}</p>
+    </div>
+  `;
+}
 
   const nomeEmpresa = localStorage.getItem("terceirizada_nome");
   if (nomeEmpresa) {
@@ -470,8 +488,9 @@ async function salvarRegrasPagamento(event, contratoId) {
     }
 
     console.log("✅ Resposta Supabase:", texto);
-    alert("✅ Regras salvas com sucesso!");
-    document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
+alert("✅ Regras salvas com sucesso!");
+document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
+carregar();
   } catch (erro) {
     console.error("❌ Falha na requisição:", erro);
     alert("❌ Erro inesperado ao tentar salvar.");
