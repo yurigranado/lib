@@ -354,8 +354,7 @@ async function salvarRegrasPagamento(event, contratoId) {
   const dados = Object.fromEntries(new FormData(form).entries());
 
 const payload = {
-  contrato_id: contratoId,
-
+  contrato_id: `${contratoId}`,
   // 🧾 Regras Padrão (geral ou jantar)
   modelo_pagamento: dados.modelo_pagamento,
   valor_fixo: Number(dados.valor_fixo) || 0,
