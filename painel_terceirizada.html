@@ -209,14 +209,14 @@ async function carregar() {
 
     html += `</div></div>`; // fecha blocos principais
 
-    if (c.status === 'ativo') {
-      html += `
-        <div style="margin-top: 20px;">
-          <div id="formularioRegras_${c.id}"></div>
-          <button onclick="abrirRegrasInline(${c.id})" style="margin-top: 12px;">⚙️ Editar Regras de Pagamento</button>
-        </div>
-      `;
-    }
+if (c.status === 'ativo') {
+  html += `
+    <div style="margin-top: 20px;">
+      <div id="formularioRegras_${c.id}"></div>
+      <button onclick="abrirRegrasInline('${c.id}')" style="margin-top: 12px;">⚙️ Editar Regras de Pagamento</button>
+    </div>
+  `;
+}
 
     card.innerHTML = html;
     container.appendChild(card);
