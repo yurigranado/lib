@@ -257,28 +257,35 @@ async function carregar() {
       `;
     }
 
-    html += `</div></div>`; // fecha blocos principais
+// Fecha o conteúdo visual do card (blocos principais)
+html += `</div></div>`;
 
+// Bloco: aceitar/recusar contrato
+if (c.status === 'aguardando_aceite_terceirizada') {
+  html += `
+    <div style="margin-top: 20px;">
+      <button onclick="atualizarStatus('${c.id}', 'ativo')">✅ Aceitar Contrato</button>
+      <button class="recusar" onclick="atualizarStatus('${c.id}', 'recusado')">❌ Recusar</button>
+    </div>
+  `;
+}
+
+// Bloco: editar regras (só se contrato estiver ativo)
 if (c.status === 'ativo') {
   html += `
     <div style="margin-top: 20px;">
       <div id="formularioRegras_${c.id}"></div>
-<button onclick='abrirRegrasInline("${c.id}")' style="margin-top: 12px;">⚙️ Editar Regras de Pagamento</button>
-    </div>
-  `;
-}    	
-    if (c.status === 'aguardando_aceite_terceirizada') {
-  html += `
-    <div style="margin-top: 20px;">
-      <button onclick="atualizarStatus(${c.id}, 'ativo')">✅ Aceitar Contrato</button>
-      <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">❌ Recusar</button>
+      <button onclick="abrirRegrasInline('${c.id}')" style="margin-top: 12px;">
+        ⚙️ Editar Regras de Pagamento
+      </button>
     </div>
   `;
 }
-    card.innerHTML = html;
-    container.appendChild(card);
-  }
 
+// Aplica o HTML final ao card
+card.innerHTML = html;
+container.appendChild(card);
+}
   // ✅ só agora, depois de todos os contratos estarem com a configuração associada
   window.CONTRATOS_ATUAIS = contratos;
 }
