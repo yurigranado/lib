@@ -354,16 +354,6 @@ async function salvarRegrasPagamento(event, contratoId) {
   const dados = Object.fromEntries(new FormData(form).entries());
   console.log("Payload enviado:", payload);
 
-const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
-  method: "POST",
-  headers: {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
-});
-
 const payload = {
 contrato_id: String(contratoId), 
   modelo_pagamento: dados.modelo_pagamento,
@@ -390,6 +380,16 @@ extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0,
 taxa_terceirizada_almoco: Number(dados.taxa_terceirizada_almoco) || 0,
 valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
 };
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
+  method: "POST",
+  headers: {
+    apikey: API_KEY,
+    Authorization: `Bearer ${API_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+});
+  
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
     headers: {
