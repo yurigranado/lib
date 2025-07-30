@@ -97,6 +97,12 @@
   </style>
 </head>
 <body>
+
+  <header>
+    <h1>Lib | Entregadores</h1>
+    <button onclick="sair()">Sair</button>
+  </header>
+
   <h1>🔍 Buscar e Convidar Entregadores</h1>
   <div class="card">
     <label for="tipoBusca">Buscar por:</label>
@@ -119,6 +125,13 @@
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
     const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id");
+
+    function sair() {
+      localStorage.removeItem("terceirizada_id");
+      localStorage.removeItem("terceirizada_nome");
+      localStorage.removeItem("session_token");
+      window.location.href = "index.html";
+    }
 
     function mascararCPF(cpf) {
       return `XXX.XXX.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
@@ -212,13 +225,6 @@
         cont.appendChild(div);
       });
     }
-
-    function sair() {
-  localStorage.removeItem("terceirizada_id");
-  localStorage.removeItem("terceirizada_nome");
-  localStorage.removeItem("session_token");
-  window.location.href = "index.html";
-}
 
     carregarVinculados();
   </script>
