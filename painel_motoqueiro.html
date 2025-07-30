@@ -162,13 +162,17 @@
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
-    let login = localStorage.getItem("login_motoqueiro") || '';
-    let entregador_id = null;
-    
-    if (!localStorage.getItem("login_motoqueiro")) {
-  // Redireciona para login se não estiver logado
-  window.location.href = "login_motoqueiro.html";
-}
+  const login = localStorage.getItem("login_motoqueiro");
+  const expiracao = localStorage.getItem("login_expira_em");
+
+  // 🔐 Verifica se o login está presente e se ainda não expirou
+  if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
+    localStorage.removeItem("login_motoqueiro");
+    localStorage.removeItem("login_expira_em");
+    window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
+  }
+
+  let entregador_id = null;
 
 async function carregarEntregadorId() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
