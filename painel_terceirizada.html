@@ -237,8 +237,20 @@ const card = document.createElement("div");
 card.className = "card-contrato";
 
 let html = `
-<div class="resumo" onclick="this.closest('.linha').classList.toggle('aberto')" style="cursor: pointer; padding: 10px 0;">
-    <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
+<div class="resumo" 
+     onclick="
+       console.log('🟢 Clicou em:', this);
+       const linha = this.closest('.linha');
+       if (linha) {
+         linha.classList.toggle('aberto');
+         console.log('🔁 Classe `aberto` alternada:', linha.classList.contains('aberto'));
+       } else {
+         console.warn('⚠️ Não encontrou o elemento `.linha`!');
+       }
+     "
+     style="cursor: pointer; padding: 10px 0;">
+  <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
+</div>
   </div>
   <div class="detalhes-escondidos" style="display: none;">
     <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
