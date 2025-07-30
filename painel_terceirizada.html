@@ -335,7 +335,7 @@ function abrirRegrasInline(contratoId) {
 
 container.innerHTML = `
   <div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
-    <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display: flex; gap: 40px; flex-wrap: wrap;">
+    <form id="formRegras_${contratoId}" style="display: flex; gap: 40px; flex-wrap: wrap;">
       <!-- 💼 Regras Jantar (esquerda) -->
       <div style="flex: 1; min-width: 300px;">
         <h3>💼 Regras Jantar</h3>
@@ -399,6 +399,10 @@ container.innerHTML = `
     </form>
   </div>
 `;
+  
+  document
+  .getElementById(`formRegras_${contratoId}`)
+  .addEventListener("submit", (e) => salvarRegrasPagamento(e, contratoId));
 
   // 👇 se tiver turno almoço ativado no contrato, exibe a coluna lateral
 const contrato = window.CONTRATOS_ATUAIS?.find(c => String(c.id) === String(contratoId));
