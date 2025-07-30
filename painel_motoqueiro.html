@@ -250,19 +250,6 @@ async function verificarEmpresaAtiva() {
     document.getElementById('blocoEscolherEmpresa').style.display = "block";
   }
 }
-    document.addEventListener("DOMContentLoaded", async () => {
-  verificarEmpresaAtiva();
-
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const dados = await r.json();
-  if (dados.length > 0) {
-    document.getElementById("nomeEntregador").innerText = dados[0].nome;
-  } else {
-    document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
-  }
-});
     async function aceitarConvite(terceirizada_id, nome) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&terceirizada_id=eq.${terceirizada_id}`, {
     method: "PATCH",
