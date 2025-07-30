@@ -237,18 +237,7 @@ const card = document.createElement("div");
 card.className = "card-contrato";
 
 let html = `
-<div class="resumo" 
-     onclick="
-       console.log('🟢 Clicou em:', this);
-       const linha = this.closest('.linha');
-       if (linha) {
-         linha.classList.toggle('aberto');
-         console.log('🔁 Classe `aberto` alternada:', linha.classList.contains('aberto'));
-       } else {
-         console.warn('⚠️ Não encontrou o elemento `.linha`!');
-       }
-     "
-     style="cursor: pointer; padding: 10px 0;">
+<div class="resumo" onclick="toggleResumo(this)" style="cursor: pointer; padding: 10px 0;">
   <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
 </div>
   </div>
@@ -327,6 +316,17 @@ container.appendChild(linha);
     localStorage.removeItem("session_token");
     window.location.href = "index.html";
   }
+
+  function toggleResumo(elemento) {
+  console.log("🟢 Clicou em:", elemento);
+  const linha = elemento.closest(".linha");
+  if (linha) {
+    linha.classList.toggle("aberto");
+    console.log("🔁 Classe `aberto`:", linha.classList.contains("aberto"));
+  } else {
+    console.warn("⚠️ .linha não encontrada");
+  }
+}
 
   function formatarTelefone(tel) {
     if (!tel) return "";
