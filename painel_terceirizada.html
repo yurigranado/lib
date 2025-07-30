@@ -253,8 +253,8 @@ async function carregar() {
   
   function alternarCamposRegrasJantar(select, contratoId) {
   const valor = select.value;
-  document.getElementById(`fixo_${contratoId}`).style.display = valor === "fixo" ? "block" : "none";
-  document.getElementById(`dinamico_${contratoId}`).style.display = valor === "dinamico" ? "block" : "none";
+  document.getElementById(`fixo_${contratoId}`).style.display = valor === "fixo" ? "grid" : "none";
+  document.getElementById(`dinamico_${contratoId}`).style.display = valor === "dinamico" ? "grid" : "none";
 }
   function alternarCamposRegrasAlmoco(select, contratoId) {
   const valor = select.value;
@@ -269,70 +269,67 @@ function abrirRegrasInline(contratoId) {
     return;
   }
 
-  container.innerHTML = `
-    <div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
-      <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display: flex; gap: 40px; flex-wrap: wrap;">
-        <!-- Regras Padrão (esquerda) -->
-        <div style="flex: 1; min-width: 300px;">
-          <h3>💼 Regras Padrão</h3>
-          <label>Modelo de Pagamento</label>
-<select name="modelo_pagamento" required onchange="alternarCamposRegrasJantar(this, ${contratoId})">
-            <option value="">Selecione</option>
-            <option value="fixo">Fixo + Adicionais</option>
-            <option value="dinamico">Dinâmico + Fixo</option>
-          </select>
+container.innerHTML = `
+  <div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
+    <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display: flex; gap: 40px; flex-wrap: wrap;">
+      <!-- Regras Padrão (esquerda) -->
+      <div style="flex: 1; min-width: 300px;">
+        <h3>💼 Regras Padrão</h3>
+        <label>Modelo de Pagamento</label>
+        <select name="modelo_pagamento" required onchange="alternarCamposRegrasJantar(this, ${contratoId})">
+          <option value="">Selecione</option>
+          <option value="fixo">Fixo + Adicionais</option>
+          <option value="dinamico">Dinâmico + Fixo</option>
+        </select>
 
-          <div id="fixo_${contratoId}" style="display:none;">
-            <label>Valor Fixo</label><input name="valor_fixo" type="number" step="0.01">
-            <label>Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01">
-            <label>Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01">
-          </div>
-
-          <div id="dinamico_${contratoId}" style="display:none;">
-            <label>Corridas Mínimas</label><input name="corridas_minimas" type="number">
-            <label>Valor Fixo Base</label><input name="valor_fixo_dinamico" type="number" step="0.01">
-            <label>Extra Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01">
-            <label>Extra Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01">
-          </div>
-
-          <label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01">
-          <label>Valor Alimentação</label>
-          <input name="valor_alimentacao" type="number" step="0.01" placeholder="Se pagar, informe o valor">
-          <label>Valor Adicional Noturno</label>
-          <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Se pagar, informe o valor">
-
+        <div id="fixo_${contratoId}" style="display: none;">
+          <label>Valor Fixo</label><input name="valor_fixo" type="number" step="0.01">
+          <label>Corrida Simples</label><input name="valor_por_corrida_simples" type="number" step="0.01">
+          <label>Corrida Dupla</label><input name="valor_por_corrida_dupla" type="number" step="0.01">
         </div>
 
-        <!-- Regras Turno Almoço (direita, condicional) -->
-<div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
-  <h3>☀️ Regras Turno Almoço</h3>
-  <label>Modelo</label>
-  <select name="modelo_almoco" onchange="alternarCamposRegrasAlmoco(this, ${contratoId})">
-    <option value="">Selecione</option>
-    <option value="fixo">Fixo + Adicionais</option>
-    <option value="dinamico">Dinâmico + Fixo</option>
-  </select>
-
-  <div id="fixo_almoco_${contratoId}" style="display: none;">
-    <label>Valor Fixo</label><input name="valor_fixo_almoco" type="number" step="0.01">
-    <label>Corrida Simples</label><input name="valor_corrida_simples_almoco" type="number" step="0.01">
-    <label>Corrida Dupla</label><input name="valor_corrida_dupla_almoco" type="number" step="0.01">
-  </div>
-
-  <div id="dinamico_almoco_${contratoId}" style="display: none;">
-    <label>Corridas Mínimas</label><input name="corridas_minimas_almoco" type="number">
-    <label>Fixo Base</label><input name="valor_fixo_dinamico_almoco" type="number" step="0.01">
-    <label>Extra Simples</label><input name="extra_simples_almoco" type="number" step="0.01">
-    <label>Extra Dupla</label><input name="extra_dupla_almoco" type="number" step="0.01">
-  </div>
-</div>
-
-        <div style="width:100%;text-align:right;margin-top:20px;">
-          <button type="submit">💾 Salvar</button>
+        <div id="dinamico_${contratoId}" style="display: none;">
+          <label>Corridas Mínimas</label><input name="corridas_minimas" type="number">
+          <label>Valor Fixo Base</label><input name="valor_fixo_dinamico" type="number" step="0.01">
+          <label>Extra Simples</label><input name="valor_extra_corrida_simples" type="number" step="0.01">
+          <label>Extra Dupla</label><input name="valor_extra_corrida_dupla" type="number" step="0.01">
         </div>
-      </form>
-    </div>
-  `;
+
+        <label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01">
+        <label>Valor Alimentação</label><input name="valor_alimentacao" type="number" step="0.01">
+        <label>Valor Adicional Noturno</label><input name="valor_adicional_noturno" type="number" step="0.01">
+      </div>
+
+      <!-- Regras Turno Almoço (direita, condicional) -->
+      <div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
+        <h3>☀️ Regras Turno Almoço</h3>
+        <label>Modelo</label>
+        <select name="modelo_almoco" onchange="alternarCamposRegrasAlmoco(this, ${contratoId})">
+          <option value="">Selecione</option>
+          <option value="fixo">Fixo + Adicionais</option>
+          <option value="dinamico">Dinâmico + Fixo</option>
+        </select>
+
+        <div id="fixo_almoco_${contratoId}" style="display: none;">
+          <label>Valor Fixo</label><input name="valor_fixo_almoco" type="number" step="0.01">
+          <label>Corrida Simples</label><input name="valor_corrida_simples_almoco" type="number" step="0.01">
+          <label>Corrida Dupla</label><input name="valor_corrida_dupla_almoco" type="number" step="0.01">
+        </div>
+
+        <div id="dinamico_almoco_${contratoId}" style="display: none;">
+          <label>Corridas Mínimas</label><input name="corridas_minimas_almoco" type="number">
+          <label>Fixo Base</label><input name="valor_fixo_dinamico_almoco" type="number" step="0.01">
+          <label>Extra Simples</label><input name="extra_simples_almoco" type="number" step="0.01">
+          <label>Extra Dupla</label><input name="extra_dupla_almoco" type="number" step="0.01">
+        </div>
+      </div>
+
+      <div style="width:100%;text-align:right;margin-top:20px;">
+        <button type="submit">💾 Salvar</button>
+      </div>
+    </form>
+  </div>
+`;
 
   // 👇 se tiver turno almoço ativado no contrato, exibe a coluna lateral
   const contrato = window.CONTRATOS_ATUAIS?.find(c => c.id === contratoId);
