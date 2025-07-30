@@ -282,7 +282,7 @@ if (c.status === 'ativo') {
     <div style="margin-top: 20px;">
       <div id="formularioRegras_${c.id}"></div>
       ${c.regras_pagamento
-        ? formatarResumoRegras(c.regras_pagamento)
+        ? formatarResumoRegras(c.regras_pagamento, c)
         : `<button onclick="abrirRegrasInline('${c.id}')" style="margin-top: 12px;">
             ⚙️ Editar Regras de Pagamento
           </button>`}
@@ -310,15 +310,56 @@ container.appendChild(card);
     return v.length === 11 ? `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}` : v;
   }
 
-  function formatarResumoRegras(r) {
-  return `
+function formatarResumoRegras(r, contrato = {}) {
+  const formatar = (label, valor) => {
+    if (!valor || Number(valor) === 0) return "";
+    return `<p><strong>${label}:</strong> R$ ${Number(valor).toFixed(2)}</p>`;
+  };
+
+  let html = `
     <div style="margin-top: 10px; font-size: 14px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+      <h4 style="margin: 0 0 6px;">💼 Regras Jantar</h4>
       <p><strong>Modelo:</strong> ${r.modelo_pagamento || "-"}</p>
-      <p><strong>Corrida Simples:</strong> R$ ${r.valor_por_corrida_simples?.toFixed(2) || "0,00"}</p>
-      <p><strong>Corrida Dupla:</strong> R$ ${r.valor_por_corrida_dupla?.toFixed(2) || "0,00"}</p>
-      <p><strong>Alimentação:</strong> R$ ${r.valor_alimentacao?.toFixed(2) || "0,00"}</p>
+      ${r.modelo_pagamento === "fixo" ? `
+        ${formatar("Valor Fixo", r.valor_fixo)}
+        ${formatar("Corrida Simples", r.valor_por_corrida_simples)}
+        ${formatar("Corrida Dupla", r.valor_por_corrida_dupla)}
+      ` : ""}
+      ${r.modelo_pagamento === "dinamico" ? `
+        ${formatar("Corridas Mínimas", r.corridas_minimas)}
+        ${formatar("Valor Fixo Base", r.valor_fixo_dinamico)}
+        ${formatar("Extra Corrida Simples", r.valor_extra_corrida_simples)}
+        ${formatar("Extra Corrida Dupla", r.valor_extra_corrida_dupla)}
+      ` : ""}
+      ${formatar("Taxa da Terceirizada", r.taxa_terceirizada)}
+      ${formatar("Alimentação", r.valor_alimentacao)}
+      ${formatar("Adicional Noturno", r.valor_adicional_noturno)}
     </div>
   `;
+
+  if (contrato?.configuracao?.turno_almoco) {
+    html += `
+      <div style="margin-top: 10px; font-size: 14px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
+        <h4 style="margin: 0 0 6px;">☀️ Regras Almoço</h4>
+        <p><strong>Modelo:</strong> ${r.modelo_pagamento_almoco || "-"}</p>
+        ${r.modelo_pagamento_almoco === "fixo" ? `
+          ${formatar("Valor Fixo", r.valor_fixo_almoco)}
+          ${formatar("Corrida Simples", r.valor_corrida_simples_almoco)}
+          ${formatar("Corrida Dupla", r.valor_corrida_dupla_almoco)}
+        ` : ""}
+        ${r.modelo_pagamento_almoco === "dinamico" ? `
+          ${formatar("Corridas Mínimas", r.corridas_minimas_almoco)}
+          ${formatar("Fixo Base", r.valor_fixo_dinamico_almoco)}
+          ${formatar("Extra Corrida Simples", r.extra_simples_almoco)}
+          ${formatar("Extra Corrida Dupla", r.extra_dupla_almoco)}
+        ` : ""}
+        ${formatar("Taxa da Terceirizada", r.taxa_terceirizada_almoco)}
+        ${formatar("Alimentação", r.valor_alimentacao_almoco)}
+      </div>
+    `;
+  }
+
+  return html;
 }
 
   const nomeEmpresa = localStorage.getItem("terceirizada_nome");
