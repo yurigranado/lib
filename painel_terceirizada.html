@@ -198,32 +198,33 @@ async function carregar() {
   }
 
   for (const c of contratos) {
-    const [diasRes, turnosRes, configRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      }),
-      fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      }),
-      fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      }),
-        fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato?contrato_id=eq.${c.id}`, {
+const [diasRes, turnosRes, configRes, regrasRes] = await Promise.all([
+  fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  }),
+  fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  }),
+  fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  }),
+  fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato?contrato_id=eq.${c.id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   })
-    ]);
+]);
 
-    const dias = await diasRes.json();
-    const turnos = await turnosRes.json();
-    const configuracao = (await configRes.json())[0];
-    const regras = (await regrasRes.json())[0];
-    c.regras_pagamento = regras;
+const dias = await diasRes.json();
+const turnos = await turnosRes.json();
+const configuracao = (await configRes.json())[0];
+const regras = (await regrasRes.json())[0];
 
-    // ✅ adiciona a configuração ao contrato para uso posterior
-    c.configuracao = configuracao;
+// ⬇️ Associando tudo ao contrato
+c.configuracao = configuracao;
+c.regras_pagamento = regras;
 
-    const card = document.createElement("div");
-    card.className = "card-contrato";
+// ⬇️ Começa a montar o card do contrato
+const card = document.createElement("div");
+card.className = "card-contrato";
 
     let html = `
       <div style="display: flex; flex-direction: row; gap: 24px; flex-wrap: wrap;">
