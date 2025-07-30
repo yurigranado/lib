@@ -175,7 +175,7 @@
   const nome = document.getElementById("nome").value.trim();
   const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
   const tel = document.getElementById("telefone").value.replace(/\D/g, '');
-  const senha = md5(document.getElementById("senha").value.trim());
+  const senha = md5(document.getElementById("senha").value.trim().toLowerCase());
   const cidade = document.getElementById("cidade").value.trim();
   const estado = document.getElementById("estado").value.trim().toUpperCase();
   const msg = document.getElementById("msg");
