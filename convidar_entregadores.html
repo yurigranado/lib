@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Convidar Entregadores</title>
   <style>
+    :root {
+      --cor-principal: #2e7d32;
+      --blur: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -18,7 +27,7 @@
       position: fixed;
       top: 0;
       width: 100%;
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--blur);
       backdrop-filter: blur(12px);
       display: flex;
       align-items: center;
@@ -97,9 +106,11 @@
   </style>
 </head>
 <body>
-
   <header>
-    <h1>Lib | Entregadores</h1>
+    <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
+    <nav>
+      <a href="painel_terceirizada.html" style="color: white; margin-right: 12px; text-decoration: none; font-weight: 500;">⬅ Voltar</a>
+    </nav>
     <button onclick="sair()">Sair</button>
   </header>
 
