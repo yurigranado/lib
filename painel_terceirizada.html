@@ -204,32 +204,32 @@ async function carregar() {
     return;
   }
 
-  for (const c of contratos) {
-const [diasRes, turnosRes, configRes, regrasRes] = await Promise.all([
-  fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }),
-  fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }),
-  fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }),
-  fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato?contrato_id=eq.${c.id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  })
-]);
+for (const c of contratos) {
+  const [diasRes, turnosRes, configRes, regrasRes] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${c.empresa.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${c.empresa.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${c.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato?contrato_id=eq.${c.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    })
+  ]);
 
-const dias = await diasRes.json();
-const turnos = await turnosRes.json();
-const configuracao = (await configRes.json())[0];
-const regras = (await regrasRes.json())[0];
+  const dias = await diasRes.json();
+  const turnos = await turnosRes.json();
+  const configuracao = (await configRes.json())[0];
+  const regras = (await regrasRes.json())[0];
 
-// ⬇️ Associando tudo ao contrato
-c.configuracao = configuracao;
-c.regras_pagamento = regras;
+  // ⬇️ Associando tudo ao contrato
+  c.configuracao = configuracao;
+  c.regras_pagamento = regras;
 
-  // ⬇️ AQUI entra o trecho
+  // ⬇️ Cria a div que agrupa tudo
   const linha = document.createElement("div");
   linha.className = "linha card-contrato";
 
@@ -239,13 +239,6 @@ c.regras_pagamento = regras;
       console.log("🔁 Expandido:", linha.classList.contains("aberto"));
     }
   });
-
-// ⬇️ Começa a montar o card do contrato
-const linha = document.createElement("div");
-linha.className = "linha";
-
-const card = document.createElement("div");
-card.className = "card-contrato";
 
 let html = `
   <div class="resumo" style="cursor: pointer; padding: 10px 0;">
@@ -313,9 +306,8 @@ if (c.status === 'ativo') {
 }
 
 html += `</div>`; // fecha .detalhes-escondidos
-card.innerHTML = html;
-linha.appendChild(card);
-container.appendChild(linha);
+  linha.innerHTML = html;
+  container.appendChild(linha);
 }
   // ✅ só agora, depois de todos os contratos estarem com a configuração associada
   window.CONTRATOS_ATUAIS = contratos;
