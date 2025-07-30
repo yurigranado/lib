@@ -152,6 +152,10 @@ const cpf = document.getElementById('login').value.replace(/\D/g, '');
       return;
     }
 
+      // 👇 Adicione aqui
+  console.log("🔐 CPF usado:", cpf);
+  console.log("🔐 Senha MD5:", senha);
+
 const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${cpf}&senha=eq.${senha}`, {
       headers: {
         apikey: API_KEY,
