@@ -112,6 +112,12 @@
     .entregador p {
       margin: 4px 0;
     }
+.grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
   </style>
 </head>
 <body>
@@ -131,7 +137,8 @@
     ">Sair</button>
   </header>
 
-  <div class="conteudo">
+<div class="conteudo">
+  <div class="grid">
     <div class="card">
       <label for="tipoBusca">Buscar por:</label>
       <select id="tipoBusca">
@@ -139,16 +146,17 @@
         <option value="cpf">CPF</option>
         <option value="telefone">Telefone</option>
       </select>
-
       <input type="text" id="valorBusca" placeholder="Digite o valor...">
       <button onclick="buscarEntregador()">🔍 Buscar</button>
-
       <div id="resultado" class="resultado"></div>
     </div>
 
-    <h1>✅ Entregadores Vinculados</h1>
-    <div id="vinculados" class="card"></div>
+    <div class="card">
+      <h2 style="margin-top: 0;">✅ Entregadores Vinculados</h2>
+      <div id="vinculados"></div>
+    </div>
   </div>
+</div>
 
   <script>
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
@@ -171,7 +179,8 @@
     async function buscarEntregador() {
       const tipo = document.getElementById("tipoBusca").value;
       const valor = document.getElementById("valorBusca").value.trim();
-      if (!valor) return alert("Digite um valor para buscar.");
+      if (!valor) {carregarVinculados(); return;
+}
 
       const campo = tipo === "cpf" ? "cpf" : tipo === "telefone" ? "telefone" : "nome";
       const query = `${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf`;
