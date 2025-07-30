@@ -98,16 +98,40 @@ async function carregarEntregadorId() {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const dados = await res.json();
+
   if (dados.length > 0) {
     entregador_id = dados[0].id;
     document.getElementById("nomeEntregador").innerText = dados[0].nome;
-    verificarEmpresaAtiva();  // só chama depois de obter o ID
+    
+    verificarEmpresaAtiva(); // já chama isso como antes
+
+    // 🔄 Verifica se há convite pendente e atualiza botão visual
+    const convitesRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&status=eq.pendente`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const convites = await convitesRes.json();
+    const botao = document.querySelector(".painel-btn");
+
+    if (botao) {
+      if (convites.length > 0) {
+        botao.innerText = "📬 Convite Pendente! Verificar";
+        botao.style.background = "#ffd54f";
+        botao.style.color = "#000";
+        botao.style.border = "2px solid #ffa000";
+        botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
+      } else {
+        botao.innerText = "🔄 Escolher Empresa";
+        botao.style.background = "white";
+        botao.style.color = "#000";
+        botao.style.border = "none";
+        botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+      }
+    }
+
   } else {
     document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
   }
 }
-
-
 async function abrirSelecaoEmpresa() {
   const container = document.getElementById("listaEmpresasVinculadas");
   container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
