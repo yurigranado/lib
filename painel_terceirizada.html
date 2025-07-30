@@ -283,8 +283,20 @@ function abrirRegrasInline(contratoId) {
         </div>
 
         <div style="grid-column:span 2;"><label>Taxa da Terceirizada</label><input name="taxa_terceirizada" type="number" step="0.01"></div>
-        <div style="grid-column:span 2;"><label><input type="checkbox" name="paga_alimentacao"> Alimentação</label><input name="valor_alimentacao" type="number" step="0.01"></div>
-        <div style="grid-column:span 2;"><label><input type="checkbox" name="adicional_noturno"> Noturno</label><input name="valor_adicional_noturno" type="number" step="0.01"></div>
+<div style="grid-column:span 2;">
+  <label style="display: flex; align-items: center; gap: 8px;">
+    <input type="checkbox" name="paga_alimentacao" />
+    Alimentação
+  </label>
+  <input name="valor_alimentacao" type="number" step="0.01" placeholder="Valor da alimentação" />
+</div>
+<div style="grid-column:span 2;">
+  <label style="display: flex; align-items: center; gap: 8px;">
+    <input type="checkbox" name="adicional_noturno" />
+    Noturno
+  </label>
+  <input name="valor_adicional_noturno" type="number" step="0.01" placeholder="Valor do adicional" />
+</div>
         <div style="grid-column:span 2;text-align:right;">
           <button type="submit">💾 Salvar</button>
         </div>
