@@ -136,6 +136,24 @@
       return CryptoJS.MD5(str).toString();
     }
 
+    function cpfValido(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+  let d1 = 11 - (soma % 11);
+  if (d1 >= 10) d1 = 0;
+  if (d1 != parseInt(cpf[9])) return false;
+
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+  let d2 = 11 - (soma % 11);
+  if (d2 >= 10) d2 = 0;
+  return d2 == parseInt(cpf[10]);
+}
+
     document.getElementById("cpf").addEventListener("input", (e) => {
       let v = e.target.value.replace(/\D/g, '').slice(0, 11);
       v = v.replace(/(\d{3})(\d)/, '$1.$2');
@@ -160,7 +178,14 @@
       const senha = md5(document.getElementById("senha").value.trim());
       const cidade = document.getElementById("cidade").value.trim();
       const estado = document.getElementById("estado").value.trim().toUpperCase();
-      const msg = document.getElementById("msg");
+      const msg = document.getElementById("msg");const cpf = document.getElementById("cpf").value.replace(/\D/g, '');
+
+// ⚠️ Valida o CPF
+if (!cpfValido(cpf)) {
+  msg.innerText = "❌ CPF inválido.";
+  msg.style.display = "block";
+  return;
+}
 
       if (!nome || !cpf || !tel || !senha || !cidade || !estado) {
         msg.innerText = "❌ Preencha todos os campos.";
