@@ -237,7 +237,7 @@ const card = document.createElement("div");
 card.className = "card-contrato";
 
 let html = `
-  <div class="resumo" onclick="this.parentElement.classList.toggle('aberto')" style="cursor: pointer; padding: 10px 0;">
+<div class="resumo" onclick="this.closest('.linha').classList.toggle('aberto')" style="cursor: pointer; padding: 10px 0;">
     <h3 style="margin: 0;">${c.empresa?.nome || "Empresa"}</h3>
   </div>
   <div class="detalhes-escondidos" style="display: none;">
