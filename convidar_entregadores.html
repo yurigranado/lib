@@ -114,18 +114,20 @@
 <body>
 
   <header>
-    <h1 id="tituloPainel">Lib | Painel da Terceirizada</h1>
-    <nav>
+  <div style="display: flex; align-items: center;">
+    <h1 id="tituloPainel" style="margin-right: 20px;">Lib | Painel da Terceirizada</h1>
+    <nav style="display: flex;">
       <a href="convidar_entregadores.html">Entregadores</a>
       <a href="#">Escalas</a>
       <a href="#">Dashboard</a>
       <a href="#" onclick="abrirMinhaConta()">Minha Conta</a>
     </nav>
-    <button onclick="sair()" style="
-      background: #e53935; color: white; border: none;
-      padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;">
-      Sair
-    </button>
+  </div>
+  <button onclick="sair()" style="
+    background: #e53935; color: white; border: none;
+    padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer;">
+    Sair
+  </button>
   </header>
 
   <div class="conteudo">
