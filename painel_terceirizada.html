@@ -221,7 +221,14 @@ if (c.status === 'ativo') {
     </div>
   `;
 }
-
+    if (c.status === 'aguardando_aceite_terceirizada') {
+  html += `
+    <div style="margin-top: 20px;">
+      <button onclick="atualizarStatus(${c.id}, 'ativo')">✅ Aceitar Contrato</button>
+      <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">❌ Recusar</button>
+    </div>
+  `;
+}
     card.innerHTML = html;
     container.appendChild(card);
   }
