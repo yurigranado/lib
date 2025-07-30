@@ -443,27 +443,36 @@ async function salvarRegrasPagamento(event, contratoId) {
     valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
   };
 
-  console.log("Payload enviado:", payload); // 👈 debug
+  console.log("🔄 Enviando payload:", payload);
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
-    method: "POST",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates"
+      },
+      body: JSON.stringify(payload)
+    });
 
-  if (!res.ok) {
-    const erro = await res.text();
-    console.error("Erro detalhado:", erro);
-    alert("❌ Erro ao salvar: " + erro);
-    return false;
+    const texto = await res.text();
+
+    if (!res.ok) {
+      console.error("❌ Erro ao salvar:", texto);
+      alert("❌ Erro ao salvar as regras:\n" + texto);
+      return false;
+    }
+
+    console.log("✅ Resposta Supabase:", texto);
+    alert("✅ Regras salvas com sucesso!");
+    document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
+  } catch (erro) {
+    console.error("❌ Falha na requisição:", erro);
+    alert("❌ Erro inesperado ao tentar salvar.");
   }
 
-  alert("✅ Regras salvas!");
-  document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
   return false;
 }
 
