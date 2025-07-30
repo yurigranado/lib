@@ -352,6 +352,17 @@ async function salvarRegrasPagamento(event, contratoId) {
   event.preventDefault();
   const form = event.target;
   const dados = Object.fromEntries(new FormData(form).entries());
+  console.log("Payload enviado:", payload);
+
+const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
+  method: "POST",
+  headers: {
+    apikey: API_KEY,
+    Authorization: `Bearer ${API_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+});
 
 const payload = {
 contrato_id: String(contratoId), 
