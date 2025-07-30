@@ -352,35 +352,35 @@ async function salvarRegrasPagamento(event, contratoId) {
   event.preventDefault();
   const form = event.target;
   const dados = Object.fromEntries(new FormData(form).entries());
-  console.log("Payload enviado:", payload);
 
-const payload = {
-contrato_id: String(contratoId), 
-  modelo_pagamento: dados.modelo_pagamento,
-  valor_fixo: Number(dados.valor_fixo) || 0,
-  valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
-  valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
-  corridas_minimas: Number(dados.corridas_minimas) || 0,
-  valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
-  valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
-  valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
-  taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
-  valor_alimentacao: Number(dados.valor_alimentacao) || 0,
-  valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
+  const payload = {
+    contrato_id: String(contratoId),
+    modelo_pagamento: dados.modelo_pagamento,
+    valor_fixo: Number(dados.valor_fixo) || 0,
+    valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
+    valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
+    corridas_minimas: Number(dados.corridas_minimas) || 0,
+    valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
+    valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
+    valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
+    taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
+    valor_alimentacao: Number(dados.valor_alimentacao) || 0,
+    valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
 
-// ☀️ Regras específicas do turno Almoço
-modelo_pagamento_almoco: dados.modelo_almoco || "",
-valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
-valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
-valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
-corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
-valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
-extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
-extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0,
-taxa_terceirizada_almoco: Number(dados.taxa_terceirizada_almoco) || 0,
-valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
-};
-  
+    modelo_pagamento_almoco: dados.modelo_almoco || "",
+    valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
+    valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
+    valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
+    corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
+    valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
+    extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
+    extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0,
+    taxa_terceirizada_almoco: Number(dados.taxa_terceirizada_almoco) || 0,
+    valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
+  };
+
+  console.log("Payload enviado:", payload); // 👈 debug
+
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
     headers: {
@@ -391,13 +391,15 @@ valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
     body: JSON.stringify(payload)
   });
 
-  if (res.ok) {
-    alert("✅ Regras salvas!");
-    document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
-  } else {
-    alert("❌ Erro ao salvar.");
+  if (!res.ok) {
+    const erro = await res.text();
+    console.error("Erro detalhado:", erro);
+    alert("❌ Erro ao salvar: " + erro);
+    return false;
   }
 
+  alert("✅ Regras salvas!");
+  document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
   return false;
 }
 
