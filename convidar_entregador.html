@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convidar Entregadores</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      padding: 100px 5vw 40px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+      margin-bottom: 24px;
+    }
+    label, select, input {
+      font-size: 16px;
+      display: block;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+    input, select {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+    button {
+      padding: 10px 20px;
+      background: #43a047;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .resultado {
+      margin-top: 20px;
+    }
+    .entregador {
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .entregador p {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Buscar e Convidar Entregadores</h1>
+  <div class="card">
+    <label for="tipoBusca">Buscar por:</label>
+    <select id="tipoBusca">
+      <option value="nome">Nome</option>
+      <option value="cpf">CPF</option>
+      <option value="telefone">Telefone</option>
+    </select>
+
+    <input type="text" id="valorBusca" placeholder="Digite o valor...">
+    <button onclick="buscarEntregador()">🔍 Buscar</button>
+
+    <div id="resultado" class="resultado"></div>
+  </div>
+
+  <h1>✅ Entregadores Vinculados</h1>
+  <div id="vinculados" class="card"></div>
+
+  <script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+    const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id");
+
+    function mascararCPF(cpf) {
+      return `XXX.XXX.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
+    }
+
+    async function buscarEntregador() {
+      const tipo = document.getElementById("tipoBusca").value;
+      const valor = document.getElementById("valorBusca").value.trim();
+      if (!valor) return alert("Digite um valor para buscar.");
+
+      const campo = tipo === "cpf" ? "cpf" : tipo === "telefone" ? "telefone" : "nome";
+      const query = `${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf`;
+
+      const res = await fetch(query, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const lista = await res.json();
+      const resultado = document.getElementById("resultado");
+      resultado.innerHTML = "";
+
+      if (!lista.length) {
+        resultado.innerHTML = "<p>Nenhum entregador encontrado.</p>";
+        return;
+      }
+
+      lista.forEach(ent => {
+        const div = document.createElement("div");
+        div.className = "entregador";
+        div.innerHTML = `
+          <p><strong>Nome:</strong> ${ent.nome}</p>
+          <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
+          <p><strong>CPF:</strong> ${mascararCPF(ent.cpf)}</p>
+          <button onclick="convidarEntregador('${ent.id}', '${ent.nome}')">Convidar</button>
+        `;
+        resultado.appendChild(div);
+      });
+    }
+
+    async function convidarEntregador(entregador_id, nome) {
+      const payload = {
+        entregador_id,
+        terceirizada_id: TERCEIRIZADA_ID,
+        status: "ativo",
+        data_aceite: new Date().toISOString()
+      };
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert(`✅ ${nome} vinculado com sucesso!`);
+        carregarVinculados();
+      } else {
+        alert("Erro ao convidar.");
+      }
+    }
+
+    async function carregarVinculados() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const vinculados = await res.json();
+      const listaIDs = vinculados.map(v => `'${v.entregador_id}'`).join(",");
+
+      if (!listaIDs) {
+        document.getElementById("vinculados").innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
+        return;
+      }
+
+      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=nome,telefone`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const lista = await r2.json();
+
+      const cont = document.getElementById("vinculados");
+      cont.innerHTML = "";
+      lista.forEach(ent => {
+        const div = document.createElement("div");
+        div.className = "entregador";
+        div.innerHTML = `
+          <p><strong>Nome:</strong> ${ent.nome}</p>
+          <p><strong>Telefone:</strong> (${ent.telefone.slice(0,2)}) ${ent.telefone.slice(2,7)}-${ent.telefone.slice(7)}</p>
+        `;
+        cont.appendChild(div);
+      });
+    }
+
+    carregarVinculados();
+  </script>
+</body>
+</html>
