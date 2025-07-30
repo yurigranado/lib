@@ -250,10 +250,11 @@ async function carregar() {
       carregarMinhaConta();
     }, 100);
   }
-
-  function alternarModeloPagamento(modelo) {
-  document.getElementById("camposFixo").style.display = modelo === "fixo" ? "grid" : "none";
-  document.getElementById("camposDinamico").style.display = modelo === "dinamico" ? "grid" : "none";
+  
+  function alternarCamposRegrasJantar(select, contratoId) {
+  const valor = select.value;
+  document.getElementById(`fixo_${contratoId}`).style.display = valor === "fixo" ? "block" : "none";
+  document.getElementById(`dinamico_${contratoId}`).style.display = valor === "dinamico" ? "block" : "none";
 }
   function alternarCamposRegrasAlmoco(select, contratoId) {
   const valor = select.value;
