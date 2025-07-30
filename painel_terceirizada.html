@@ -230,8 +230,11 @@ c.configuracao = configuracao;
 c.regras_pagamento = regras;
 
 // ⬇️ Começa a montar o card do contrato
+const linha = document.createElement("div");
+linha.className = "linha";
+
 const card = document.createElement("div");
-card.className = "linha card-contrato";
+card.className = "card-contrato";
 
 let html = `
   <div class="resumo" onclick="this.parentElement.classList.toggle('aberto')" style="cursor: pointer; padding: 10px 0;">
@@ -300,7 +303,8 @@ if (c.status === 'ativo') {
 
 html += `</div>`; // fecha .detalhes-escondidos
 card.innerHTML = html;
-container.appendChild(card);
+linha.appendChild(card);
+container.appendChild(linha);
 }
   // ✅ só agora, depois de todos os contratos estarem com a configuração associada
   window.CONTRATOS_ATUAIS = contratos;
