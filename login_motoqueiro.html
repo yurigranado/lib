@@ -142,7 +142,7 @@
   
   document.getElementById('f').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const tel = document.getElementById('login').value.replace(/\D/g, '');
+const cpf = document.getElementById('login').value.replace(/\D/g, '');
     const senha = md5(document.getElementById('senha').value.trim());
     const msg = document.getElementById('msg');
 
@@ -152,7 +152,7 @@
       return;
     }
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?telefone=eq.${tel}&senha=eq.${senha}`, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${cpf}&senha=eq.${senha}`, {
       headers: {
         apikey: API_KEY,
         Authorization: `Bearer ${API_KEY}`
@@ -162,7 +162,7 @@
     const dados = await res.json();
     if (dados.length === 1) {
       const entregador = dados[0];
-      localStorage.setItem("login_motoqueiro", entregador.telefone);
+localStorage.setItem("login_motoqueiro", entregador.cpf);
       localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
       window.location.href = "painel.html";
     } else {
