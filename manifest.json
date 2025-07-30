@@ -1,6 +1,6 @@
 {
-  "name": "Lib Motoqueiro",
-  "short_name": "Motoqueiro",
+  "name": "Lib",
+  "short_name": "Lib Entregador",
   "start_url": "login_motoqueiro.html",
   "display": "standalone",
   "background_color": "#5fdfb8",
