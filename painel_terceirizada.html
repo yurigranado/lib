@@ -337,7 +337,7 @@ container.innerHTML = `
 `;
 
   // 👇 se tiver turno almoço ativado no contrato, exibe a coluna lateral
-  const contrato = window.CONTRATOS_ATUAIS?.find(c => c.id === contratoId);
+const contrato = window.CONTRATOS_ATUAIS?.find(c => String(c.id) === String(contratoId));
   if (contrato?.configuracao?.turno_almoco) {
     document.getElementById(`blocoRegrasAlmoco_${contratoId}`).style.display = "block";
   }
