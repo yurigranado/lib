@@ -209,7 +209,14 @@ async function carregar() {
 
     html += `</div></div>`; // fecha blocos principais
 
-    if (c.status === 'ativo') {
+if (c.status === 'ativo') {
+  html += `
+    <div style="margin-top: 20px;">
+      <div id="formularioRegras_${c.id}"></div>
+<button onclick='abrirRegrasInline("${c.id}")' style="margin-top: 12px;">⚙️ Editar Regras de Pagamento</button>
+    </div>
+  `;
+}    if (c.status === 'ativo') {
       html += `
         <div style="margin-top: 20px;">
           <div id="formularioRegras_${c.id}"></div>
@@ -217,7 +224,15 @@ async function carregar() {
         </div>
       `;
     }
-
+	
+    if (c.status === 'aguardando_aceite_terceirizada') {
+  html += `
+    <div style="margin-top: 20px;">
+      <button onclick="atualizarStatus(${c.id}, 'ativo')">✅ Aceitar Contrato</button>
+      <button class="recusar" onclick="atualizarStatus(${c.id}, 'recusado')">❌ Recusar</button>
+    </div>
+  `;
+}
     card.innerHTML = html;
     container.appendChild(card);
   }
@@ -327,15 +342,17 @@ container.innerHTML = `
         <label>Valor Alimentação</label><input name="valor_alimentacao_almoco" type="number" step="0.01">
       </div>
 
-      <div style="width:100%;text-align:right;margin-top:20px;">
-        <button type="submit">💾 Salvar</button>
-      </div>
+<div style="width:100%;text-align:right;margin-top:20px;">
+  <button type="submit" style="background: none; border: none; cursor: pointer;">
+    <img src="https://i.imgur.com/hdsbbiK.png" alt="Salvar" style="height: 25px;">
+  </button>
+</div>
     </form>
   </div>
 `;
 
   // 👇 se tiver turno almoço ativado no contrato, exibe a coluna lateral
-  const contrato = window.CONTRATOS_ATUAIS?.find(c => c.id === contratoId);
+const contrato = window.CONTRATOS_ATUAIS?.find(c => String(c.id) === String(contratoId));
   if (contrato?.configuracao?.turno_almoco) {
     document.getElementById(`blocoRegrasAlmoco_${contratoId}`).style.display = "block";
   }
@@ -351,32 +368,34 @@ async function salvarRegrasPagamento(event, contratoId) {
   const form = event.target;
   const dados = Object.fromEntries(new FormData(form).entries());
 
-const payload = {
-  contrato_id: contratoId,
+  const payload = {
+    contrato_id: String(contratoId),
+    modelo_pagamento: dados.modelo_pagamento,
+    valor_fixo: Number(dados.valor_fixo) || 0,
+    valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
+    valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
+    corridas_minimas: Number(dados.corridas_minimas) || 0,
+    valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
+    valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
+    valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
+    taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
+    valor_alimentacao: Number(dados.valor_alimentacao) || 0,
+    valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
 
-  // 🧾 Regras Padrão (geral ou jantar)
-  modelo_pagamento: dados.modelo_pagamento,
-  valor_fixo: Number(dados.valor_fixo) || 0,
-  valor_por_corrida_simples: Number(dados.valor_por_corrida_simples) || 0,
-  valor_por_corrida_dupla: Number(dados.valor_por_corrida_dupla) || 0,
-  corridas_minimas: Number(dados.corridas_minimas) || 0,
-  valor_fixo_dinamico: Number(dados.valor_fixo_dinamico) || 0,
-  valor_extra_corrida_simples: Number(dados.valor_extra_corrida_simples) || 0,
-  valor_extra_corrida_dupla: Number(dados.valor_extra_corrida_dupla) || 0,
-  taxa_terceirizada: Number(dados.taxa_terceirizada) || 0,
-  valor_alimentacao: Number(dados.valor_alimentacao) || 0,
-  valor_adicional_noturno: Number(dados.valor_adicional_noturno) || 0,
+    modelo_pagamento_almoco: dados.modelo_almoco || "",
+    valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
+    valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
+    valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
+    corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
+    valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
+    extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
+    extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0,
+    taxa_terceirizada_almoco: Number(dados.taxa_terceirizada_almoco) || 0,
+    valor_alimentacao_almoco: Number(dados.valor_alimentacao_almoco) || 0
+  };
 
-  // ☀️ Regras específicas do turno Almoço
-  modelo_pagamento_almoco: dados.modelo_almoco || "",
-  valor_fixo_almoco: Number(dados.valor_fixo_almoco) || 0,
-  valor_corrida_simples_almoco: Number(dados.valor_corrida_simples_almoco) || 0,
-  valor_corrida_dupla_almoco: Number(dados.valor_corrida_dupla_almoco) || 0,
-  corridas_minimas_almoco: Number(dados.corridas_minimas_almoco) || 0,
-  valor_fixo_dinamico_almoco: Number(dados.valor_fixo_dinamico_almoco) || 0,
-  extra_simples_almoco: Number(dados.extra_simples_almoco) || 0,
-  extra_dupla_almoco: Number(dados.extra_dupla_almoco) || 0
-};
+  console.log("Payload enviado:", payload); // 👈 debug
+
   const res = await fetch(`${SUPABASE_URL}/rest/v1/regras_pagamento_contrato`, {
     method: "POST",
     headers: {
@@ -387,13 +406,15 @@ const payload = {
     body: JSON.stringify(payload)
   });
 
-  if (res.ok) {
-    alert("✅ Regras salvas!");
-    document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
-  } else {
-    alert("❌ Erro ao salvar.");
+  if (!res.ok) {
+    const erro = await res.text();
+    console.error("Erro detalhado:", erro);
+    alert("❌ Erro ao salvar: " + erro);
+    return false;
   }
 
+  alert("✅ Regras salvas!");
+  document.getElementById(`formularioRegras_${contratoId}`).innerHTML = "";
   return false;
 }
 
