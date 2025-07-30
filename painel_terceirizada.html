@@ -393,8 +393,8 @@ container.innerHTML = `
 
 <div style="width:100%;text-align:right;margin-top:20px;">
   <button type="submit" style="background: none; border: none; cursor: pointer;">
-    <img src="https://i.imgur.com/hdsbbiK.png" alt="Salvar" style="height: 25px;">
-  </button>
+  <img src="https://i.imgur.com/hdsbbiK.png" alt="Salvar" style="height: 25px;">
+</button>
 </div>
     </form>
   </div>
@@ -504,6 +504,7 @@ async function salvarRegrasPagamento(event, contratoId) {
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  console.log("🟢 Formulário capturado, salvando regras...");
   const payload = {
     nome: form.nome.value,
     proprietario: form.proprietario.value,
