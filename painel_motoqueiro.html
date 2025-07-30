@@ -112,7 +112,7 @@ async function carregarEntregadorId() {
       const container = document.getElementById("listaEmpresasVinculadas");
       container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
 
-const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}`, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
       });
       const lista = await res.json();
@@ -221,7 +221,7 @@ async function verificarEmpresaAtiva() {
   }
 });
     async function aceitarConvite(terceirizada_id, nome) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}&terceirizada_id=eq.${terceirizada_id}`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&terceirizada_id=eq.${terceirizada_id}`, {
     method: "PATCH",
     headers: {
       apikey: API_KEY,
@@ -242,7 +242,7 @@ async function verificarEmpresaAtiva() {
 async function recusarConvite(terceirizada_id) {
   if (!confirm("Deseja recusar o convite desta empresa?")) return;
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${login}&terceirizada_id=eq.${terceirizada_id}`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&terceirizada_id=eq.${terceirizada_id}`, {
     method: "PATCH",
     headers: {
       apikey: API_KEY,
