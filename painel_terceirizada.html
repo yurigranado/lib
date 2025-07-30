@@ -272,9 +272,9 @@ function abrirRegrasInline(contratoId) {
 container.innerHTML = `
   <div class="card" style="margin-top:20px; grid-column: span 2; width: 100%;">
     <form onsubmit="return salvarRegrasPagamento(event, ${contratoId})" style="display: flex; gap: 40px; flex-wrap: wrap;">
-      <!-- Regras Padrão (esquerda) -->
+      <!-- 💼 Regras Jantar (esquerda) -->
       <div style="flex: 1; min-width: 300px;">
-        <h3>💼 Regras Padrão</h3>
+        <h3>💼 Regras Jantar</h3>
         <label>Modelo de Pagamento</label>
         <select name="modelo_pagamento" required onchange="alternarCamposRegrasJantar(this, ${contratoId})">
           <option value="">Selecione</option>
@@ -300,7 +300,7 @@ container.innerHTML = `
         <label>Valor Adicional Noturno</label><input name="valor_adicional_noturno" type="number" step="0.01">
       </div>
 
-      <!-- Regras Turno Almoço (direita, condicional) -->
+      <!-- ☀️ Regras Almoço (direita) -->
       <div id="blocoRegrasAlmoco_${contratoId}" style="flex: 1; min-width: 300px; display: none;">
         <h3>☀️ Regras Turno Almoço</h3>
         <label>Modelo</label>
@@ -322,6 +322,9 @@ container.innerHTML = `
           <label>Extra Simples</label><input name="extra_simples_almoco" type="number" step="0.01">
           <label>Extra Dupla</label><input name="extra_dupla_almoco" type="number" step="0.01">
         </div>
+
+        <label>Taxa da Terceirizada</label><input name="taxa_terceirizada_almoco" type="number" step="0.01">
+        <label>Valor Alimentação</label><input name="valor_alimentacao_almoco" type="number" step="0.01">
       </div>
 
       <div style="width:100%;text-align:right;margin-top:20px;">
