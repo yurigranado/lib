@@ -392,7 +392,7 @@ container.innerHTML = `
       </div>
 
 <div style="width:100%;text-align:right;margin-top:20px;">
-  <button type="submit" style="background: none; border: none; cursor: pointer;">
+<button type="button" onclick="this.closest('form').requestSubmit()" style="background: none; border: none; cursor: pointer;">
   <img src="https://i.imgur.com/hdsbbiK.png" alt="Salvar" style="height: 25px;">
 </button>
 </div>
