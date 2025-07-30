@@ -248,36 +248,40 @@ async function buscarEntregador() {
       }
     }
 
-    async function carregarVinculados() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const vinculados = await res.json();
-      const listaIDs = vinculados.map(v => v.entregador_id).join(",");
+async function carregarVinculados() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id,status`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
 
-      if (!listaIDs) {
-        document.getElementById("vinculados").innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
-        return;
-      }
+  const vinculados = await res.json();
+  if (!vinculados.length) {
+    document.getElementById("vinculados").innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
+    return;
+  }
 
-      const r2 = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=nome,telefone`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const lista = await r2.json();
+  const listaIDs = vinculados.map(v => v.entregador_id).join(",");
+  const res2 = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome,telefone`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
 
-      const cont = document.getElementById("vinculados");
-      cont.innerHTML = "";
-      lista.forEach(ent => {
-        const div = document.createElement("div");
-        div.className = "entregador";
-        div.innerHTML = `
-          <p><strong>Nome:</strong> ${ent.nome}</p>
-          <p><strong>Telefone:</strong> (${ent.telefone.slice(0,2)}) ${ent.telefone.slice(2,7)}-${ent.telefone.slice(7)}</p>
-        `;
-        cont.appendChild(div);
-      });
-    }
+  const entregadores = await res2.json();
+  const cont = document.getElementById("vinculados");
+  cont.innerHTML = "";
 
+  entregadores.forEach(ent => {
+    const status = vinculados.find(v => v.entregador_id === ent.id)?.status || "desconhecido";
+    const cor = status === "ativo" ? "#66bb6a" : "#ffa726"; // verde ou laranja
+
+    const div = document.createElement("div");
+    div.className = "entregador";
+    div.innerHTML = `
+      <p><strong>Nome:</strong> ${ent.nome}</p>
+      <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
+      <p><strong>Status:</strong> <span style="color:${cor};font-weight:bold;">${status}</span></p>
+    `;
+    cont.appendChild(div);
+  });
+}
     carregarVinculados();
   </script>
 </body>
