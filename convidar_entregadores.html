@@ -596,10 +596,12 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   const turnos = ['almoco', 'jantar'];
   const novaEscala = [];
 
-  const entregadoresSelecionados = [...form.querySelectorAll(input[name="entregador_selecionado"])].map(e => e.value);
+  const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_selecionado"]`)].map(e => e.value);
+
+  console.log("✔️ Entregadores Selecionados:", entregadoresSelecionados);
 
   for (const turno of turnos) {
-    const diasSelecionados = [...form.querySelectorAll(input[name="dia_${turno}"]:checked)].map(d => d.value);
+    const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
 
     diasSelecionados.forEach(dia => {
       entregadoresSelecionados.forEach(entregador_id => {
@@ -613,31 +615,40 @@ async function salvarEscalaPorSemana(event, contrato_id) {
     });
   }
 
-  // 🧹 Apaga tudo anterior do contrato
-  await fetch(${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}, {
+  console.log("📦 Payload para salvar:", novaEscala);
+
+  // 🔥 Apaga os registros antigos
+  await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}`, {
     method: "DELETE",
     headers: {
       apikey: API_KEY,
-      Authorization: Bearer ${API_KEY}
+      Authorization: `Bearer ${API_KEY}`
     }
   });
 
   if (novaEscala.length > 0) {
-    await fetch(${SUPABASE_URL}/rest/v1/escala_semana, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
       method: "POST",
       headers: {
         apikey: API_KEY,
-        Authorization: Bearer ${API_KEY},
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(novaEscala)
     });
+
+    const resText = await res.text();
+    console.log("📬 Resposta do Supabase:", resText);
+
+    if (!res.ok) {
+      alert("❌ Erro ao salvar a escala. Veja o console.");
+      return;
+    }
   }
 
   alert("✅ Escala semanal salva com sucesso!");
   abrirEscala(contrato_id);
 }
-
 </script>
 </body>
 </html>
