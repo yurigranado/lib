@@ -524,7 +524,7 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
       const dia = (diaRaw || "").toLowerCase();
       html += `
         <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 10px;border-radius:8px;">
-          <input type="checkbox" name="dia_${turno}" value="${dia}">
+          <input type="checkbox" name="dia_${turno}" value="${normalizarDia(dia)}">
           ${iconesDias[dia] || dia}
         </label>`;
     }
@@ -563,11 +563,12 @@ async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
     return;
   }
 
+  const idsSelecionados = [...document.querySelectorAll(`#selecionados_${contrato_id} input[name="entregador_selecionado"]`)].map(e => e.value);
   const idsExibidos = new Set();
 
   lista.forEach(ent => {
-    if (idsExibidos.has(ent.id)) return;
-    idsExibidos.add(ent.id);
+  if (idsExibidos.has(ent.id) || idsSelecionados.includes(ent.id)) return;
+  idsExibidos.add(ent.id);
 
     const li = document.createElement("li");
     li.innerHTML = `<span style="cursor:pointer;padding:6px;display:block;">${ent.nome}</span>`;
