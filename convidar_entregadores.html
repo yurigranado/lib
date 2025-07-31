@@ -587,7 +587,7 @@ async function salvarEscalaPorSemana(event, contrato_id) {
 
   for (const turno of turnos) {
     const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
-    const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_${turno}"]:checked`)].map(e => e.value);
+const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_selecionado"]`)].map(e => e.value);
 
     diasSelecionados.forEach(dia => {
       entregadoresSelecionados.forEach(entregador_id => {
