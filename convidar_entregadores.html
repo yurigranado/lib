@@ -468,7 +468,6 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   const container = document.getElementById(`alocacao_${contrato_id}`);
   container.innerHTML = `<p>Carregando entregadores...</p>`;
 
-  // Buscar entregadores vinculados com status ativo
   const resVinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -480,7 +479,6 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
     return;
   }
 
-  // Buscar dados dos entregadores
   const resEnt = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -489,48 +487,51 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
   <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
 
+  // Mostrar os entregadores no topo
+  html += `<label style="margin-bottom:6px;display:block;">👤 Entregadores</label>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">`;
+
+  for (const ent of entregadores) {
+    html += `
+      <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+        <input type="checkbox" name="entregador_selecionado" value="${ent.id}">
+        ${ent.nome}
+      </label>`;
+  }
+
+  html += `</div>`;
+
   const iconesDias = {
     segunda: 'Seg', terca: 'Ter', quarta: 'Qua', quinta: 'Qui',
     sexta: 'Sex', sabado: 'Sáb', domingo: 'Dom'
   };
 
+  html += `<div style="display: flex; gap: 24px; flex-wrap: wrap;">`;
+
   for (const turno of ['almoco', 'jantar']) {
     if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
 
-html += `
-  <div style="margin-bottom: 24px;">
-    <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
-    <label style="margin-bottom:6px;">📅 Dias da Semana</label>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
-`;
+    html += `
+      <div style="flex:1; min-width: 240px;">
+        <h4 style="margin: 0 0 10px;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px;">`;
 
-for (const diaRaw of diasSemana) {
-  const dia = (diaRaw || "").toLowerCase();
-  html += `
-    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-      <input type="checkbox" name="dia_${turno}" value="${dia}">
-      ${iconesDias[dia] || dia}
-    </label>
-  `;
-}
-
-    html += `</div>
-      <label style="margin-top:8px;">👤 Entregadores</label>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
-
-    for (const ent of entregadores) {
+    for (const diaRaw of diasSemana) {
+      const dia = (diaRaw || "").toLowerCase();
       html += `
-        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-          <input type="checkbox" name="entregador_${turno}" value="${ent.id}">
-          ${ent.nome}
+        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 10px;border-radius:8px;">
+          <input type="checkbox" name="dia_${turno}" value="${dia}">
+          ${iconesDias[dia] || dia}
         </label>`;
     }
 
     html += `</div></div>`;
   }
 
+  html += `</div>`;
+
   html += `
-    <div class="botoes-centro">
+    <div class="botoes-centro" style="margin-top: 20px;">
       <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
     </div>
   </form>`;
