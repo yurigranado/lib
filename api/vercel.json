@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/sendNotification.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
-}
