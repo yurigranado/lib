@@ -1,0 +1,9 @@
+{
+  "name": "lib-notificacoes",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "dependencies": {
+    "web-push": "^3.5.0",
+    "node-fetch": "^2.6.9"
+  }
+}
