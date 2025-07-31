@@ -593,11 +593,10 @@ async function ativarNotificacoes() {
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return;
 
-  // 🧹 Cancela qualquer subscription antiga com outra VAPID
-  const oldSub = await reg.pushManager.getSubscription();
-  if (oldSub) {
-    await oldSub.unsubscribe();
-    console.log("🔁 Subscription antiga removida.");
+  const antiga = await reg.pushManager.getSubscription();
+  if (antiga) {
+    await antiga.unsubscribe();
+    console.log("🧹 Subscription antiga cancelada");
   }
 
   const subscription = await reg.pushManager.subscribe({
@@ -605,7 +604,7 @@ async function ativarNotificacoes() {
     applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
   });
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens?on_conflict=entregador_id`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens?on_conflict=entregador_id`, {
     method: "POST",
     headers: {
       apikey: API_KEY,
@@ -618,7 +617,6 @@ async function ativarNotificacoes() {
       token: JSON.stringify(subscription)
     })
   });
-
   const resposta = await res.text();
   console.log("📥 Resultado do salvamento do token:", resposta);
 }
