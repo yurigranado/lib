@@ -551,7 +551,7 @@ async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
   ul.innerHTML = "";
   if (!valor) return;
 
-  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.map(id => `'${id}'`).join(',')})&select=id,nome`;
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome`;
   const res = await fetch(query, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
