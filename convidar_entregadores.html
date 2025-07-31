@@ -449,7 +449,7 @@ card.innerHTML += `
   </p>
   <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
   <div class="botoes-centro">
-    <button class="botao" onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">
+abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar}, ${JSON.stringify(diasSemana)})
       👥 Gerenciar Entregadores
     </button>
   </div>
@@ -460,7 +460,7 @@ card.innerHTML += `
 
 carregarEscalasPorRestaurante();
 
-async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo) {
+async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, diasSemana) {
   const container = document.getElementById(`alocacao_${contrato_id}`);
   container.innerHTML = `<p>Carregando entregadores...</p>`;
 
@@ -484,8 +484,7 @@ const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
 let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
 
-const diasSemana = ${JSON.stringify(diasSemana)}; // ← vem direto do contrato
-const iconesDias = {
+  const iconesDias = {
   segunda: 'Seg',
   terca: 'Ter',
   quarta: 'Qua',
