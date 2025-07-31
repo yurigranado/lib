@@ -214,12 +214,12 @@ async function carregarEntregadorId() {
     const botaoContainer = document.getElementById("blocoEscolherEmpresa");
     const botao = document.querySelector(".painel-btn");
 
-    if (!vinculos.length) {
-      // ❌ Nenhum vínculo = esconde botão
-      botaoContainer.style.display = "none";
-    } else {
-      // ✅ Tem vínculo: verifica pendente
-      botaoContainer.style.display = "block";
+const temAtivoOuPendente = vinculos.some(v => v.status === "ativo" || v.status === "pendente");
+
+if (!temAtivoOuPendente) {
+  botaoContainer.style.display = "none";
+} else {
+  botaoContainer.style.display = "block";
 
       const temPendente = vinculos.some(v => v.status === "pendente");
 
