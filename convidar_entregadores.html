@@ -449,7 +449,7 @@ card.innerHTML += `
   </p>
   <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
   <div class="botoes-centro">
-abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar}, ${JSON.stringify(diasSemana)})
+    <button class="botao" onclick='abrirEscala("${contrato.id}", "${empresa.nome}", ${config.turno_almoco}, ${config.turno_jantar}, ${JSON.stringify(diasSemana)})'>
       👥 Gerenciar Entregadores
     </button>
   </div>
