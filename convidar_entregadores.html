@@ -537,7 +537,8 @@ html += `
     <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
   </div>
 </form>`;
-
+  
+container.innerHTML = html;
 
 async function salvarEscalaPorSemana(event, contrato_id) {
   event.preventDefault();
