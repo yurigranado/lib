@@ -273,6 +273,9 @@
 
     document.getElementById("tituloPainel").innerText = `${localStorage.getItem("terceirizada_nome") || "Lib"} | Painel`;
 
+    function normalizarDia(dia) {
+  return dia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
     function sair() {
       localStorage.removeItem("terceirizada_id");
       localStorage.removeItem("terceirizada_nome");
