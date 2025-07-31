@@ -5,153 +5,197 @@
 <title>Convidar Entregadores</title>							   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <style>
-    :root {
-      --cor-principal: #2e7d32;
-      --cor-fundo: #121212;
-      --blur: rgba(255, 255, 255, 0.06);
-    }
+<style>
+  :root {
+    --cor-principal: #2e7d32;
+    --cor-fundo: #121212;
+    --blur: rgba(255, 255, 255, 0.06);
+  }
 
-    * {
-      box-sizing: border-box;
-    }
+  * {
+    box-sizing: border-box;
+  }
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
-    }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: url('https://i.imgur.com/lQBNt2B.png') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+  }
 
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: var(--blur);
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 30px;
-      z-index: 1000;
-    }
+  header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: var(--blur);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 30px;
+    z-index: 1000;
+  }
 
-    header h1 {
-      font-size: 22px;
-      margin: 0;
-    }
+  header h1 {
+    font-size: 22px;
+    margin: 0;
+  }
 
-    nav a {
-      margin: 0 12px;
-      color: white;
-      text-decoration: none;
-      font-weight: 500;
-      transition: 0.3s;
-    }
+  nav a {
+    margin: 0 12px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+  }
 
-    nav a:hover {
-      color: #90ee90;
-    }
+  nav a:hover {
+    color: #90ee90;
+  }
 
-    .conteudo {
-      padding: 100px 5vw 40px;
-    }
+  .conteudo {
+    padding: 100px 5vw 40px;
+  }
 
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-	  color: #fff;
-      font-weight: 600;
-    }
+  h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #fff;
+    font-weight: 600;
+  }
 
-.card {
-  background: rgba(255, 255, 255, 0.06);
-  padding: 20px;
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-  margin-bottom: 24px;
-  flex: 1 1 360px;
-  min-width: 360px;
-}
+  .grid {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
 
-    label, select, input {
-      font-size: 16px;
-      display: block;
-      margin-bottom: 10px;
-      width: 100%;
-    }
+  .card {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    margin-bottom: 24px;
+    flex: 1 1 360px;
+    min-width: 360px;
+  }
 
-    input, select {
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-    }
+  label, select, input {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 10px;
+    width: 100%;
+  }
 
-    button {
-      padding: 10px 16px;
-      background: #43a047;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+  input, select {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+  }
 
-    .resultado {
-      margin-top: 20px;
-    }
+  .resultado {
+    margin-top: 20px;
+  }
 
-    .entregador {
-      background: rgba(255,255,255,0.05);
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
+  .entregador {
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
 
-    .entregador p {
-      margin: 4px 0;
-    }
-.grid {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-	  .botao {
-  margin: 12px auto 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  padding: 10px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: all 0.25s ease-in-out;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-}
+  .entregador p {
+    margin: 4px 0;
+  }
 
-.botao:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: scale(1.03);
-  border-color: rgba(255,255,255,0.3);
-}
+  /* 🌟 Botões modernos */
+  .botao {
+    margin: 12px auto 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    padding: 10px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  }
 
-.botoes-centro {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-  </style>
+  .botao:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.03);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .botoes-centro {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  /* 📊 Tabela estilo dashboard */
+  .tabela-escalas {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    color: white;
+  }
+
+  .tabela-escalas th,
+  .tabela-escalas td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 15px;
+  }
+
+  .tabela-escalas th {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .tabela-escalas tr:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* 🟢 Badges */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 13px;
+    color: white;
+  }
+
+  .status-ativo {
+    background: #66bb6a;
+  }
+
+  .status-pendente {
+    background: #ffa726;
+  }
+
+  .status-recusado {
+    background: #ef5350;
+  }
+</style>
 </head>
 <body>
 
@@ -170,10 +214,11 @@
     ">Sair</button>
   </header>
 
-<div class="conteudo">
-  <div class="grid">
-    <!-- 🔍 Busca -->
+  <div class="conteudo painel-central">
+    
+    <!-- 🔍 Filtro de busca -->
     <div class="card">
+      <h2 style="margin-top: 0;">🔍 Buscar Entregador</h2>
       <label for="tipoBusca">Buscar por:</label>
       <select id="tipoBusca">
         <option value="nome">Nome</option>
@@ -181,12 +226,13 @@
         <option value="telefone">Telefone</option>
       </select>
       <input type="text" id="valorBusca" placeholder="Digite o valor...">
-<div class="botoes-centro">
-  <button onclick="buscarEntregador()" class="botao">🔍 Buscar</button>
-</div>      <div id="resultado" class="resultado"></div>
+      <div class="botoes-centro">
+        <button onclick="buscarEntregador()" class="botao">🔍 Buscar</button>
+      </div>
+      <div id="resultado" class="resultado"></div>
     </div>
 
-    <!-- ✅ Entregadores Vinculados -->
+    <!-- ✅ Lista de Entregadores Vinculados -->
     <div class="card">
       <h2 style="margin-top: 0;">✅ Entregadores Vinculados</h2>
       <div id="vinculados"></div>
@@ -199,9 +245,8 @@
         <p>Carregando contratos ativos...</p>
       </div>
     </div>
-  </div>
-</div>
 
+  </div> <!-- Fim .painel-central -->
   <script>
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
@@ -298,8 +343,10 @@ async function carregarVinculados() {
   });
 
   const vinculados = await res.json();
+  const cont = document.getElementById("vinculados");
+
   if (!vinculados.length) {
-    document.getElementById("vinculados").innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
+    cont.innerHTML = "<p>Nenhum entregador vinculado ainda.</p>";
     return;
   }
 
@@ -309,24 +356,46 @@ async function carregarVinculados() {
   });
 
   const entregadores = await res2.json();
-  const cont = document.getElementById("vinculados");
-  cont.innerHTML = "";
+  if (!entregadores.length) {
+    cont.innerHTML = "<p>Erro ao carregar dados dos entregadores.</p>";
+    return;
+  }
 
-  entregadores.forEach(ent => {
+  let html = `
+    <table class="tabela-escalas">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Telefone</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  for (const ent of entregadores) {
     const status = vinculados.find(v => v.entregador_id === ent.id)?.status || "desconhecido";
-    const cor = status === "ativo" ? "#66bb6a" : "#ffa726"; // verde ou laranja
+    const badgeClass =
+      status === "ativo" ? "status-ativo" :
+      status === "pendente" ? "status-pendente" :
+      "status-recusado";
 
-    const div = document.createElement("div");
-    div.className = "entregador";
-    div.innerHTML = `
-      <p><strong>Nome:</strong> ${ent.nome}</p>
-      <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
-      <p><strong>Status:</strong> <span style="color:${cor};font-weight:bold;">${status}</span></p>
+    const telefone = `(${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}`;
+
+    html += `
+      <tr>
+        <td>${ent.nome}</td>
+        <td>${telefone}</td>
+        <td><span class="status-badge ${badgeClass}">${status}</span></td>
+      </tr>
     `;
-    cont.appendChild(div);
-  });
+  }
+
+  html += `</tbody></table>`;
+  cont.innerHTML = html;
 }
-    carregarVinculados();
+
+carregarVinculados();
 
 async function carregarEscalasPorRestaurante() {
   const resContratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=id,empresa_id`, {
