@@ -468,44 +468,36 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   const container = document.getElementById(`alocacao_${contrato_id}`);
   container.innerHTML = `<p>Carregando entregadores...</p>`;
 
+  // Buscar entregadores vinculados ativos
   const resVinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const vinculados = await resVinculos.json();
-  const listaIDs = vinculados.map(v => v.entregador_id).join(",");
-
-  if (!listaIDs) {
+  const listaIDs = vinculados.map(v => v.entregador_id);
+  if (!listaIDs.length) {
     container.innerHTML = "<p>Nenhum entregador ativo para alocar.</p>";
     return;
   }
 
-  const resEnt = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const entregadores = await resEnt.json();
+  // HTML base
+  let html = `
+    <h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
+    <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">
 
-  let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
-  <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
+    <label style="display:block;margin-bottom:6px;">👤 Buscar Entregador</label>
+    <input type="text" id="busca_${contrato_id}" placeholder="Digite o nome..." oninput="filtrarSugestoes(this.value, '${contrato_id}', [${listaIDs.map(id => `'${id}'`).join(',')}])" style="padding:8px;border-radius:6px;border:none;width:100%;max-width:400px;margin-bottom:10px;">
 
-  // Mostrar os entregadores no topo
-  html += `<label style="margin-bottom:6px;display:block;">👤 Entregadores</label>
-  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">`;
+    <ul id="sugestoes_${contrato_id}" style="list-style:none;padding:0;margin:0 0 10px;"></ul>
+    <div id="selecionados_${contrato_id}" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;"></div>
+  `;
 
-  for (const ent of entregadores) {
-    html += `
-      <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-        <input type="checkbox" name="entregador_selecionado" value="${ent.id}">
-        ${ent.nome}
-      </label>`;
-  }
-
-  html += `</div>`;
-
+  // Dicionário de dias
   const iconesDias = {
     segunda: 'Seg', terça: 'Ter', quarta: 'Qua', quinta: 'Qui',
     sexta: 'Sex', sábado: 'Sáb', domingo: 'Dom'
   };
 
+  // Dias por turno
   html += `<div style="display: flex; gap: 24px; flex-wrap: wrap;">`;
 
   for (const turno of ['almoco', 'jantar']) {
@@ -537,6 +529,39 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   </form>`;
 
   container.innerHTML = html;
+}
+  async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
+  const ul = document.getElementById(`sugestoes_${contrato_id}`);
+  ul.innerHTML = "";
+  if (!valor) return;
+
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.map(id => `'${id}'`).join(',')})&select=id,nome`;
+  const res = await fetch(query, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const lista = await res.json();
+
+  lista.forEach(ent => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span style="cursor:pointer;padding:6px;display:block;">${ent.nome}</span>`;
+    li.onclick = () => adicionarEntregadorSelecionado(contrato_id, ent);
+    ul.appendChild(li);
+  });
+}
+
+function adicionarEntregadorSelecionado(contrato_id, ent) {
+  const cont = document.getElementById(`selecionados_${contrato_id}`);
+  if (document.getElementById(`entregador_${contrato_id}_${ent.id}`)) return;
+
+  const div = document.createElement("div");
+  div.id = `entregador_${contrato_id}_${ent.id}`;
+  div.innerHTML = `
+    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+      <input type="hidden" name="entregador_selecionado" value="${ent.id}">
+      ${ent.nome}
+      <button onclick="this.parentElement.parentElement.remove()" style="color:red;background:none;border:none;font-weight:bold;cursor:pointer;">✖</button>
+    </label>`;
+  cont.appendChild(div);
 }
 
 async function salvarEscalaPorSemana(event, contrato_id) {
