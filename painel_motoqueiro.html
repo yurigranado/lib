@@ -598,7 +598,7 @@ async function ativarNotificacoes() {
     applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
   });
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens`, {
+const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens?on_conflict=entregador_id`, {
   method: "POST",
   headers: {
     apikey: API_KEY,
