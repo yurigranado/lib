@@ -660,8 +660,8 @@ const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terc
   for (const dia of diasSemana) {
     let linha = "";
     for (const turno of turnos) {
-      const qtd = config[`qtd_${dia}_${turno}`];
-      if (!qtd) continue;
+const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
+if (qtd <= 0) continue;
 
       const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
