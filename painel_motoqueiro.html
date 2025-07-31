@@ -367,8 +367,8 @@ function fecharModalEmpresas() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          entregador_id: login,
-          terceirizada_id,
+    entregador_id,
+    terceirizada_id,
           data_inicio: new Date().toISOString(),
           ativo: true
         })
