@@ -366,24 +366,40 @@ const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
   let html = `<h3 style="margin-top: 10px;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarAlocacoes(event, '${contrato_id}')">`;
 
-  for (const turno of ["almoco", "jantar"]) {
-    if ((turno === "almoco" && !almocoAtivo) || (turno === "jantar" && !jantarAtivo)) continue;
+html += `
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;">
+    <thead>
+      <tr style="background:#ffffff10;">
+        <th style="text-align:left;padding:8px;">Entregador</th>
+        ${almocoAtivo ? '<th style="text-align:center;">☀️ Almoço</th>' : ''}
+        ${jantarAtivo ? '<th style="text-align:center;">🌙 Jantar</th>' : ''}
+      </tr>
+    </thead>
+    <tbody>
+`;
 
-    html += `<p><strong>${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}:</strong></p><div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;">`;
+for (const ent of entregadores) {
+  html += `<tr style="border-bottom:1px solid #ffffff11;">`;
+  html += `<td style="padding:8px;">${ent.nome}</td>`;
 
-    for (const ent of entregadores) {
-      const checked = estaAlocado(ent.id, turno) ? "checked" : "";
-      html += `
-        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-          <input type="checkbox" name="alocar_${turno}" value="${ent.id}" ${checked}>
-          ${ent.nome}
-        </label>`;
-    }
-
-    html += "</div>";
+  if (almocoAtivo) {
+    const checked = estaAlocado(ent.id, "almoco") ? "checked" : "";
+    html += `<td style="text-align:center;"><input type="checkbox" name="alocar_almoco" value="${ent.id}" ${checked}></td>`;
   }
 
-  html += `<button type="submit" style="margin-top:10px;">💾 Salvar Alocações</button></form>`;
+  if (jantarAtivo) {
+    const checked = estaAlocado(ent.id, "jantar") ? "checked" : "";
+    html += `<td style="text-align:center;"><input type="checkbox" name="alocar_jantar" value="${ent.id}" ${checked}></td>`;
+  }
+
+  html += `</tr>`;
+}
+
+html += `
+    </tbody>
+  </table>
+  <button type="submit" style="margin-top:12px;">💾 Salvar Alocações</button>
+</form>`;
   container.innerHTML = html;
 }
 
