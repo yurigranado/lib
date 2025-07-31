@@ -349,8 +349,8 @@ function fecharModalEmpresas() {
 }
 
     async function ativarEmpresa(terceirizada_id, nome) {
-      await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${login}&ativo=is.true`, {
-        method: "PATCH",
+      await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${login}&ativo=eq.true`, {
+  method: "PATCH",
         headers: {
           apikey: API_KEY,
           Authorization: `Bearer ${API_KEY}`,
