@@ -1,197 +1,633 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <base target="_top">
-  <title>Login Motoqueiro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Motoqueiro</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #003366;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    #painelContainer {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #5fdfb8, #7db7ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-y: auto;
+  border: 6px solid white; /* 👈 moldura branca */
+  box-sizing: border-box;  /* 👈 garante que a borda não estoure o layout */
+}    
+    
+    #nomeEntregador {
+      color: white;
+      font-size: 1em;
+      margin: 6px 0 -4px;
+      text-align: center;
+    }
+    .painel-btn {
+      background: white;
+      padding: 14px 24px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin: 12px 0;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    #empresaAtiva {
+      font-size: 1em;
+      margin: 10px 0;
+      color: white;
+      text-align: center;
+    }
+  #modalEmpresas .box {
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    max-width: 380px;
+    width: 90%;
+    color: #003366;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    animation: fadeIn 0.3s ease;
+    margin: 60px 16px auto;
+  }
 
-  <!-- Manifesto PWA -->
-<link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#5fdfb8">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3468/3468379.png" type="image/png">
-  <link rel="apple-touch-icon" href="https://i.imgur.com/zVxP1A2.png">
+  #modalEmpresas h3 {
+    margin-top: 0;
+    font-size: 1.4em;
+    color: #003366;
+    margin-bottom: 20px;
+  }
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
-<style>
-  :root { --escala: 1.3; }
-  * { box-sizing: border-box; }
-  body {
+  #listaEmpresasVinculadas p {
     margin: 0;
-    padding: 0;
-    height: 100vh;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #5fdfb8, #7db7ff);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .login-container {
-    width: calc(var(--escala) * 250px);
-    max-width: 100%;
-    background: rgba(255, 255, 255, 0.2);
-    padding: calc(var(--escala) * 24px);
-    border-radius: calc(var(--escala) * 16px);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(12px);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .logo {
-    width: 100px;
-    height: 100px;
-    background: white;
-    border-radius: 50%;
-    margin: 30px auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
-  .logo img {
-    width: 300%;
-    height: 300%;
-    object-fit: contain;
-  }
-  label {
-    font-size: calc(var(--escala) * 14px);
-    align-self: flex-start;
-    margin-bottom: calc(var(--escala) * 4px);
-    color: white;
-  }
-  input {
-    width: 100%;
-    padding: calc(var(--escala) * 12px);
-    font-size: calc(var(--escala) * 14px);
-    border: none;
-    border-bottom: 2px solid white;
-    background: transparent;
-    color: white;
-    outline: none;
-    margin-bottom: calc(var(--escala) * 16px);
-  }
-  input::placeholder {
-    color: rgba(255, 255, 255, 0.75);
-  }
-  button {
-    width: 100%;
-    padding: calc(var(--escala) * 12px);
-    margin-top: calc(var(--escala) * 20px);
-    border: none;
-    border-radius: calc(var(--escala) * 30px);
-    font-size: calc(var(--escala) * 16px);
     font-weight: bold;
-    background: white;
-    color: #333;
+    color: #003366;
+  }
+
+  #listaEmpresasVinculadas button {
+    display: inline-block;
+    margin: 10px 6px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #listaEmpresasVinculadas button:first-of-type {
+    background: #c8f7c5;
+    color: #2e7d32;
+  }
+
+  #listaEmpresasVinculadas button:first-of-type:hover {
+    background: #b3efb0;
+  }
+
+  #listaEmpresasVinculadas button:nth-of-type(2) {
+    background: #ffe1e1;
+    color: #c62828;
+  }
+
+  #listaEmpresasVinculadas button:nth-of-type(2):hover {
+    background: #ffcccc;
+  }
+
+  .cancelar-btn {
+    margin-top: 15px;
+    background: transparent;
+    color: #666;
+    font-size: 0.9em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 8px 16px;
     cursor: pointer;
   }
-  button:hover {
-    background: #e1e1e1;
+
+  .cancelar-btn:hover {
+    background: #f5f5f5;
   }
-  #msg {
-    text-align: center;
-    margin-top: calc(var(--escala) * 16px);
-    font-size: calc(var(--escala) * 14px);
-    color: #fff3f3;
-    display: none;
+    #modalEmpresas {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+    
+#headerTopo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 500px; /* ou o mesmo valor usado no container */
+  padding: 0 16px;
+  margin-bottom: 4px;
+  color: white;
+}
+    
+#btnSair {
+  background: transparent;
+  border: none;
+  font-size: 1.4em;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.2s ease;
+}
+
+#btnSair:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+
+    #topoUsuario {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 16px;
+  margin-bottom: 8px;
+  color: white;
+  font-size: 1em;
+}
+
+#topoUsuario #btnSair {
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: white;
+  padding: 0;
+  margin-left: 12px;
+  transition: transform 0.2s ease;
+}
+
+#topoUsuario #btnSair:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
+}
+    .tabela-escala-entregador {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 340px;
+  margin: 12px auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: white;
+  font-size: 15px;
+  text-align: left;
+}
+
+.tabela-escala-entregador table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-escala-entregador th,
+.tabela-escala-entregador td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.tabela-escala-entregador th {
+  font-weight: bold;
+}
+
+    .bloco-escala-detalhada {
+  background: rgba(255,255,255,0.12);
+  padding: 12px 16px;
+  border-radius: 10px;
+  max-width: 360px;
+  margin: 16px auto;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.bloco-escala-detalhada summary {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.bloco-escala-detalhada summary::-webkit-details-marker {
+  display: none;
+}
+    
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
   }
-</style>
+
+/* 🔧 Remover sombra azul ou qualquer highlight de toque/foco */
+button, input, select, textarea {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent; /* remove highlight azul em dispositivos móveis */
+  -webkit-focus-ring-color: transparent; /* remove borda azul no Safari */
+}
+
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}    
+  </style>
 </head>
 <body>
+<div id="painelContainer">
+<div id="topoUsuario">
+  <span id="nomeEntregador">Carregando nome...</span>
 
-  <div class="login-container">
-    <div class="logo">
-      <img src="https://i.imgur.com/VpQtXGy.png" alt="Logo Motoqueiro">
-    </div>
+  <img src="https://i.imgur.com/Q1sC9ei.png" alt="Logo" style="height: 28px; margin: 0 12px;" />
 
-    <form id="f">
-<label for="login">CPF:</label>
-<input id="login" type="text" inputmode="numeric" placeholder="000.000.000-00" required>
+  <button onclick="logout()" id="btnSair" title="Sair" style="margin-top: 8px;">🚪Logout</button>
+</div>
 
-      <label for="senha">Senha:</label>
-<input id="senha" type="password" inputmode="numeric" placeholder="Digite sua senha" required>
-      <button type="submit">Entrar</button>
-      
-      <button type="button" onclick="window.location.href='cadastro_entregador.html'" style="background: transparent; color: white; margin-top: 12px; font-size: 14px; border: 1px solid white;">
-  Criar minha conta
-</button>
-      <div id="msg"></div>
-    </form>
+  <!-- Empresa + Botão lado a lado -->
+<div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+  <div id="blocoEscolherEmpresa" style="display: none;">
+    <button class="painel-btn" onclick="abrirSelecaoEmpresa()">Carregando.</button>
+  </div>
+  <p id="empresaAtiva" style="margin: 0;">Empresa: carregando...</p>
+</div>
+
+  <!-- Bloco da escala abaixo -->
+  <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
+    Carregando escala...
   </div>
 
-<script>
-  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-  // Se já estiver logado e a sessão ainda estiver válida, redireciona direto para o painel
-const login = localStorage.getItem("login_motoqueiro");
-const expira = localStorage.getItem("login_expira_em");
+  <div id="modalEmpresas">
+    <div class="box">
+      <h3>👥 Convites Pendentes</h3>
+      <div id="listaEmpresasVinculadas">Carregando...</div>
+      <button class="cancelar-btn" onclick="fecharModalEmpresas()">✖️ Fechar</button>
+    </div>
+  </div>
+</div>
+  <script>
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
-if (login && expira && Date.now() < parseInt(expira)) {
-  window.location.href = "painel_motoqueiro.html";
-}
-  
-  function md5(str) {
-    return CryptoJS.MD5(str).toString();
+  const login = localStorage.getItem("login_motoqueiro");
+  const expiracao = localStorage.getItem("login_expira_em");
+
+  // 🔐 Verifica se o login está presente e se ainda não expirou
+  if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
+    localStorage.removeItem("login_motoqueiro");
+    localStorage.removeItem("login_expira_em");
+    window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
   }
 
-  document.getElementById("login").addEventListener("input", (e) => {
-  let v = e.target.value.replace(/\D/g, '').slice(0, 11);
-  v = v.replace(/(\d{3})(\d)/, "$1.$2");
-  v = v.replace(/(\d{3})(\d)/, "$1.$2");
-  v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  e.target.value = v;
-});
-  
-  document.getElementById('f').addEventListener('submit', async (e) => {
-    e.preventDefault();
-const cpf = document.getElementById('login').value.replace(/\D/g, '');
-    const senha = md5(document.getElementById('senha').value.trim());
-    const msg = document.getElementById('msg');
+  let entregador_id = null;
 
-    if (!cpf || !senha) {
-      msg.innerText = 'Preencha todos os campos.';
-      msg.style.display = "block";
-      return;
-    }
+async function carregarEntregadorId() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const dados = await res.json();
 
-      // 👇 Adicione aqui
-  console.log("🔐 CPF usado:", cpf);
-  console.log("🔐 Senha MD5:", senha);
+  if (dados.length > 0) {
+    entregador_id = dados[0].id;
+    document.getElementById("nomeEntregador").innerText = dados[0].nome;
 
-const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${cpf}&senha=eq.${senha}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
+    await verificarEmpresaAtiva(); // já atualiza o texto do painel
+    await carregarEscalaSemanal(); // carrega a escala logo após login
+    await ativarNotificacoes(); // 👈 aqui
+
+    // 🔍 Verifica vínculos existentes
+    const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
+    const vinculos = await vinculosRes.json();
 
-    const dados = await res.json();
-    if (dados.length === 1) {
-      const entregador = dados[0];
-localStorage.setItem("login_motoqueiro", entregador.cpf);
-      localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
-      window.location.href = "painel_motoqueiro.html";
-    } else {
-      msg.innerText = "❌ CPF ou senha inválidos.";
-      msg.style.display = "block";
+    const botaoContainer = document.getElementById("blocoEscolherEmpresa");
+    const botao = document.querySelector(".painel-btn");
+
+const temAtivoOuPendente = vinculos.some(v => v.status === "ativo" || v.status === "pendente");
+
+if (!temAtivoOuPendente) {
+  botaoContainer.style.display = "none";
+} else {
+  botaoContainer.style.display = "block";
+
+      const temPendente = vinculos.some(v => v.status === "pendente");
+
+      if (temPendente) {
+        botao.innerText = "📬 Convite Pendente! Verificar";
+        botao.style.background = "#ffd54f";
+        botao.style.color = "#000";
+        botao.style.border = "2px solid #ffa000";
+        botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
+      } else {
+        botao.innerText = "🔄";
+        botao.style.background = "white";
+        botao.style.color = "#000";
+        botao.style.border = "none";
+        botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+      }
     }
+
+  } else {
+    document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
+    document.getElementById("blocoEscolherEmpresa").style.display = "none";
+  }
+}
+
+async function abrirSelecaoEmpresa() {
+  const container = document.getElementById("listaEmpresasVinculadas");
+  container.innerHTML = "<p>Carregando empresas vinculadas...</p>";
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const lista = await res.json();
+  container.innerHTML = "";
+
+  if (!lista.length) {
+    container.innerHTML = "<p>Você ainda não está vinculado a nenhuma empresa.</p>";
+    return;
+  }
+
+  let temPendente = false;
+
+  for (const item of lista) {
+    const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = (await empRes.json())[0];
+    const status = item.status;
+
+    const div = document.createElement("div");
+    div.style.marginBottom = "12px";
+
+    if (status === "ativo") {
+      const btn = document.createElement("button");
+      btn.innerText = `✅ Ativar ${empresa.nome}`;
+      btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
+      div.appendChild(btn);
+    } else if (status === "pendente") {
+      temPendente = true;
+      div.innerHTML = `
+        <p><strong>Convite:</strong> ${empresa.nome}</p>
+        <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
+        <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
+      `;
+    }
+
+    container.appendChild(div);
+  }
+
+  document.getElementById("modalEmpresas").style.display = "flex";
+
+  // 🔔 Atualiza o botão principal conforme status
+  const botao = document.querySelector(".painel-btn");
+  if (temPendente) {
+    botao.innerText = "📬 Convite Pendente! Verificar";
+    botao.style.background = "#ffd54f";
+    botao.style.color = "#000";
+    botao.style.border = "2px solid #ffa000";
+    botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
+  } else {
+    botao.innerText = "🔄";
+    botao.style.background = "white";
+    botao.style.color = "#000";
+    botao.style.border = "none";
+    botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+  }
+}
+
+function fecharModalEmpresas() {
+  document.getElementById("modalEmpresas").style.display = "none";
+}
+
+async function ativarEmpresa(terceirizada_id, nome) {
+  await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ ativo: false })
   });
 
-  window.addEventListener("DOMContentLoaded", () => {
-    const url = new URL(window.location.href);
-    const mensagem = url.searchParams.get("msg");
-    const msg = document.getElementById("msg");
-    if (mensagem === "sessao_expirada") {
-      msg.innerText = "⚠️ Sua sessão expirou. Faça login novamente.";
-      msg.style.display = "block";
-    }
+  await fetch(`${SUPABASE_URL}/rest/v1/status_entregador`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      entregador_id,
+      terceirizada_id,
+      data_inicio: new Date().toISOString(),
+      ativo: true
+    })
   });
-</script>
 
+location.reload();
+}
+
+async function verificarEmpresaAtiva() {
+  if (!entregador_id) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const data = await res.json();
+
+  if (data.length > 0) {
+    const id = data[0].terceirizada_id;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = (await r.json())[0];
+    document.getElementById('empresaAtiva').innerText = `Empresa: ${empresa.nome}`;
+    document.getElementById('blocoEscolherEmpresa').style.display = "none";
+  } else {
+document.getElementById('empresaAtiva').innerText = `Nenhuma empresa ativa no momento`;
+
+// Oculta o botão por padrão
+document.getElementById('blocoEscolherEmpresa').style.display = "none";
+  }
+}
+    async function aceitarConvite(terceirizada_id, nome) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&terceirizada_id=eq.${terceirizada_id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status: "ativo", data_aceite: new Date().toISOString() })
+  });
+
+  if (res.ok) {
+    alert(`✅ Você aceitou o convite da empresa "${nome}".`);
+    abrirSelecaoEmpresa();
+  } else {
+    alert("❌ Erro ao aceitar o convite.");
+  }
+}
+
+    function logout() {
+  localStorage.removeItem("login_motoqueiro");
+  localStorage.removeItem("login_expira_em");
+  window.location.href = "login_motoqueiro.html";
+}
+
+async function recusarConvite(terceirizada_id) {
+  if (!confirm("Deseja recusar o convite desta empresa?")) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&terceirizada_id=eq.${terceirizada_id}`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status: "recusado" })
+  });
+
+  if (res.ok) {
+    alert("❌ Convite recusado.");
+    abrirSelecaoEmpresa();
+  } else {
+    alert("❌ Erro ao recusar o convite.");
+  }
+}
+  document.addEventListener("DOMContentLoaded", carregarEntregadorId);
+    
+    async function carregarEscalaSemanal() {
+  const container = document.getElementById("blocoEscalaEntregador");
+  container.innerHTML = "Carregando escala...";
+
+  const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+
+  const empresaData = await empresaRes.json();
+  if (!empresaData.length) {
+    container.innerHTML = "❌ Nenhuma empresa ativa.";
+    return;
+  }
+
+  const terceirizada_id = empresaData[0].terceirizada_id;
+
+  const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&select=dia_semana,turno,contrato_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+
+  const escala = await escalaRes.json();
+  if (!escala.length) {
+    container.innerHTML = "⚠️ Você ainda não está escalado para nenhum turno.";
+    return;
+  }
+
+  // Organiza por dia da semana
+  const dias = ['segunda','terça','quarta','quinta','sexta','sábado','domingo'];
+  const turnos = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
+  const organizado = {};
+
+  for (const item of escala) {
+    if (!organizado[item.dia_semana]) organizado[item.dia_semana] = [];
+    organizado[item.dia_semana].push(turnos[item.turno] || item.turno);
+  }
+
+let html = `
+  <details class="bloco-escala-detalhada">
+    <summary>Escala da Semana</summary>
+    <div class="tabela-escala-entregador">
+      <table>
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Turno(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+`;
+
+for (const dia of dias) {
+  if (organizado[dia]) {
+    const nomeDia = dia.charAt(0).toUpperCase() + dia.slice(1);
+    html += `<tr><td>${nomeDia}</td><td>${organizado[dia].join(" + ")}</td></tr>`;
+  }
+}
+
+html += `
+        </tbody>
+      </table>
+    </div>
+  </details>
+`;
+
+container.innerHTML = html;
+}
+
+const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
+
+async function ativarNotificacoes() {
+  const reg = await navigator.serviceWorker.register("service-worker.js");
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") return;
+
+  const antiga = await reg.pushManager.getSubscription();
+  if (antiga) {
+    await antiga.unsubscribe();
+    console.log("🧹 Subscription antiga cancelada");
+  }
+
+  const subscription = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+  });
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens?on_conflict=entregador_id`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates"
+    },
+    body: JSON.stringify({
+      entregador_id: entregador_id,
+      token: JSON.stringify(subscription)
+    })
+  });
+  const resposta = await res.text();
+  console.log("📥 Resultado do salvamento do token:", resposta);
+}
+    
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return new Uint8Array([...raw].map(char => char.charCodeAt(0)));
+}
+
+  </script>
 </body>
 </html>
