@@ -118,6 +118,37 @@
   align-items: flex-start;
   flex-wrap: wrap;
 }
+	  .botao {
+  margin: 12px auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: all 0.25s ease-in-out;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.botao:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(1.03);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.botoes-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
   </style>
 </head>
 <body>
@@ -148,8 +179,9 @@
         <option value="telefone">Telefone</option>
       </select>
       <input type="text" id="valorBusca" placeholder="Digite o valor...">
-      <button onclick="buscarEntregador()">🔍 Buscar</button>
-      <div id="resultado" class="resultado"></div>
+<div class="botoes-centro">
+  <button onclick="buscarEntregador()" class="botao">🔍 Buscar</button>
+</div>      <div id="resultado" class="resultado"></div>
     </div>
 
     <!-- ✅ Entregadores Vinculados -->
@@ -323,8 +355,14 @@ async function carregarEscalasPorRestaurante() {
 
 card.innerHTML += `
   <div id="alocacao_${contrato.id}" style="margin-top: 16px;"></div>
-  <button onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">
+<div class="botoes-centro">
+  <button
+    class="botao"
+    onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})"
+  >
     👥 Gerenciar Entregadores
+  </button>
+</div>    👥 Gerenciar Entregadores
   </button>
 `;
     container.appendChild(card);
@@ -398,8 +436,9 @@ for (const ent of entregadores) {
 html += `
     </tbody>
   </table>
-  <button type="submit" style="margin-top:12px;">💾 Salvar Alocações</button>
-</form>`;
+<div class="botoes-centro">
+  <button type="submit" class="botao">💾 Salvar Alocações</button>
+</div></form>`;
   container.innerHTML = html;
 }
 
