@@ -546,7 +546,7 @@ async function recusarConvite(terceirizada_id) {
   }
 
   // Organiza por dia da semana
-  const dias = ['segunda','terça','quarta','quinta','sexta','sábado','domingo'];
+  const dias = ['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
   const turnos = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
   const organizado = {};
 
@@ -571,7 +571,17 @@ let html = `
 
 for (const dia of dias) {
   if (organizado[dia]) {
-    const nomeDia = dia.charAt(0).toUpperCase() + dia.slice(1);
+    const nomesDiasFormatados = {
+  segunda: "Segunda",
+  terca: "Terça",
+  quarta: "Quarta",
+  quinta: "Quinta",
+  sexta: "Sexta",
+  sabado: "Sábado",
+  domingo: "Domingo"
+};
+
+const nomeDia = nomesDiasFormatados[dia] || dia;
     html += `<tr><td>${nomeDia}</td><td>${organizado[dia].join(" + ")}</td></tr>`;
   }
 }
