@@ -5,8 +5,8 @@ const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
 const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
 // ✅ Chaves VAPID (versão base64 segura - já gerada corretamente)
-const VAPID_PUBLIC_KEY = "BMRrdiNvX8iJPdP2qt9Az4IkTQotwxIp5wQ8NU6X7TGvMYV9UJGyaZbAcxZ61hMyZTx5XasEcocgmFdFV0JJdfI";
-const VAPID_PRIVATE_KEY = "u9QKqNp3_2qDGSW-BBDzvj3o2D7sAqFUs5zt2QlfkaI";
+const VAPID_PUBLIC_KEY = "BOV6dKMKXWZLUcB3qkiPax5y25Lo7urUp7yt5GqahFb4YmAqSgV1bgOmrF-xOIGPw3VsZ4MsX8RoI9rfdME9K8Y";
+const VAPID_PRIVATE_KEY = "NRAKsb0j9DH2p_mFnfMHe-d_YTf4JVGijWw9e3GOyJg";
 
 webpush.setVapidDetails(
   "mailto:suporte@lib.com.br",
