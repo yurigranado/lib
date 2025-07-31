@@ -342,7 +342,7 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo) {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const vinculados = await resVinculos.json();
-  const listaIDs = vinculados.map(v => `'${v.entregador_id}'`).join(",");
+const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
   if (!listaIDs) {
     container.innerHTML = "<p>Nenhum entregador ativo para alocar.</p>";
