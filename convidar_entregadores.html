@@ -623,14 +623,15 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   console.log("📦 Payload para salvar:", novaEscala);
 
   // 🔥 Apaga os registros antigos
-  await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}`, {
+for (const entregador_id of entregadoresSelecionados) {
+  await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&entregador_id=eq.${entregador_id}`, {
     method: "DELETE",
     headers: {
       apikey: API_KEY,
       Authorization: `Bearer ${API_KEY}`
     }
   });
-
+}
   if (novaEscala.length > 0) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
       method: "POST",
