@@ -135,23 +135,20 @@
     
 #btnSair {
   position: fixed;
-  top: 12px;
+  top: 14px;
   right: 16px;
-  background: #e53935;
-  color: white;
+  background: transparent;
   border: none;
-  padding: 10px 18px;
-  border-radius: 50px;
-  font-weight: bold;
-  font-size: 0.9em;
+  font-size: 1.6em;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: white;
   z-index: 10000;
-  transition: background 0.3s;
+  transition: transform 0.2s ease;
 }
 
 #btnSair:hover {
-  background: #c62828;
+  transform: scale(1.2);
+  opacity: 0.8;
 }
     
   @keyframes fadeIn {
@@ -161,7 +158,7 @@
   </style>
 </head>
 <body>
-<button onclick="logout()" id="btnSair">🚪 Sair</button>
+<button onclick="logout()" id="btnSair" title="Sair">🚪</button>
   <div id="painelContainer">
     <p id="nomeEntregador">Carregando nome...</p>
     <h2>Painel do Motoqueiro</h2>
