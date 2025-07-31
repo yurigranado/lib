@@ -132,6 +132,26 @@
   justify-content: center;
   align-items: center;
 }
+    
+    #btnSair {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+    
+#btnSair:hover {
+  background: #d32f2f;
+}
+    
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to   { opacity: 1; transform: scale(1); }
@@ -139,10 +159,9 @@
   </style>
 </head>
 <body>
+  <button onclick="logout()" id="btnSair">🚪 Sair</button>
   <div id="painelContainer">
     <p id="nomeEntregador">Carregando nome...</p>
-    <button onclick="logout()" class="painel-btn">Logout</button>
-
     <h2>Painel do Motoqueiro</h2>
 
     <p id="empresaAtiva">Empresa: carregando...</p>
