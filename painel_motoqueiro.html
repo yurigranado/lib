@@ -239,15 +239,18 @@
     to   { opacity: 1; transform: scale(1); }
   }
 
-    button:focus,
-input:focus,
-a:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  box-shadow: none;
+/* 🔧 Remover sombra azul ou qualquer highlight de toque/foco */
+button, input, select, textarea {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent; /* remove highlight azul em dispositivos móveis */
+  -webkit-focus-ring-color: transparent; /* remove borda azul no Safari */
 }
-    
+
+button:focus, input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}    
   </style>
 </head>
 <body>
