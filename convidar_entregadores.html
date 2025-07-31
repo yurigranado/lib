@@ -501,7 +501,7 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
       <div style="margin-bottom: 24px;">
         <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
         <label style="margin-bottom:6px;">📅 Dias da Semana</label>
-        <div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
 
     for (const diaRaw of diasSemana) {
       const dia = (diaRaw || "").toLowerCase();
