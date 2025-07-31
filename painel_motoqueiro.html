@@ -312,6 +312,7 @@ async function carregarEntregadorId() {
 
     await verificarEmpresaAtiva(); // já atualiza o texto do painel
     await carregarEscalaSemanal(); // carrega a escala logo após login
+    await ativarNotificacoes(); // 👈 aqui
 
     // 🔍 Verifica vínculos existentes
     const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
@@ -597,20 +598,31 @@ async function ativarNotificacoes() {
     applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
   });
 
-  // Salvar no Supabase vinculado ao entregador
-const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens`, {
-  method: "POST",
-  headers: {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`,
-    "Content-Type": "application/json",
-    Prefer: "resolution=merge-duplicates"
-  },
-  body: JSON.stringify({
-    entregador_id: entregador_id,
-    token: JSON.stringify(subscription)
-  })
-});
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/notificacoes_tokens`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates"
+    },
+    body: JSON.stringify({
+      entregador_id: entregador_id,
+      token: JSON.stringify(subscription)
+    })
+  });
+
+  const resposta = await res.text();
+  console.log("📥 Resultado do salvamento do token:", resposta);
+}
+    
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  return new Uint8Array([...raw].map(char => char.charCodeAt(0)));
+}
+
   </script>
 </body>
 </html>
