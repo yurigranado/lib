@@ -443,13 +443,14 @@ async function carregarEscalasPorRestaurante() {
     const card = document.createElement("div");
     card.style = "background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 14px;";
 
+const diasSanitizados = diasSemana.map(d => `"${d}"`).join(",");
 card.innerHTML += `
   <p style="margin: 0 0 6px; font-weight: 600; font-size: 15px;">
     🍽 <span style="opacity: 0.85;">${empresa.nome}</span>
   </p>
   <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
   <div class="botoes-centro">
-    <button class="botao" onclick='abrirEscala("${contrato.id}", "${empresa.nome}", ${config.turno_almoco}, ${config.turno_jantar}, ${JSON.stringify(diasSemana)})'>
+    <button class="botao" onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar}, [${diasSanitizados}])">
       👥 Gerenciar Entregadores
     </button>
   </div>
@@ -505,12 +506,12 @@ for (const turno of ['almoco', 'jantar']) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
   `;
 
-html += `<div style="display: flex; gap: 12px; flex-wrap: wrap;">`;
+html += `<div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
 for (const dia of diasSemana) {
   html += `
     <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
       <input type="checkbox" name="dia_${turno}" value="${dia}">
-      ${iconesDias[dia]}
+      ${iconesDias[dia.toLowerCase()]}
     </label>
   `;
 }
