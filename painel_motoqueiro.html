@@ -198,24 +198,30 @@
     <span id="nomeEntregador">Carregando nome...</span>
     <button onclick="logout()" id="btnSair" title="Sair">🚪Logout</button>
   </div>
-    <h2>Painel do Motoqueiro</h2>
 
-    <p id="empresaAtiva">Empresa: carregando...</p>
-  <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">Carregando escala...</div>
+  <h2>Painel do Motoqueiro</h2>
 
-
+  <!-- Empresa + Botão lado a lado -->
+  <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+    <p id="empresaAtiva" style="margin: 0;">Empresa: carregando...</p>
     <div id="blocoEscolherEmpresa" style="display: none;">
       <button class="painel-btn" onclick="abrirSelecaoEmpresa()">Carregando.</button>
     </div>
+  </div>
 
-    <div id="modalEmpresas">
-  <div class="box">
-    <h3>👥 Convites Pendentes</h3>
-    <div id="listaEmpresasVinculadas">Carregando...</div>
-    <button class="cancelar-btn" onclick="fecharModalEmpresas()">✖️ Fechar</button>
+  <!-- Bloco da escala abaixo -->
+  <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
+    Carregando escala...
+  </div>
+
+  <div id="modalEmpresas">
+    <div class="box">
+      <h3>👥 Convites Pendentes</h3>
+      <div id="listaEmpresasVinculadas">Carregando...</div>
+      <button class="cancelar-btn" onclick="fecharModalEmpresas()">✖️ Fechar</button>
+    </div>
   </div>
 </div>
-  </div>
   <script>
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
@@ -270,7 +276,7 @@ if (!temAtivoOuPendente) {
         botao.style.border = "2px solid #ffa000";
         botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
       } else {
-        botao.innerText = "🔄 Escolher Empresa";
+        botao.innerText = "🔄";
         botao.style.background = "white";
         botao.style.color = "#000";
         botao.style.border = "none";
@@ -339,7 +345,7 @@ async function abrirSelecaoEmpresa() {
     botao.style.border = "2px solid #ffa000";
     botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
   } else {
-    botao.innerText = "🔄 Escolher Empresa";
+    botao.innerText = "🔄";
     botao.style.background = "white";
     botao.style.color = "#000";
     botao.style.border = "none";
