@@ -443,18 +443,21 @@ async function carregarEscalasPorRestaurante() {
     const card = document.createElement("div");
     card.style = "background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 14px;";
 
-const diasSanitizados = diasSemana.map(d => `'${d}'`).join(","); // usar aspas simples para JSON seguro
-card.innerHTML += `
-  <p style="margin: 0 0 6px; font-weight: 600; font-size: 15px;">
-    🍽 <span style="opacity: 0.85;">${empresa.nome}</span>
-  </p>
-  <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
-  <div class="botoes-centro">
-    <button class="botao" onclick='abrirEscala("${contrato.id}", "${empresa.nome}", ${config.turno_almoco}, ${config.turno_jantar}, [${diasSanitizados}])'>
-      👥 Gerenciar Entregadores
-    </button>
-  </div>
-`;
+    // Cria string segura para passar array de dias no botão
+    const diasSanitizados = JSON.stringify(diasSemana);
+
+    card.innerHTML += `
+      <p style="margin: 0 0 6px; font-weight: 600; font-size: 15px;">
+        🍽 <span style="opacity: 0.85;">${empresa.nome}</span>
+      </p>
+      <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
+      <div class="botoes-centro">
+        <button class="botao" onclick='abrirEscala("${contrato.id}", "${empresa.nome}", ${config.turno_almoco}, ${config.turno_jantar}, ${diasSanitizados})'>
+          👥 Gerenciar Entregadores
+        </button>
+      </div>
+    `;
+    
     container.appendChild(card);
   }
 }
@@ -470,7 +473,7 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const vinculados = await resVinculos.json();
-const listaIDs = vinculados.map(v => v.entregador_id).join(",");
+  const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
   if (!listaIDs) {
     container.innerHTML = "<p>Nenhum entregador ativo para alocar.</p>";
@@ -483,63 +486,55 @@ const listaIDs = vinculados.map(v => v.entregador_id).join(",");
   });
   const entregadores = await resEnt.json();
 
-let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
+  let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
+  <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
 
   const iconesDias = {
-  segunda: 'Seg',
-  terca: 'Ter',
-  quarta: 'Qua',
-  quinta: 'Qui',
-  sexta: 'Sex',
-  sabado: 'Sáb',
-  domingo: 'Dom'
-};
+    segunda: 'Seg', terca: 'Ter', quarta: 'Qua', quinta: 'Qui',
+    sexta: 'Sex', sabado: 'Sáb', domingo: 'Dom'
+  };
 
-for (const turno of ['almoco', 'jantar']) {
-  if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
+  for (const turno of ['almoco', 'jantar']) {
+    if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
 
-  html += `
-    <div style="margin-bottom: 24px;">
-      <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
-      
-      <label style="margin-bottom:6px;">📅 Dias da Semana</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-  `;
-
-html += `<div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
-for (const dia of diasSemana) {
-  html += `
-    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-      <input type="checkbox" name="dia_${turno}" value="${dia}">
-      ${iconesDias[dia.toLowerCase()]}
-    </label>
-  `;
-}
-html += `</div>`;
-
-  html += `<label style="margin-top:8px;">👤 Entregadores</label>
-    <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
-
-  for (const ent of entregadores) {
     html += `
-      <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-        <input type="checkbox" name="entregador_${turno}" value="${ent.id}">
-        ${ent.nome}
-      </label>
-    `;
+      <div style="margin-bottom: 24px;">
+        <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
+        <label style="margin-bottom:6px;">📅 Dias da Semana</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px;">`;
+
+    for (const diaRaw of diasSemana) {
+      const dia = (diaRaw || "").toLowerCase();
+      html += `
+        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+          <input type="checkbox" name="dia_${turno}" value="${dia}">
+          ${iconesDias[dia] || dia}
+        </label>`;
+    }
+
+    html += `</div>
+      <label style="margin-top:8px;">👤 Entregadores</label>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
+
+    for (const ent of entregadores) {
+      html += `
+        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+          <input type="checkbox" name="entregador_${turno}" value="${ent.id}">
+          ${ent.nome}
+        </label>`;
+    }
+
+    html += `</div></div>`;
   }
 
-  html += `</div></div>`;
+  html += `
+    <div class="botoes-centro">
+      <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
+    </div>
+  </form>`;
+
+  container.innerHTML = html;
 }
-
-html += `
-  <div class="botoes-centro">
-    <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
-  </div>
-</form>`;
-  
-container.innerHTML = html;
-  }
 
 async function salvarEscalaPorSemana(event, contrato_id) {
   event.preventDefault();
