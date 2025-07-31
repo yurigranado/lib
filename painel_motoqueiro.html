@@ -632,71 +632,94 @@ async function carregarTurnosDisponiveis(contrato_id) {
   const bloco = document.getElementById(`escala_${contrato_id}`);
   bloco.innerHTML = "🔎 Buscando turnos...";
 
-  const [configRes, diasRes] = await Promise.all([
-    fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
+  try {
+    // 📦 Consulta contrato com empresa_id
+    const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    }),
-    fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
+    });
+    const contratos = await contratoRes.json();
+    if (!contratos.length || !contratos[0].empresa_id) {
+      console.warn("⚠️ Contrato não possui empresa_id:", contratos);
+      bloco.innerHTML = "⚠️ Erro ao buscar informações da empresa.";
+      return;
+    }
+
+    const empresa_id = contratos[0].empresa_id;
+
+    // 📅 Dias de funcionamento
+    const diasRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${empresa_id}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    }).then(r => r.json())
-      .then(async dados => {
-        if (!dados.length) return [];
-        const empresa_id = dados[0].empresa_id;
-        const dias = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${empresa_id}`, {
+    });
+    const diasAtivos = await diasRes.json();
+    const diasPermitidos = diasAtivos.map(d => d.dia);
+    console.log("📆 Dias ativos da empresa:", diasPermitidos);
+
+    if (!diasPermitidos.length) {
+      bloco.innerHTML = "⚠️ Empresa não possui dias de funcionamento configurados.";
+      return;
+    }
+
+    // ⚙️ Configuração de quantidade por turno
+    const configRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const config = (await configRes.json())[0];
+    if (!config) {
+      bloco.innerHTML = "⚠️ Empresa ainda não configurou a escala.";
+      return;
+    }
+
+    const turnos = ["almoco", "jantar"];
+    const turnoLabel = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
+
+    // 👤 Turnos já escolhidos pelo entregador
+    const escaladoHoje = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }).then(r => r.json());
+
+    const jaEscolheu = {};
+    escaladoHoje.forEach(e => {
+      jaEscolheu[`${e.dia_semana}_${e.turno}`] = true;
+    });
+
+    let html = "";
+
+    for (const dia of diasPermitidos) {
+      let linha = "";
+      for (const turno of turnos) {
+        const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
+        if (qtd <= 0) continue;
+
+        const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
           headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
         });
-        return dias.json();
-      })
-  ]);
+        const escalados = await countRes.json();
 
-  const config = (await configRes.json())[0];
-  const diasSemana = diasRes.map(d => d.dia);
-  if (!config || !diasSemana.length) {
-    bloco.innerHTML = "⚠️ Empresa ainda não configurou a escala.";
-    return;
-  }
+        const vagasRestantes = qtd - escalados.length;
+        const conflito = jaEscolheu[`${dia}_${turno}`];
 
-  const turnos = ["almoco", "jantar"];
-  const turnoLabel = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
+        if (conflito) {
+          linha += `<p>${turnoLabel[turno]} - ❌ Conflito com outra empresa</p>`;
+        } else if (vagasRestantes > 0) {
+          linha += `<p>${turnoLabel[turno]} - ${vagasRestantes} vaga(s) 
+            <button onclick="escalarEntregador('${contrato_id}', '${dia}', '${turno}')">✅ Me escalar</button></p>`;
+        } else {
+          linha += `<p>${turnoLabel[turno]} - 🔒 Vagas esgotadas</p>`;
+        }
+      }
 
-  const escaladoHoje = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }).then(r => r.json());
-
-  let html = "";
-
-  for (const dia of diasSemana) {
-    let linha = "";
-    for (const turno of turnos) {
-      const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
-      if (qtd <= 0) continue;
-
-      const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const escalados = await countRes.json();
-
-      const vagasRestantes = qtd - escalados.length;
-      const conflito = escaladoHoje.some(e => e.dia_semana === dia && e.turno === turno);
-
-      if (conflito) {
-        linha += `<p>${turnoLabel[turno]} - ❌ Conflito com outra empresa</p>`;
-      } else if (vagasRestantes > 0) {
-        linha += `<p>${turnoLabel[turno]} - ${vagasRestantes} vaga(s) 
-        <button onclick="escalarEntregador('${contrato_id}', '${dia}', '${turno}')">✅ Me escalar</button></p>`;
-      } else {
-        linha += `<p>${turnoLabel[turno]} - 🔒 Vagas esgotadas</p>`;
+      if (linha) {
+        html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;">
+          <strong>${dia.charAt(0).toUpperCase() + dia.slice(1)}:</strong> ${linha}
+        </div>`;
       }
     }
 
-    if (linha) {
-      html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;">
-        <strong>${dia.charAt(0).toUpperCase() + dia.slice(1)}:</strong> ${linha}
-      </div>`;
-    }
+    bloco.innerHTML = html || "<p>⚠️ Nenhum turno disponível.</p>";
+  } catch (erro) {
+    console.error("❌ Erro ao carregar turnos:", erro);
+    bloco.innerHTML = "❌ Erro ao carregar turnos disponíveis.";
   }
-
-  bloco.innerHTML = html || "<p>⚠️ Nenhum turno disponível.</p>";
 }
 
     async function escalarEntregador(contrato_id, dia, turno) {
