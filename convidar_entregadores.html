@@ -597,6 +597,9 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   const turnos = ['almoco', 'jantar'];
   const novaEscala = [];
 
+  const normalizarDia = dia =>
+    dia.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
   const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_selecionado"]`)].map(e => e.value);
 
   console.log("✔️ Entregadores Selecionados:", entregadoresSelecionados);
@@ -605,12 +608,13 @@ async function salvarEscalaPorSemana(event, contrato_id) {
     const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
 
     diasSelecionados.forEach(dia => {
+      const diaFormatado = normalizarDia(dia);
       entregadoresSelecionados.forEach(entregador_id => {
         novaEscala.push({
           contrato_id,
           entregador_id,
           turno,
-          dia_semana: dia
+          dia_semana: diaFormatado
         });
       });
     });
