@@ -271,7 +271,7 @@
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
     const TERCEIRIZADA_ID = localStorage.getItem("terceirizada_id");
 
-    document.getElementById("tituloPainel").innerText = ${localStorage.getItem("terceirizada_nome") || "Lib"} | Painel;
+    document.getElementById("tituloPainel").innerText = `${localStorage.getItem("terceirizada_nome") || "Lib"} | Painel`;
 
     function sair() {
       localStorage.removeItem("terceirizada_id");
@@ -281,7 +281,7 @@
     }
 
     function mascararCPF(cpf) {
-      return XXX.XXX.${cpf.slice(6, 9)}-${cpf.slice(9, 11)};
+      return `XXX.XXX.${cpf.slice(6, 9)}-${cpf.slice(9, 11)}`;
     }
 
 async function buscarEntregador() {
@@ -293,10 +293,10 @@ async function buscarEntregador() {
   }
 
   const campo = tipo === "cpf" ? "cpf" : tipo === "telefone" ? "telefone" : "nome";
-  const query = ${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf;
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?${campo}=ilike.%25${valor}%25&select=id,nome,telefone,cpf`;
 
   const res = await fetch(query, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const lista = await res.json();
   const resultado = document.getElementById("resultado");
@@ -309,56 +309,68 @@ async function buscarEntregador() {
 
   for (const ent of lista) {
     // Verifica se já foi convidado
-    const check = await fetch(${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&entregador_id=eq.${ent.id}, {
-      headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+    const check = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&entregador_id=eq.${ent.id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const vinculo = await check.json();
 
     const div = document.createElement("div");
     div.className = "entregador";
-    div.innerHTML = 
+    div.innerHTML = `
       <p><strong>Nome:</strong> ${ent.nome}</p>
       <p><strong>Telefone:</strong> (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}</p>
       <p><strong>CPF:</strong> ${mascararCPF(ent.cpf)}</p>
       ${
         vinculo.length
-          ? <p style="color: orange;"><strong>Status:</strong> ${vinculo[0].status}</p>
-          : <button onclick="convidarEntregador('${ent.id}', '${ent.nome}')">Convidar</button>
+          ? `<p style="color: orange;"><strong>Status:</strong> ${vinculo[0].status}</p>`
+          : `<button onclick="convidarEntregador('${ent.id}', '${ent.nome}')">Convidar</button>`
       }
-    ;
+    `;
     resultado.appendChild(div);
   }
 }
 
-    async function convidarEntregador(entregador_id, nome) {
-      const payload = {
-        entregador_id,
-        terceirizada_id: TERCEIRIZADA_ID,
-        status: "pendente",
-        data_aceite: new Date().toISOString()
-      };
+async function convidarEntregador(entregador_id, nome) {
+  const payload = {
+    entregador_id,
+    terceirizada_id: TERCEIRIZADA_ID,
+    status: "pendente",
+    data_aceite: new Date().toISOString()
+  };
 
-      const res = await fetch(${SUPABASE_URL}/rest/v1/vinculos_entregadores, {
-        method: "POST",
-        headers: {
-          apikey: API_KEY,
-          Authorization: Bearer ${API_KEY},
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
 
-      if (res.ok) {
-        alert(✅ ${nome} vinculado com sucesso!);
-        carregarVinculados();
-      } else {
-        alert("Erro ao convidar.");
-      }
-    }
+  if (res.ok) {
+    alert(`✅ ${nome} vinculado com sucesso!`);
+    carregarVinculados();
+
+    // 🔕 Notificação temporariamente desativada
+await fetch("https://lib-neon.vercel.app/api/sendNotification", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    entregador_id: entregador_id,
+    title: "📬 Novo Convite",
+    body: `Você foi convidado para se vincular à empresa ${nomeEmpresa}!`
+  })
+});
+  } else {
+    alert("Erro ao convidar.");
+  }
+}
+
 
 async function carregarVinculados() {
-  const res = await fetch(${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id,status, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id,status`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
 
   const vinculados = await res.json();
@@ -370,8 +382,8 @@ async function carregarVinculados() {
   }
 
   const listaIDs = vinculados.map(v => v.entregador_id).join(",");
-  const res2 = await fetch(${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome,telefone, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+  const res2 = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome,telefone`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
 
   const entregadores = await res2.json();
@@ -380,7 +392,7 @@ async function carregarVinculados() {
     return;
   }
 
-  let html = 
+  let html = `
     <table class="tabela-escalas">
       <thead>
         <tr>
@@ -390,7 +402,7 @@ async function carregarVinculados() {
         </tr>
       </thead>
       <tbody>
-  ;
+  `;
 
   for (const ent of entregadores) {
     const status = vinculados.find(v => v.entregador_id === ent.id)?.status || "desconhecido";
@@ -399,26 +411,26 @@ async function carregarVinculados() {
       status === "pendente" ? "status-pendente" :
       "status-recusado";
 
-    const telefone = (${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)};
+    const telefone = `(${ent.telefone.slice(0, 2)}) ${ent.telefone.slice(2, 7)}-${ent.telefone.slice(7)}`;
 
-    html += 
+    html += `
       <tr>
         <td>${ent.nome}</td>
         <td>${telefone}</td>
         <td><span class="status-badge ${badgeClass}">${status}</span></td>
       </tr>
-    ;
+    `;
   }
 
-  html += </tbody></table>;
+  html += `</tbody></table>`;
   cont.innerHTML = html;
 }
 
 carregarVinculados();
 
 async function carregarEscalasPorRestaurante() {
-  const resContratos = await fetch(${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=id,empresa_id, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+  const resContratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=id,empresa_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const contratos = await resContratos.json();
   const container = document.getElementById("blocoEscalas");
@@ -431,9 +443,9 @@ async function carregarEscalasPorRestaurante() {
 
   for (const contrato of contratos) {
     const [empresaRes, configRes, diasRes] = await Promise.all([
-      fetch(${SUPABASE_URL}/rest/v1/empresas?id=eq.${contrato.empresa_id}, { headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} } }),
-      fetch(${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato.id}, { headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} } }),
-      fetch(${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${contrato.empresa_id}, { headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} } })
+      fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${contrato.empresa_id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato.id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${contrato.empresa_id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } })
     ]);
 
     const empresa = (await empresaRes.json())[0];
@@ -446,7 +458,7 @@ async function carregarEscalasPorRestaurante() {
     // Cria string segura para passar array de dias no botão
     const diasSanitizados = JSON.stringify(diasSemana);
 
-    card.innerHTML += 
+    card.innerHTML += `
       <p style="margin: 0 0 6px; font-weight: 600; font-size: 15px;">
         🍽 <span style="opacity: 0.85;">${empresa.nome}</span>
       </p>
@@ -456,7 +468,7 @@ async function carregarEscalasPorRestaurante() {
           👥 Gerenciar Entregadores
         </button>
       </div>
-    ;
+    `;
     
     container.appendChild(card);
   }
@@ -465,12 +477,12 @@ async function carregarEscalasPorRestaurante() {
 carregarEscalasPorRestaurante();
 
 async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, diasSemana) {
-  const container = document.getElementById(alocacao_${contrato_id});
-  container.innerHTML = <p>Carregando entregadores...</p>;
+  const container = document.getElementById(`alocacao_${contrato_id}`);
+  container.innerHTML = `<p>Carregando entregadores...</p>`;
 
   // Buscar entregadores vinculados ativos
-  const resVinculos = await fetch(${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+  const resVinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const vinculados = await resVinculos.json();
   const listaIDs = vinculados.map(v => v.entregador_id);
@@ -480,16 +492,16 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   }
 
   // HTML base
-  let html = 
+  let html = `
     <h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
     <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">
 
     <label style="display:block;margin-bottom:6px;">👤 Buscar Entregador</label>
-    <input type="text" id="busca_${contrato_id}" placeholder="Digite o nome..." oninput="filtrarSugestoes(this.value, '${contrato_id}', [${listaIDs.map(id => '${id}').join(',')}])" style="padding:8px;border-radius:6px;border:none;width:100%;max-width:400px;margin-bottom:10px;">
+    <input type="text" id="busca_${contrato_id}" placeholder="Digite o nome..." oninput="filtrarSugestoes(this.value, '${contrato_id}', [${listaIDs.map(id => `'${id}'`).join(',')}])" style="padding:8px;border-radius:6px;border:none;width:100%;max-width:400px;margin-bottom:10px;">
 
     <ul id="sugestoes_${contrato_id}" style="list-style:none;padding:0;margin:0 0 10px;"></ul>
     <div id="selecionados_${contrato_id}" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;"></div>
-  ;
+  `;
 
   // Dicionário de dias
   const iconesDias = {
@@ -498,56 +510,56 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   };
 
   // Dias por turno
-  html += <div style="display: flex; gap: 24px; flex-wrap: wrap;">;
+  html += `<div style="display: flex; gap: 24px; flex-wrap: wrap;">`;
 
   for (const turno of ['almoco', 'jantar']) {
     if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
 
-    html += 
+    html += `
       <div style="flex:1; min-width: 240px;">
         <h4 style="margin: 0 0 10px;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px;">;
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px;">`;
 
     for (const diaRaw of diasSemana) {
       const dia = (diaRaw || "").toLowerCase();
-      html += 
+      html += `
         <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 10px;border-radius:8px;">
           <input type="checkbox" name="dia_${turno}" value="${dia}">
           ${iconesDias[dia] || dia}
-        </label>;
+        </label>`;
     }
 
-    html += </div></div>;
+    html += `</div></div>`;
   }
 
-  html += </div>;
+  html += `</div>`;
 
-  html += 
+  html += `
     <div class="botoes-centro" style="margin-top: 20px;">
       <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
     </div>
-  </form>;
+  </form>`;
 
   container.innerHTML = html;
 }
     
 async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
-  const ul = document.getElementById(sugestoes_${contrato_id});
+  const ul = document.getElementById(`sugestoes_${contrato_id}`);
   ul.innerHTML = "";
   if (!valor) return;
 
   // 🔥 REMOVE aspas internas no array
-  const query = ${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome;
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome`;
 
   const res = await fetch(query, {
-    headers: { apikey: API_KEY, Authorization: Bearer ${API_KEY} }
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
 
   const lista = await res.json();
 
   if (!Array.isArray(lista)) {
     console.error("Resposta inesperada:", lista);
-    ul.innerHTML = <li style="color:red;">Erro ao buscar sugestões</li>;
+    ul.innerHTML = `<li style="color:red;">Erro ao buscar sugestões</li>`;
     return;
   }
 
@@ -558,24 +570,24 @@ async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
     idsExibidos.add(ent.id);
 
     const li = document.createElement("li");
-    li.innerHTML = <span style="cursor:pointer;padding:6px;display:block;">${ent.nome}</span>;
+    li.innerHTML = `<span style="cursor:pointer;padding:6px;display:block;">${ent.nome}</span>`;
     li.onclick = () => adicionarEntregadorSelecionado(contrato_id, ent);
     ul.appendChild(li);
   });
 }
 
 function adicionarEntregadorSelecionado(contrato_id, ent) {
-  const cont = document.getElementById(selecionados_${contrato_id});
-  if (document.getElementById(entregador_${contrato_id}_${ent.id})) return;
+  const cont = document.getElementById(`selecionados_${contrato_id}`);
+  if (document.getElementById(`entregador_${contrato_id}_${ent.id}`)) return;
 
   const div = document.createElement("div");
-  div.id = entregador_${contrato_id}_${ent.id};
-  div.innerHTML = 
+  div.id = `entregador_${contrato_id}_${ent.id}`;
+  div.innerHTML = `
     <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
       <input type="hidden" name="entregador_selecionado" value="${ent.id}">
       ${ent.nome}
       <button onclick="this.parentElement.parentElement.remove()" style="color:red;background:none;border:none;font-weight:bold;cursor:pointer;">✖</button>
-    </label>;
+    </label>`;
   cont.appendChild(div);
 }
 
@@ -586,6 +598,8 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   const novaEscala = [];
 
   const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_selecionado"]`)].map(e => e.value);
+
+  console.log("✔️ Entregadores Selecionados:", entregadoresSelecionados);
 
   for (const turno of turnos) {
     const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
@@ -602,7 +616,9 @@ async function salvarEscalaPorSemana(event, contrato_id) {
     });
   }
 
-  // 🧹 Apaga tudo anterior do contrato
+  console.log("📦 Payload para salvar:", novaEscala);
+
+  // 🔥 Apaga os registros antigos
   await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}`, {
     method: "DELETE",
     headers: {
@@ -612,7 +628,7 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   });
 
   if (novaEscala.length > 0) {
-    await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
       method: "POST",
       headers: {
         apikey: API_KEY,
@@ -621,12 +637,19 @@ async function salvarEscalaPorSemana(event, contrato_id) {
       },
       body: JSON.stringify(novaEscala)
     });
+
+    const resText = await res.text();
+    console.log("📬 Resposta do Supabase:", resText);
+
+    if (!res.ok) {
+      alert("❌ Erro ao salvar a escala. Veja o console.");
+      return;
+    }
   }
 
   alert("✅ Escala semanal salva com sucesso!");
   abrirEscala(contrato_id);
 }
-
-</script>
+  </script>
 </body>
 </html>
