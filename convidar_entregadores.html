@@ -530,16 +530,29 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
 
   container.innerHTML = html;
 }
-  async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
+    
+async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
   const ul = document.getElementById(`sugestoes_${contrato_id}`);
   ul.innerHTML = "";
   if (!valor) return;
 
-  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.map(id => `'${id}'`).join(',')})&select=id,nome`;
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome`;
   const res = await fetch(query, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
-  const lista = await res.json();
+
+  let lista;
+  try {
+    lista = await res.json();
+  } catch (e) {
+    ul.innerHTML = "<li style='color: red;'>Erro ao carregar</li>";
+    return;
+  }
+
+  if (!Array.isArray(lista)) {
+    ul.innerHTML = "<li style='color: red;'>Nenhum resultado encontrado</li>";
+    return;
+  }
 
   lista.forEach(ent => {
     const li = document.createElement("li");
