@@ -354,14 +354,15 @@ async function carregarEscalasPorRestaurante() {
     card.style = "background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 14px;";
 
 card.innerHTML += `
-  <div id="alocacao_${contrato.id}" style="margin-top: 16px;"></div>
-<div class="botoes-centro">
-  <button
-    class="botao"
-    onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})"
-  >
-    👥 Gerenciar Entregadores
-  </button>
+  <p style="margin: 0 0 6px; font-weight: 600; font-size: 15px;">
+    🍽 <span style="opacity: 0.85;">${empresa.nome}</span>
+  </p>
+  <div id="alocacao_${contrato.id}" style="margin-top: 10px;"></div>
+  <div class="botoes-centro">
+    <button class="botao" onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">
+      👥 Gerenciar Entregadores
+    </button>
+  </div>
 `;
     container.appendChild(card);
   }
