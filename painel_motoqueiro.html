@@ -628,21 +628,34 @@ const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terc
   container.innerHTML = html;
 }
 
-    async function carregarTurnosDisponiveis(contrato_id) {
+async function carregarTurnosDisponiveis(contrato_id) {
   const bloco = document.getElementById(`escala_${contrato_id}`);
   bloco.innerHTML = "🔎 Buscando turnos...";
 
-  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const config = (await contratoRes.json())[0];
-  if (!config) {
+  const [configRes, diasRes] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }),
+    fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    }).then(r => r.json())
+      .then(async dados => {
+        if (!dados.length) return [];
+        const empresa_id = dados[0].empresa_id;
+        const dias = await fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${empresa_id}`, {
+          headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+        });
+        return dias.json();
+      })
+  ]);
+
+  const config = (await configRes.json())[0];
+  const diasSemana = diasRes.map(d => d.dia);
+  if (!config || !diasSemana.length) {
     bloco.innerHTML = "⚠️ Empresa ainda não configurou a escala.";
     return;
   }
 
-  const diasSemana = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
-  const diasConfig = diasSemana.filter(d => config[`qtd_${d}_almoco`] || config[`qtd_${d}_jantar`]);
   const turnos = ["almoco", "jantar"];
   const turnoLabel = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
 
@@ -650,18 +663,13 @@ const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terc
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   }).then(r => r.json());
 
-  const jaEscolheu = {}; // dia_turno como chave
-  escaladoHoje.forEach(e => {
-    jaEscolheu[`${e.dia_semana}_${e.turno}`] = true;
-  });
-
   let html = "";
 
   for (const dia of diasSemana) {
     let linha = "";
     for (const turno of turnos) {
-const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
-if (qtd <= 0) continue;
+      const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
+      if (qtd <= 0) continue;
 
       const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
