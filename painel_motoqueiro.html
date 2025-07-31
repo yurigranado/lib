@@ -133,16 +133,23 @@
   align-items: center;
 }
     
+#headerTopo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 500px; /* ou o mesmo valor usado no container */
+  padding: 0 16px;
+  margin-bottom: 4px;
+  color: white;
+}
+    
 #btnSair {
-  position: fixed;
-  top: 14px;
-  right: 16px;
   background: transparent;
   border: none;
-  font-size: 1.6em;
+  font-size: 1.4em;
   cursor: pointer;
   color: white;
-  z-index: 10000;
   transition: transform 0.2s ease;
 }
 
@@ -158,9 +165,9 @@
   </style>
 </head>
 <body>
-<button onclick="logout()" id="btnSair" title="Sair">🚪</button>
   <div id="painelContainer">
     <p id="nomeEntregador">Carregando nome...</p>
+    <button onclick="logout()" id="btnSair" title="Sair">🚪</button>
     <h2>Painel do Motoqueiro</h2>
 
     <p id="empresaAtiva">Empresa: carregando...</p>
