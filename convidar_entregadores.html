@@ -482,75 +482,87 @@ const listaIDs = vinculados.map(v => v.entregador_id).join(",");
   });
   const entregadores = await resEnt.json();
 
-  // Buscar alocações já existentes
-  const resAlocados = await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores?contrato_id=eq.${contrato_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const alocados = await resAlocados.json();
+let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
 
-  const estaAlocado = (entregador_id, turno) =>
-    alocados.some(a => a.entregador_id === entregador_id && a.turno === turno);
+const diasSemana = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+const iconesDias = {
+  segunda: 'Seg',
+  terca: 'Ter',
+  quarta: 'Qua',
+  quinta: 'Qui',
+  sexta: 'Sex',
+  sabado: 'Sáb',
+  domingo: 'Dom'
+};
 
-  let html = `<h3 style="margin-top: 10px;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarAlocacoes(event, '${contrato_id}')">`;
+for (const turno of ['almoco', 'jantar']) {
+  if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
 
-html += `
-  <table style="width:100%;border-collapse:collapse;margin-top:12px;">
-    <thead>
-      <tr style="background:#ffffff10;">
-        <th style="text-align:left;padding:8px;">Entregador</th>
-        ${almocoAtivo ? '<th style="text-align:center;">☀️ Almoço</th>' : ''}
-        ${jantarAtivo ? '<th style="text-align:center;">🌙 Jantar</th>' : ''}
-      </tr>
-    </thead>
-    <tbody>
-`;
+  html += `
+    <div style="margin-bottom: 24px;">
+      <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
+      
+      <label style="margin-bottom:6px;">📅 Dias da Semana</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+  `;
 
-for (const ent of entregadores) {
-  html += `<tr style="border-bottom:1px solid #ffffff11;">`;
-  html += `<td style="padding:8px;">${ent.nome}</td>`;
-
-  if (almocoAtivo) {
-    const checked = estaAlocado(ent.id, "almoco") ? "checked" : "";
-    html += `<td style="text-align:center;"><input type="checkbox" name="alocar_almoco" value="${ent.id}" ${checked}></td>`;
+  for (const dia of diasSemana) {
+    html += `
+      <label style="display:flex;align-items:center;gap:4px;">
+        <input type="checkbox" name="dia_${turno}" value="${dia}">
+        ${iconesDias[dia]}
+      </label>
+    `;
   }
 
-  if (jantarAtivo) {
-    const checked = estaAlocado(ent.id, "jantar") ? "checked" : "";
-    html += `<td style="text-align:center;"><input type="checkbox" name="alocar_jantar" value="${ent.id}" ${checked}></td>`;
+  html += `</div>`;
+
+  html += `<label style="margin-top:8px;">👤 Entregadores</label>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
+
+  for (const ent of entregadores) {
+    html += `
+      <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+        <input type="checkbox" name="entregador_${turno}" value="${ent.id}">
+        ${ent.nome}
+      </label>
+    `;
   }
 
-  html += `</tr>`;
+  html += `</div></div>`;
 }
 
 html += `
-    </tbody>
-  </table>
-<div class="botoes-centro">
-  <button type="submit" class="botao">💾 Salvar Alocações</button>
-</div></form>`;
-  container.innerHTML = html;
-}
+  <div class="botoes-centro">
+    <button type="submit" class="botao">💾 Salvar Escala Semanal</button>
+  </div>
+</form>`;
 
-async function salvarAlocacoes(event, contrato_id) {
+
+async function salvarEscalaPorSemana(event, contrato_id) {
   event.preventDefault();
   const form = event.target;
-
-  const turnos = ["almoco", "jantar"];
-  const novasAlocacoes = [];
+  const turnos = ['almoco', 'jantar'];
+  const novaEscala = [];
 
   for (const turno of turnos) {
-    const inputs = form.querySelectorAll(`input[name="alocar_${turno}"]:checked`);
-    inputs.forEach(input => {
-      novasAlocacoes.push({
-        contrato_id,
-        entregador_id: input.value,
-        turno
+    const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
+    const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_${turno}"]:checked`)].map(e => e.value);
+
+    diasSelecionados.forEach(dia => {
+      entregadoresSelecionados.forEach(entregador_id => {
+        novaEscala.push({
+          contrato_id,
+          entregador_id,
+          turno,
+          dia_semana: dia
+        });
       });
     });
   }
 
-  // Limpa as alocações anteriores
-  await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores?contrato_id=eq.${contrato_id}`, {
+  // Limpa a escala anterior do contrato
+  await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}`, {
     method: "DELETE",
     headers: {
       apikey: API_KEY,
@@ -558,21 +570,20 @@ async function salvarAlocacoes(event, contrato_id) {
     }
   });
 
-  // Insere as novas
-  if (novasAlocacoes.length > 0) {
-    await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores`, {
+  if (novaEscala.length > 0) {
+    await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
       method: "POST",
       headers: {
         apikey: API_KEY,
         Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(novasAlocacoes)
+      body: JSON.stringify(novaEscala)
     });
   }
 
-  alert("✅ Alocações salvas!");
-  abrirEscala(contrato_id); // recarrega após salvar
+  alert("✅ Escala semanal salva com sucesso!");
+  abrirEscala(contrato_id); // recarrega
 }
 
   </script>
