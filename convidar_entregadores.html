@@ -353,15 +353,15 @@ async function convidarEntregador(entregador_id, nome) {
     carregarVinculados();
 
     // 🔕 Notificação temporariamente desativada
-    await fetch("https://lib-neon.vercel.app/api/sendNotification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        entregador_id: entregador_id,
-        title: "📬 Novo Convite",
-        body: "Você foi convidado para se vincular à empresa de entregas!"
-      })
-    });
+await fetch("https://lib-neon.vercel.app/api/sendNotification", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    entregador_id: entregador_id,
+    title: "📬 Novo Convite",
+    body: `Você foi convidado para se vincular à empresa ${nomeEmpresa}!`
+  })
+});
   } else {
     alert("Erro ao convidar.");
   }
