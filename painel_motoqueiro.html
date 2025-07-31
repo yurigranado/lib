@@ -348,35 +348,35 @@ function fecharModalEmpresas() {
   document.getElementById("modalEmpresas").style.display = "none";
 }
 
-    async function ativarEmpresa(terceirizada_id, nome) {
-      await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${login}&ativo=eq.true`, {
-  method: "PATCH",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ ativo: false })
-      });
+async function ativarEmpresa(terceirizada_id, nome) {
+  await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true`, {
+    method: "PATCH",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ ativo: false })
+  });
 
-      await fetch(`${SUPABASE_URL}/rest/v1/status_entregador`, {
-        method: "POST",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-    entregador_id,
-    terceirizada_id,
-          data_inicio: new Date().toISOString(),
-          ativo: true
-        })
-      });
+  await fetch(`${SUPABASE_URL}/rest/v1/status_entregador`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      entregador_id,
+      terceirizada_id,
+      data_inicio: new Date().toISOString(),
+      ativo: true
+    })
+  });
 
-      alert(`✅ Empresa "${nome}" ativada com sucesso!`);
-      location.reload();
-    }
+  alert(`✅ Empresa "${nome}" ativada com sucesso!`);
+  location.reload();
+}
 
 async function verificarEmpresaAtiva() {
   if (!entregador_id) return;
