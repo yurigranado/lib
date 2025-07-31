@@ -468,44 +468,36 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   const container = document.getElementById(`alocacao_${contrato_id}`);
   container.innerHTML = `<p>Carregando entregadores...</p>`;
 
+  // Buscar entregadores vinculados ativos
   const resVinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const vinculados = await resVinculos.json();
-  const listaIDs = vinculados.map(v => v.entregador_id).join(",");
-
-  if (!listaIDs) {
+  const listaIDs = vinculados.map(v => v.entregador_id);
+  if (!listaIDs.length) {
     container.innerHTML = "<p>Nenhum entregador ativo para alocar.</p>";
     return;
   }
 
-  const resEnt = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const entregadores = await resEnt.json();
+  // HTML base
+  let html = `
+    <h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
+    <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">
 
-  let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3>
-  <form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
+    <label style="display:block;margin-bottom:6px;">👤 Buscar Entregador</label>
+    <input type="text" id="busca_${contrato_id}" placeholder="Digite o nome..." oninput="filtrarSugestoes(this.value, '${contrato_id}', [${listaIDs.map(id => `'${id}'`).join(',')}])" style="padding:8px;border-radius:6px;border:none;width:100%;max-width:400px;margin-bottom:10px;">
 
-  // Mostrar os entregadores no topo
-  html += `<label style="margin-bottom:6px;display:block;">👤 Entregadores</label>
-  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">`;
+    <ul id="sugestoes_${contrato_id}" style="list-style:none;padding:0;margin:0 0 10px;"></ul>
+    <div id="selecionados_${contrato_id}" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;"></div>
+  `;
 
-  for (const ent of entregadores) {
-    html += `
-      <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-        <input type="checkbox" name="entregador_selecionado" value="${ent.id}">
-        ${ent.nome}
-      </label>`;
-  }
-
-  html += `</div>`;
-
+  // Dicionário de dias
   const iconesDias = {
-    segunda: 'Seg', terca: 'Ter', quarta: 'Qua', quinta: 'Qui',
-    sexta: 'Sex', sabado: 'Sáb', domingo: 'Dom'
+    segunda: 'Seg', terça: 'Ter', quarta: 'Qua', quinta: 'Qui',
+    sexta: 'Sex', sábado: 'Sáb', domingo: 'Dom'
   };
 
+  // Dias por turno
   html += `<div style="display: flex; gap: 24px; flex-wrap: wrap;">`;
 
   for (const turno of ['almoco', 'jantar']) {
@@ -538,6 +530,54 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
 
   container.innerHTML = html;
 }
+    
+async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
+  const ul = document.getElementById(`sugestoes_${contrato_id}`);
+  ul.innerHTML = "";
+  if (!valor) return;
+
+  // 🔥 REMOVE aspas internas no array
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome`;
+
+  const res = await fetch(query, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+
+  const lista = await res.json();
+
+  if (!Array.isArray(lista)) {
+    console.error("Resposta inesperada:", lista);
+    ul.innerHTML = `<li style="color:red;">Erro ao buscar sugestões</li>`;
+    return;
+  }
+
+  const idsExibidos = new Set();
+
+  lista.forEach(ent => {
+    if (idsExibidos.has(ent.id)) return;
+    idsExibidos.add(ent.id);
+
+    const li = document.createElement("li");
+    li.innerHTML = `<span style="cursor:pointer;padding:6px;display:block;">${ent.nome}</span>`;
+    li.onclick = () => adicionarEntregadorSelecionado(contrato_id, ent);
+    ul.appendChild(li);
+  });
+}
+
+function adicionarEntregadorSelecionado(contrato_id, ent) {
+  const cont = document.getElementById(`selecionados_${contrato_id}`);
+  if (document.getElementById(`entregador_${contrato_id}_${ent.id}`)) return;
+
+  const div = document.createElement("div");
+  div.id = `entregador_${contrato_id}_${ent.id}`;
+  div.innerHTML = `
+    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+      <input type="hidden" name="entregador_selecionado" value="${ent.id}">
+      ${ent.nome}
+      <button onclick="this.parentElement.parentElement.remove()" style="color:red;background:none;border:none;font-weight:bold;cursor:pointer;">✖</button>
+    </label>`;
+  cont.appendChild(div);
+}
 
 async function salvarEscalaPorSemana(event, contrato_id) {
   event.preventDefault();
@@ -545,9 +585,12 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   const turnos = ['almoco', 'jantar'];
   const novaEscala = [];
 
+  const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_selecionado"]`)].map(e => e.value);
+
+  console.log("✔️ Entregadores Selecionados:", entregadoresSelecionados);
+
   for (const turno of turnos) {
     const diasSelecionados = [...form.querySelectorAll(`input[name="dia_${turno}"]:checked`)].map(d => d.value);
-    const entregadoresSelecionados = [...form.querySelectorAll(`input[name="entregador_${turno}"]:checked`)].map(e => e.value);
 
     diasSelecionados.forEach(dia => {
       entregadoresSelecionados.forEach(entregador_id => {
@@ -561,7 +604,9 @@ async function salvarEscalaPorSemana(event, contrato_id) {
     });
   }
 
-  // Limpa a escala anterior do contrato
+  console.log("📦 Payload para salvar:", novaEscala);
+
+  // 🔥 Apaga os registros antigos
   await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}`, {
     method: "DELETE",
     headers: {
@@ -571,7 +616,7 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   });
 
   if (novaEscala.length > 0) {
-    await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
       method: "POST",
       headers: {
         apikey: API_KEY,
@@ -580,12 +625,19 @@ async function salvarEscalaPorSemana(event, contrato_id) {
       },
       body: JSON.stringify(novaEscala)
     });
+
+    const resText = await res.text();
+    console.log("📬 Resposta do Supabase:", resText);
+
+    if (!res.ok) {
+      alert("❌ Erro ao salvar a escala. Veja o console.");
+      return;
+    }
   }
 
   alert("✅ Escala semanal salva com sucesso!");
-  abrirEscala(contrato_id); // recarrega
+  abrirEscala(contrato_id);
 }
-
   </script>
 </body>
 </html>
