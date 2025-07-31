@@ -497,20 +497,22 @@ async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, d
   for (const turno of ['almoco', 'jantar']) {
     if ((turno === 'almoco' && !almocoAtivo) || (turno === 'jantar' && !jantarAtivo)) continue;
 
-    html += `
-      <div style="margin-bottom: 24px;">
-        <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
-        <label style="margin-bottom:6px;">📅 Dias da Semana</label>
-html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">`;
+html += `
+  <div style="margin-bottom: 24px;">
+    <h4 style="margin: 10px 0;">${turno === 'almoco' ? '☀️ Almoço' : '🌙 Jantar'}</h4>
+    <label style="margin-bottom:6px;">📅 Dias da Semana</label>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px;">
+`;
 
-    for (const diaRaw of diasSemana) {
-      const dia = (diaRaw || "").toLowerCase();
-      html += `
-        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
-          <input type="checkbox" name="dia_${turno}" value="${dia}">
-          ${iconesDias[dia] || dia}
-        </label>`;
-    }
+for (const diaRaw of diasSemana) {
+  const dia = (diaRaw || "").toLowerCase();
+  html += `
+    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+      <input type="checkbox" name="dia_${turno}" value="${dia}">
+      ${iconesDias[dia] || dia}
+    </label>
+  `;
+}
 
     html += `</div>
       <label style="margin-top:8px;">👤 Entregadores</label>
