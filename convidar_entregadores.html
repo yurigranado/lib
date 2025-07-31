@@ -484,7 +484,7 @@ const listaIDs = vinculados.map(v => v.entregador_id).join(",");
 
 let html = `<h3 style="margin-top: 0;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarEscalaPorSemana(event, '${contrato_id}')">`;
 
-const diasSemana = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+const diasSemana = ${JSON.stringify(diasSemana)}; // ← vem direto do contrato
 const iconesDias = {
   segunda: 'Seg',
   terca: 'Ter',
@@ -506,16 +506,16 @@ for (const turno of ['almoco', 'jantar']) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
   `;
 
-  for (const dia of diasSemana) {
-    html += `
-      <label style="display:flex;align-items:center;gap:4px;">
-        <input type="checkbox" name="dia_${turno}" value="${dia}">
-        ${iconesDias[dia]}
-      </label>
-    `;
-  }
-
-  html += `</div>`;
+html += `<div style="display: flex; gap: 12px; flex-wrap: wrap;">`;
+for (const dia of diasSemana) {
+  html += `
+    <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+      <input type="checkbox" name="dia_${turno}" value="${dia}">
+      ${iconesDias[dia]}
+    </label>
+  `;
+}
+html += `</div>`;
 
   html += `<label style="margin-top:8px;">👤 Entregadores</label>
     <div style="display:flex;flex-wrap:wrap;gap:12px;">`;
