@@ -608,7 +608,7 @@ container.innerHTML = html;
   let html = "";
 
   for (const v of vinculos) {
-    const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${v.contrato_id}&status=eq.ativo&select=*,empresa:empresas(nome)`, {
+const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${v.terceirizada_id}&status=eq.ativo&select=*,empresa:empresas(nome)`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
 
