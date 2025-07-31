@@ -321,20 +321,115 @@ async function carregarEscalasPorRestaurante() {
     const card = document.createElement("div");
     card.style = "background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 14px;";
 
-    card.innerHTML = `
-      <p><strong>🍽 Restaurante:</strong> ${empresa.nome}</p>
-      <p><strong>Turnos Solicitados:</strong>
-        ${config.turno_almoco ? `☀️ Almoço (${config.qtd_almoco}) ` : ""}
-        ${config.turno_jantar ? `🌙 Jantar (${config.qtd_jantar})` : ""}
-      </p>
-      <p><strong>Dias de funcionamento:</strong> ${diasSemana.join(", ")}</p>
-      <button onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">📋 Ver Escala</button>
-    `;
+card.innerHTML += `
+  <div id="alocacao_${contrato.id}" style="margin-top: 16px;"></div>
+  <button onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">
+    👥 Gerenciar Entregadores
+  </button>
+`;
     container.appendChild(card);
   }
 }
 
 carregarEscalasPorRestaurante();
+
+async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo) {
+  const container = document.getElementById(`alocacao_${contrato_id}`);
+  container.innerHTML = `<p>Carregando entregadores...</p>`;
+
+  // Buscar entregadores vinculados com status ativo
+  const resVinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=entregador_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const vinculados = await resVinculos.json();
+  const listaIDs = vinculados.map(v => `'${v.entregador_id}'`).join(",");
+
+  if (!listaIDs) {
+    container.innerHTML = "<p>Nenhum entregador ativo para alocar.</p>";
+    return;
+  }
+
+  // Buscar dados dos entregadores
+  const resEnt = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${listaIDs})&select=id,nome`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const entregadores = await resEnt.json();
+
+  // Buscar alocações já existentes
+  const resAlocados = await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores?contrato_id=eq.${contrato_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const alocados = await resAlocados.json();
+
+  const estaAlocado = (entregador_id, turno) =>
+    alocados.some(a => a.entregador_id === entregador_id && a.turno === turno);
+
+  let html = `<h3 style="margin-top: 10px;">👥 Alocar Entregadores para ${nomeEmpresa}</h3><form onsubmit="salvarAlocacoes(event, '${contrato_id}')">`;
+
+  for (const turno of ["almoco", "jantar"]) {
+    if ((turno === "almoco" && !almocoAtivo) || (turno === "jantar" && !jantarAtivo)) continue;
+
+    html += `<p><strong>${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}:</strong></p><div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;">`;
+
+    for (const ent of entregadores) {
+      const checked = estaAlocado(ent.id, turno) ? "checked" : "";
+      html += `
+        <label style="display:flex;align-items:center;gap:6px;background:#fff2;padding:6px 12px;border-radius:8px;">
+          <input type="checkbox" name="alocar_${turno}" value="${ent.id}" ${checked}>
+          ${ent.nome}
+        </label>`;
+    }
+
+    html += "</div>";
+  }
+
+  html += `<button type="submit" style="margin-top:10px;">💾 Salvar Alocações</button></form>`;
+  container.innerHTML = html;
+}
+
+async function salvarAlocacoes(event, contrato_id) {
+  event.preventDefault();
+  const form = event.target;
+
+  const turnos = ["almoco", "jantar"];
+  const novasAlocacoes = [];
+
+  for (const turno of turnos) {
+    const inputs = form.querySelectorAll(`input[name="alocar_${turno}"]:checked`);
+    inputs.forEach(input => {
+      novasAlocacoes.push({
+        contrato_id,
+        entregador_id: input.value,
+        turno
+      });
+    });
+  }
+
+  // Limpa as alocações anteriores
+  await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores?contrato_id=eq.${contrato_id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`
+    }
+  });
+
+  // Insere as novas
+  if (novasAlocacoes.length > 0) {
+    await fetch(`${SUPABASE_URL}/rest/v1/alocacoes_entregadores`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(novasAlocacoes)
+    });
+  }
+
+  alert("✅ Alocações salvas!");
+  abrirEscala(contrato_id); // recarrega após salvar
+}
 
 function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo) {
   alert(`📋 Abrir escala de "${nomeEmpresa}"\n\nContrato: ${contrato_id}\nTurnos: ${almocoAtivo ? "Almoço" : ""} ${jantarAtivo ? "Jantar" : ""}`);
