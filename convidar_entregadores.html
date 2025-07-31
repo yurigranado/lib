@@ -195,6 +195,20 @@
   .status-recusado {
     background: #ef5350;
   }
+  
+  .layout-duas-colunas {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.coluna-esquerda,
+.coluna-direita {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 </style>
 </head>
 <body>
@@ -214,39 +228,44 @@
     ">Sair</button>
   </header>
 
-  <div class="conteudo painel-central">
-    
-    <!-- 🔍 Filtro de busca -->
-    <div class="card">
-      <h2 style="margin-top: 0;">🔍 Buscar Entregador</h2>
-      <label for="tipoBusca">Buscar por:</label>
-      <select id="tipoBusca">
-        <option value="nome">Nome</option>
-        <option value="cpf">CPF</option>
-        <option value="telefone">Telefone</option>
-      </select>
-      <input type="text" id="valorBusca" placeholder="Digite o valor...">
-      <div class="botoes-centro">
-        <button onclick="buscarEntregador()" class="botao">🔍 Buscar</button>
+<div class="conteudo">
+  <div class="layout-duas-colunas">
+    <!-- 🔍 Filtro + vinculados (coluna esquerda) -->
+    <div class="coluna-esquerda">
+      <!-- 🔍 Buscar Entregador -->
+      <div class="card">
+        <h2 style="margin-top: 0;">🔍 Buscar Entregador</h2>
+        <label for="tipoBusca">Buscar por:</label>
+        <select id="tipoBusca">
+          <option value="nome">Nome</option>
+          <option value="cpf">CPF</option>
+          <option value="telefone">Telefone</option>
+        </select>
+        <input type="text" id="valorBusca" placeholder="Digite o valor...">
+        <div class="botoes-centro">
+          <button onclick="buscarEntregador()" class="botao">🔍 Buscar</button>
+        </div>
+        <div id="resultado" class="resultado"></div>
       </div>
-      <div id="resultado" class="resultado"></div>
-    </div>
 
-    <!-- ✅ Lista de Entregadores Vinculados -->
-    <div class="card">
-      <h2 style="margin-top: 0;">✅ Entregadores Vinculados</h2>
-      <div id="vinculados"></div>
-    </div>
-
-    <!-- 📅 Escalas por Restaurante -->
-    <div class="card">
-      <h2 style="margin-top: 0;">📅 Escalas por Restaurante</h2>
-      <div id="blocoEscalas">
-        <p>Carregando contratos ativos...</p>
+      <!-- ✅ Entregadores Vinculados -->
+      <div class="card">
+        <h2 style="margin-top: 0;">✅ Entregadores Vinculados</h2>
+        <div id="vinculados"></div>
       </div>
     </div>
 
-  </div> <!-- Fim .painel-central -->
+    <!-- 📅 Escalas por Restaurante (coluna direita) -->
+    <div class="coluna-direita">
+      <div class="card">
+        <h2 style="margin-top: 0;">📅 Escalas por Restaurante</h2>
+        <div id="blocoEscalas">
+          <p>Carregando contratos ativos...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <script>
     const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
     const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
