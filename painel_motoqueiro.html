@@ -276,11 +276,6 @@ button:focus, input:focus, select:focus, textarea:focus {
     Carregando escala...
   </div>
 
-  <div id="blocoAutoEscala" style="margin-top: 24px; color: white; text-align: center;">
-  <h3>📋 Auto Escala</h3>
-  <div id="listaEmpresasAutoEscala">Carregando empresas...</div>
-</div>
-
   <div id="modalEmpresas">
     <div class="box">
       <h3>👥 Convites Pendentes</h3>
@@ -318,7 +313,6 @@ async function carregarEntregadorId() {
     await verificarEmpresaAtiva(); // já atualiza o texto do painel
     await carregarEscalaSemanal(); // carrega a escala logo após login
     await ativarNotificacoes(); // 👈 aqui
-    await carregarEmpresasComAutoEscala();
 
     // 🔍 Verifica vínculos existentes
     const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
@@ -591,133 +585,6 @@ html += `
 
 container.innerHTML = html;
 }
-    
-    async function carregarEmpresasComAutoEscala() {
-  const container = document.getElementById("listaEmpresasAutoEscala");
-  container.innerHTML = "<p>🔄 Buscando empresas com escala...</p>";
-
-  const vinculos = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}&status=eq.ativo`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }).then(r => r.json());
-
-  if (!vinculos.length) {
-    container.innerHTML = "<p>❌ Nenhum vínculo ativo encontrado.</p>";
-    return;
-  }
-
-  let html = "";
-
-  for (const v of vinculos) {
-const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${v.terceirizada_id}&status=eq.ativo&select=*,empresa:empresas(nome)`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-
-    const contratos = await contratoRes.json();
-    const contrato = contratos[0];
-    if (!contrato) continue;
-
-    html += `<div style="background:rgba(255,255,255,0.1);padding:12px;margin-bottom:12px;border-radius:10px;">
-      <h4 style="margin:0 0 8px;">🏢 ${contrato.empresa.nome}</h4>
-      <div id="escala_${contrato.id}">⏳ Carregando turnos...</div>
-    </div>`;
-
-    // 🔁 carregar os turnos depois de exibir
-    setTimeout(() => carregarTurnosDisponiveis(contrato.id), 200);
-  }
-
-  container.innerHTML = html;
-}
-
-    async function carregarTurnosDisponiveis(contrato_id) {
-  const bloco = document.getElementById(`escala_${contrato_id}`);
-  bloco.innerHTML = "🔎 Buscando turnos...";
-
-  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const config = (await contratoRes.json())[0];
-  if (!config) {
-    bloco.innerHTML = "⚠️ Empresa ainda não configurou a escala.";
-    return;
-  }
-
-  const diasSemana = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
-  const diasConfig = diasSemana.filter(d => config[`qtd_${d}_almoco`] || config[`qtd_${d}_jantar`]);
-  const turnos = ["almoco", "jantar"];
-  const turnoLabel = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
-
-  const escaladoHoje = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }).then(r => r.json());
-
-  const jaEscolheu = {}; // dia_turno como chave
-  escaladoHoje.forEach(e => {
-    jaEscolheu[`${e.dia_semana}_${e.turno}`] = true;
-  });
-
-  let html = "";
-
-  for (const dia of diasSemana) {
-    let linha = "";
-    for (const turno of turnos) {
-const qtd = parseInt(config[`qtd_${dia}_${turno}`] || 0);
-if (qtd <= 0) continue;
-
-      const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const escalados = await countRes.json();
-
-      const vagasRestantes = qtd - escalados.length;
-      const conflito = escaladoHoje.some(e => e.dia_semana === dia && e.turno === turno);
-
-      if (conflito) {
-        linha += `<p>${turnoLabel[turno]} - ❌ Conflito com outra empresa</p>`;
-      } else if (vagasRestantes > 0) {
-        linha += `<p>${turnoLabel[turno]} - ${vagasRestantes} vaga(s) 
-        <button onclick="escalarEntregador('${contrato_id}', '${dia}', '${turno}')">✅ Me escalar</button></p>`;
-      } else {
-        linha += `<p>${turnoLabel[turno]} - 🔒 Vagas esgotadas</p>`;
-      }
-    }
-
-    if (linha) {
-      html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;">
-        <strong>${dia.charAt(0).toUpperCase() + dia.slice(1)}:</strong> ${linha}
-      </div>`;
-    }
-  }
-
-  bloco.innerHTML = html || "<p>⚠️ Nenhum turno disponível.</p>";
-}
-
-    async function escalarEntregador(contrato_id, dia, turno) {
-  const confirmar = confirm(`Deseja se escalar para ${dia.toUpperCase()} (${turno.toUpperCase()})?`);
-  if (!confirmar) return;
-
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
-    method: "POST",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      entregador_id,
-      contrato_id,
-      dia_semana: dia,
-      turno: turno
-    })
-  });
-
-  if (res.ok) {
-    alert("✅ Escala registrada com sucesso!");
-    carregarEmpresasComAutoEscala(); // Recarrega
-    carregarEscalaSemanal(); // Atualiza a tabela de cima também
-  } else {
-    alert("❌ Erro ao salvar escala.");
-  }
-}
 
 const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
 
@@ -729,6 +596,7 @@ async function ativarNotificacoes() {
   const antiga = await reg.pushManager.getSubscription();
   if (antiga) {
     await antiga.unsubscribe();
+    console.log("🧹 Subscription antiga cancelada");
   }
 
   const subscription = await reg.pushManager.subscribe({
@@ -750,6 +618,7 @@ async function ativarNotificacoes() {
     })
   });
   const resposta = await res.text();
+  console.log("📥 Resultado do salvamento do token:", resposta);
 }
     
 function urlBase64ToUint8Array(base64String) {
@@ -758,7 +627,6 @@ function urlBase64ToUint8Array(base64String) {
   const raw = atob(base64);
   return new Uint8Array([...raw].map(char => char.charCodeAt(0)));
 }
-    
 
   </script>
 </body>
