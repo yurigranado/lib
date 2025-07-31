@@ -139,6 +139,7 @@
 
 <div class="conteudo">
   <div class="grid">
+    <!-- 🔍 Busca -->
     <div class="card">
       <label for="tipoBusca">Buscar por:</label>
       <select id="tipoBusca">
@@ -151,9 +152,18 @@
       <div id="resultado" class="resultado"></div>
     </div>
 
+    <!-- ✅ Entregadores Vinculados -->
     <div class="card">
       <h2 style="margin-top: 0;">✅ Entregadores Vinculados</h2>
       <div id="vinculados"></div>
+    </div>
+
+    <!-- 📅 Escalas por Restaurante -->
+    <div class="card">
+      <h2 style="margin-top: 0;">📅 Escalas por Restaurante</h2>
+      <div id="blocoEscalas">
+        <p>Carregando contratos ativos...</p>
+      </div>
     </div>
   </div>
 </div>
@@ -283,6 +293,48 @@ async function carregarVinculados() {
   });
 }
     carregarVinculados();
+
+async function carregarEscalasPorRestaurante() {
+  const resContratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=id,empresa_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const contratos = await resContratos.json();
+  const container = document.getElementById("blocoEscalas");
+  container.innerHTML = "";
+
+  if (!contratos.length) {
+    container.innerHTML = "<p>Nenhum contrato ativo encontrado.</p>";
+    return;
+  }
+
+  for (const contrato of contratos) {
+    const [empresaRes, configRes, diasRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${contrato.empresa_id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato.id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } }),
+      fetch(`${SUPABASE_URL}/rest/v1/empresa_dias_semana?empresa_id=eq.${contrato.empresa_id}`, { headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` } })
+    ]);
+
+    const empresa = (await empresaRes.json())[0];
+    const config = (await configRes.json())[0];
+    const diasSemana = (await diasRes.json()).map(d => d.dia);
+
+    const card = document.createElement("div");
+    card.style = "background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 14px;";
+
+    card.innerHTML = `
+      <p><strong>🍽 Restaurante:</strong> ${empresa.nome}</p>
+      <p><strong>Turnos Solicitados:</strong>
+        ${config.turno_almoco ? `☀️ Almoço (${config.qtd_almoco}) ` : ""}
+        ${config.turno_jantar ? `🌙 Jantar (${config.qtd_jantar})` : ""}
+      </p>
+      <p><strong>Dias de funcionamento:</strong> ${diasSemana.join(", ")}</p>
+      <button onclick="abrirEscala('${contrato.id}', '${empresa.nome}', ${config.turno_almoco}, ${config.turno_jantar})">📋 Ver Escala</button>
+    `;
+    container.appendChild(card);
+  }
+}
+
+carregarEscalasPorRestaurante();
   </script>
 </body>
 </html>
