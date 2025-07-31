@@ -185,6 +185,33 @@
   transform: scale(1.2);
   opacity: 0.8;
 }
+    .tabela-escala-entregador {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 340px;
+  margin: 12px auto;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: white;
+  font-size: 15px;
+  text-align: left;
+}
+
+.tabela-escala-entregador table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-escala-entregador th,
+.tabela-escala-entregador td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.tabela-escala-entregador th {
+  font-weight: bold;
+}
+
     
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
@@ -456,6 +483,7 @@ async function recusarConvite(terceirizada_id) {
   }
 }
   document.addEventListener("DOMContentLoaded", carregarEntregadorId);
+    
     async function carregarEscalaSemanal() {
   const container = document.getElementById("blocoEscalaEntregador");
   container.innerHTML = "Carregando escala...";
@@ -492,16 +520,31 @@ async function recusarConvite(terceirizada_id) {
     organizado[item.dia_semana].push(turnos[item.turno] || item.turno);
   }
 
-  let html = "<h4 style='margin-top:8px;'>📅 Sua Escala da Semana:</h4>";
-  html += "<ul style='list-style:none;padding:0;margin-top:10px;font-size:0.95em;'>";
+  let html = `
+    <div class="tabela-escala-entregador">
+      <table>
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Turno(s)</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
 
   for (const dia of dias) {
     if (organizado[dia]) {
-      html += `<li><strong>${dia.charAt(0).toUpperCase() + dia.slice(1)}:</strong> ${organizado[dia].join(" + ")}</li>`;
+      const nomeDia = dia.charAt(0).toUpperCase() + dia.slice(1);
+      html += `<tr><td>${nomeDia}</td><td>${organizado[dia].join(" + ")}</td></tr>`;
     }
   }
 
-  html += "</ul>";
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
   container.innerHTML = html;
 }
 
