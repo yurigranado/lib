@@ -330,42 +330,31 @@ async function buscarEntregador() {
   }
 }
 
-async function convidarEntregador(entregador_id, nome) {
-  const payload = {
-    entregador_id,
-    terceirizada_id: TERCEIRIZADA_ID,
-    status: "pendente",
-    data_aceite: new Date().toISOString()
-  };
+    async function convidarEntregador(entregador_id, nome) {
+      const payload = {
+        entregador_id,
+        terceirizada_id: TERCEIRIZADA_ID,
+        status: "pendente",
+        data_aceite: new Date().toISOString()
+      };
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores`, {
-    method: "POST",
-    headers: {
-      apikey: API_KEY,
-      Authorization: `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores`, {
+        method: "POST",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
-  if (res.ok) {
-    alert(`✅ ${nome} vinculado com sucesso!`);
-    carregarVinculados();
-
-    // 🔔 Envia notificação push via API da Vercel
-    await fetch("https://lib-neon.vercel.app/api/sendNotification", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        entregador_id: entregador_id,
-        title: "📬 Novo Convite",
-        body: "Você foi convidado para se vincular à empresa de entregas!"
-      })
-    });
-  } else {
-    alert("Erro ao convidar.");
-  }
-}
+      if (res.ok) {
+        alert(`✅ ${nome} vinculado com sucesso!`);
+        carregarVinculados();
+      } else {
+        alert("Erro ao convidar.");
+      }
+    }
 
 async function carregarVinculados() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?terceirizada_id=eq.${TERCEIRIZADA_ID}&select=entregador_id,status`, {
@@ -649,6 +638,6 @@ async function salvarEscalaPorSemana(event, contrato_id) {
   alert("✅ Escala semanal salva com sucesso!");
   abrirEscala(contrato_id);
 }
-</script>
+  </script>
 </body>
 </html>
