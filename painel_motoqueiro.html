@@ -519,7 +519,7 @@ async function recusarConvite(terceirizada_id) {
 }
   document.addEventListener("DOMContentLoaded", carregarEntregadorId);
     
-    async function carregarEscalaSemanal() {
+async function carregarEscalaSemanal() {
   const container = document.getElementById("blocoEscalaEntregador");
   container.innerHTML = "Carregando escala...";
 
@@ -535,7 +535,7 @@ async function recusarConvite(terceirizada_id) {
 
   const terceirizada_id = empresaData[0].terceirizada_id;
 
-  const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&select=dia_semana,turno,contrato_id`, {
+  const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&select=dia_semana,turno`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
 
@@ -547,53 +547,59 @@ async function recusarConvite(terceirizada_id) {
 
   // Organiza por dia da semana
   const dias = ['segunda','terca','quarta','quinta','sexta','sabado','domingo'];
-  const turnos = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
+  const nomesDias = {
+    segunda: "Segunda",
+    terca: "Terça",
+    quarta: "Quarta",
+    quinta: "Quinta",
+    sexta: "Sexta",
+    sabado: "Sábado",
+    domingo: "Domingo"
+  };
+  const turnos = {
+    almoco: "☀️ Almoço",
+    jantar: "🌙 Jantar"
+  };
   const organizado = {};
 
   for (const item of escala) {
-    if (!organizado[item.dia_semana]) organizado[item.dia_semana] = [];
-    organizado[item.dia_semana].push(turnos[item.turno] || item.turno);
+    const dia = item.dia_semana;
+    if (!organizado[dia]) organizado[dia] = new Set();
+    organizado[dia].add(turnos[item.turno] || item.turno);
   }
 
-let html = `
-  <details class="bloco-escala-detalhada">
-    <summary>Escala da Semana</summary>
-    <div class="tabela-escala-entregador">
-      <table>
-        <thead>
-          <tr>
-            <th>Dia</th>
-            <th>Turno(s)</th>
-          </tr>
-        </thead>
-        <tbody>
-`;
+  let html = `
+    <details class="bloco-escala-detalhada">
+      <summary>Escala da Semana</summary>
+      <div class="tabela-escala-entregador">
+        <table>
+          <thead>
+            <tr>
+              <th>Dia</th>
+              <th>Turno(s)</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
 
-for (const dia of dias) {
-  if (organizado[dia]) {
-    const nomesDiasFormatados = {
-  segunda: "Segunda",
-  terca: "Terça",
-  quarta: "Quarta",
-  quinta: "Quinta",
-  sexta: "Sexta",
-  sabado: "Sábado",
-  domingo: "Domingo"
-};
-
-const nomeDia = nomesDiasFormatados[dia] || dia;
-    html += `<tr><td>${nomeDia}</td><td>${organizado[dia].join(" + ")}</td></tr>`;
+  for (const dia of dias) {
+    if (organizado[dia]) {
+      html += `
+        <tr>
+          <td>${nomesDias[dia]}</td>
+          <td>${[...organizado[dia]].join(" + ")}</td>
+        </tr>`;
+    }
   }
-}
 
-html += `
-        </tbody>
-      </table>
-    </div>
-  </details>
-`;
+  html += `
+          </tbody>
+        </table>
+      </div>
+    </details>
+  `;
 
-container.innerHTML = html;
+  container.innerHTML = html;
 }
 
 const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
