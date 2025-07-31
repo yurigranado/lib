@@ -628,6 +628,97 @@ container.innerHTML = html;
   container.innerHTML = html;
 }
 
+    async function carregarTurnosDisponiveis(contrato_id) {
+  const bloco = document.getElementById(`escala_${contrato_id}`);
+  bloco.innerHTML = "🔎 Buscando turnos...";
+
+  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/configuracoes_contrato?contrato_id=eq.${contrato_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const config = (await contratoRes.json())[0];
+  if (!config) {
+    bloco.innerHTML = "⚠️ Empresa ainda não configurou a escala.";
+    return;
+  }
+
+  const diasSemana = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"];
+  const diasConfig = diasSemana.filter(d => config[`qtd_${d}_almoco`] || config[`qtd_${d}_jantar`]);
+  const turnos = ["almoco", "jantar"];
+  const turnoLabel = { almoco: "☀️ Almoço", jantar: "🌙 Jantar" };
+
+  const escaladoHoje = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  }).then(r => r.json());
+
+  const jaEscolheu = {}; // dia_turno como chave
+  escaladoHoje.forEach(e => {
+    jaEscolheu[`${e.dia_semana}_${e.turno}`] = true;
+  });
+
+  let html = "";
+
+  for (const dia of diasSemana) {
+    let linha = "";
+    for (const turno of turnos) {
+      const qtd = config[`qtd_${dia}_${turno}`];
+      if (!qtd) continue;
+
+      const countRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&dia_semana=eq.${dia}&turno=eq.${turno}`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const escalados = await countRes.json();
+
+      const vagasRestantes = qtd - escalados.length;
+      const conflito = escaladoHoje.some(e => e.dia_semana === dia && e.turno === turno);
+
+      if (conflito) {
+        linha += `<p>${turnoLabel[turno]} - ❌ Conflito com outra empresa</p>`;
+      } else if (vagasRestantes > 0) {
+        linha += `<p>${turnoLabel[turno]} - ${vagasRestantes} vaga(s) 
+        <button onclick="escalarEntregador('${contrato_id}', '${dia}', '${turno}')">✅ Me escalar</button></p>`;
+      } else {
+        linha += `<p>${turnoLabel[turno]} - 🔒 Vagas esgotadas</p>`;
+      }
+    }
+
+    if (linha) {
+      html += `<div style="margin-bottom:12px;background:rgba(255,255,255,0.06);padding:8px;border-radius:6px;">
+        <strong>${dia.charAt(0).toUpperCase() + dia.slice(1)}:</strong> ${linha}
+      </div>`;
+    }
+  }
+
+  bloco.innerHTML = html || "<p>⚠️ Nenhum turno disponível.</p>";
+}
+
+    async function escalarEntregador(contrato_id, dia, turno) {
+  const confirmar = confirm(`Deseja se escalar para ${dia.toUpperCase()} (${turno.toUpperCase()})?`);
+  if (!confirmar) return;
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      entregador_id,
+      contrato_id,
+      dia_semana: dia,
+      turno: turno
+    })
+  });
+
+  if (res.ok) {
+    alert("✅ Escala registrada com sucesso!");
+    carregarEmpresasComAutoEscala(); // Recarrega
+    carregarEscalaSemanal(); // Atualiza a tabela de cima também
+  } else {
+    alert("❌ Erro ao salvar escala.");
+  }
+}
+
 const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
 
 async function ativarNotificacoes() {
