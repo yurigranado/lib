@@ -358,8 +358,10 @@ async function verificarEmpresaAtiva() {
     document.getElementById('empresaAtiva').innerText = `Empresa: ${empresa.nome}`;
     document.getElementById('blocoEscolherEmpresa').style.display = "none";
   } else {
-    document.getElementById('empresaAtiva').innerText = `Nenhuma empresa ativa no momento`;
-    document.getElementById('blocoEscolherEmpresa').style.display = "block";
+document.getElementById('empresaAtiva').innerText = `Nenhuma empresa ativa no momento`;
+
+// Oculta o botão por padrão
+document.getElementById('blocoEscolherEmpresa').style.display = "none";
   }
 }
     async function aceitarConvite(terceirizada_id, nome) {
