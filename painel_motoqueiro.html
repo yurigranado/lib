@@ -584,10 +584,11 @@ async function carregarEscalaSemanal() {
 
   for (const dia of dias) {
     if (organizado[dia]) {
+      const turnosFormatados = [...organizado[dia]].join(" + ");
       html += `
         <tr>
           <td>${nomesDias[dia]}</td>
-          <td>${[...organizado[dia]].join(" + ")}</td>
+          <td><span style="white-space: nowrap;">${turnosFormatados}</span></td>
         </tr>`;
     }
   }
