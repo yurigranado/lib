@@ -536,11 +536,8 @@ async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
   ul.innerHTML = "";
   if (!valor) return;
 
-  // 🧼 Remove duplicados
-  const listaUnica = [...new Set(idsAutorizados)];
-
-  // 🔍 Monta a query
-  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${listaUnica.map(id => `'${id}'`).join(',')})&select=id,nome`;
+  // 🔥 REMOVE aspas internas no array
+  const query = `${SUPABASE_URL}/rest/v1/entregadores?nome=ilike.%25${valor}%25&id=in.(${idsAutorizados.join(',')})&select=id,nome`;
 
   const res = await fetch(query, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
@@ -548,7 +545,12 @@ async function filtrarSugestoes(valor, contrato_id, idsAutorizados) {
 
   const lista = await res.json();
 
-  // 🛡️ Filtra duplicados pelo ID no retorno
+  if (!Array.isArray(lista)) {
+    console.error("Resposta inesperada:", lista);
+    ul.innerHTML = `<li style="color:red;">Erro ao buscar sugestões</li>`;
+    return;
+  }
+
   const idsExibidos = new Set();
 
   lista.forEach(ent => {
