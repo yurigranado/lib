@@ -141,6 +141,7 @@
 <body>
   <div id="painelContainer">
     <p id="nomeEntregador">Carregando nome...</p>
+    <button onclick="logout()" class="painel-btn">Logout</button>
 
     <h2>Painel do Motoqueiro</h2>
 
@@ -360,6 +361,12 @@ async function verificarEmpresaAtiva() {
   } else {
     alert("❌ Erro ao aceitar o convite.");
   }
+}
+
+    function logout() {
+  localStorage.removeItem("login_motoqueiro");
+  localStorage.removeItem("login_expira_em");
+  window.location.href = "login_motoqueiro.html";
 }
 
 async function recusarConvite(terceirizada_id) {
