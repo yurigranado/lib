@@ -198,7 +198,7 @@
         headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
       });
       const escalados = await escalaRes.json();
-      const ids = escalados.map(e => `'${e.entregador_id}'`);
+      const ids = escalados.map(e => e.entregador_id);
 
       if (!ids.length) continue;
 
