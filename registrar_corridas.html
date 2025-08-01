@@ -209,6 +209,7 @@ function logout() {
   }
 
   async function carregarEntregadores() {
+  await carregarChaves();
   const container = document.getElementById("blocoEntregadores");
   container.innerHTML = "🔄 Carregando...";
 
