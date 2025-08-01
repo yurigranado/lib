@@ -899,12 +899,32 @@ async function ativarNotificacoes() {
     diasResumo[data] += simples + duplas;
   }
 
-  const resumoDias = Object.entries(diasResumo).sort((a, b) => new Date(b[0]) - new Date(a[0]))
-    .map(([data, qtd]) => {
-      const d = new Date(data);
-      const dia = d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
-      return `- ${dia}: ${qtd}`;
-    }).join("<br>");
+  const resumoDias = `
+    <table style="width:100%; border-collapse: collapse; color: white; font-size: 14px; text-align: center;">
+      <thead>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+          <th>Data</th>
+          <th>Turno</th>
+          <th>Simples</th>
+          <th>Duplas</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${corridas.map(c => {
+          const d = new Date(c.data);
+          const dataFormatada = d.toLocaleDateString("pt-BR");
+          const turno = c.turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar";
+          return `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <td>${dataFormatada}</td>
+              <td>${turno}</td>
+              <td>${c.qtd_corridas}</td>
+              <td>${c.qtd_corridas_duplas}</td>
+            </tr>`;
+        }).join("")}
+      </tbody>
+    </table>
+  `;
 
   let tabelaHTML = `
     <div class="tabela-escala-entregador" style="margin-top: 20px;">
