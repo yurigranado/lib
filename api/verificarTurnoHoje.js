@@ -24,12 +24,7 @@ export default async function handler(req, res) {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const empresaData = await empresaRes.json();
-    console.log("📦 Terceirizada ativa encontrada:", empresaData);
-
-    if (!empresaData.length) {
-      console.warn("⚠️ Nenhuma terceirizada ativa");
-      return res.status(200).json({ status: "sem_empresa" });
-    }
+    if (!empresaData.length) return res.status(200).json({ status: "sem_empresa" });
 
     const terceirizada_id = empresaData[0].terceirizada_id;
 
@@ -38,13 +33,9 @@ export default async function handler(req, res) {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const contrato = await contratoRes.json();
-    console.log("📄 Contrato:", contrato);
-
     const contrato_id = contrato[0]?.id;
-    if (!contrato_id) {
-      console.warn("⚠️ Sem contrato para a terceirizada");
-      return res.status(200).json({ status: "sem_contrato" });
-    }
+    const empresa_id = contrato[0]?.empresa_id;
+    if (!contrato_id || !empresa_id) return res.status(200).json({ status: "sem_contrato" });
 
     // 🔎 Verificar chegada ativa
     const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato_id}&or=(encerrado.is.false,encerrado.is.null)&select=data,turno,entregador_id`, {
@@ -52,13 +43,11 @@ export default async function handler(req, res) {
     });
     const todas = await chegadaRes.json();
     const chegadas = todas.filter(c => String(c.entregador_id) === String(entregador_id));
-    console.log("🚪 Chegadas abertas encontradas:", chegadas.length);
 
     if (chegadas.length > 0) {
       const ultima = chegadas.sort((a, b) => new Date(b.data) - new Date(a.data))[0];
       const dataHora = new Date(ultima.data);
       const dataBrasilia = new Date(dataHora.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-
       return res.status(200).json({
         status: "chegada_existente",
         data: dataBrasilia.toLocaleDateString("pt-BR"),
@@ -66,42 +55,53 @@ export default async function handler(req, res) {
       });
     }
 
-    // 🔎 Buscar turnos da empresa
-    const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
+    // 🔎 Buscar ESCALA do entregador
+    const diaSemana = new Date().toLocaleString("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" }).toLowerCase();
+    const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${diaSemana}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const turnos = await empresaTurnoRes.json();
-    console.log("🕒 Turnos da empresa:", turnos);
+    const escalaHoje = await escalaRes.json();
+
+    if (!escalaHoje.length) {
+      console.warn("⚠️ Entregador não está escalado para hoje");
+      return res.status(200).json({ status: "fora_do_horario" });
+    }
+
+    // 🔎 Buscar horários da empresa
+    const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${empresa_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const turnosEmpresa = await empresaTurnoRes.json();
 
     const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
 
-    for (const turno of turnos) {
-      const [horaStr, minutoStr] = turno.horario_inicio.split(":");
+    for (const esc of escalaHoje) {
+      const turnoNome = esc.turno.toLowerCase();
+      const infoTurno = turnosEmpresa.find(t => t.nome_turno.toLowerCase() === turnoNome);
+      if (!infoTurno) continue;
+
+      const [h, m] = infoTurno.horario_inicio.split(":");
       const inicio = new Date(agora);
-      inicio.setHours(+horaStr);
-      inicio.setMinutes(+minutoStr - 15);
+      inicio.setHours(+h);
+      inicio.setMinutes(+m - 15);
 
-      const fim = new Date(inicio);
-      fim.setMinutes(fim.getMinutes() + 360);
+      const [hf, mf] = infoTurno.horario_fim.split(":");
+      const fim = new Date(agora);
+      fim.setHours(+hf);
+      fim.setMinutes(+mf);
 
-      const nomeTurno = turno.nome?.toLowerCase();
-      console.log("⏳ Avaliando turno:", nomeTurno, "entre", inicio.toISOString(), "e", fim.toISOString());
-
-      if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
-        console.log("✅ Turno válido:", nomeTurno);
+      if (agora >= inicio && agora <= fim) {
         return res.status(200).json({
           status: "pode_confirmar",
-          turno: nomeTurno,
+          turno: turnoNome,
           contrato_id
         });
       }
     }
 
-    console.warn("⏳ Fora do horário permitido");
     return res.status(200).json({ status: "fora_do_horario" });
 
   } catch (erro) {
-    console.error("💥 Erro interno no verificarTurnoHoje:", erro.message);
     return res.status(500).json({ erro: "Erro interno", detalhes: erro.message });
   }
 }
