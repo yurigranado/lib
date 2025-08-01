@@ -276,6 +276,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   <div id="blocoConfirmarChegada" style="margin-top: 10px; display: none;">
   <button class="painel-btn" onclick="confirmarChegada()">📍 Confirmar Chegada</button>
   <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
+  <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
 </div>
 
   <!-- Bloco da escala abaixo -->
@@ -706,37 +707,37 @@ async function confirmarChegada() {
     });
     const contrato = await contratoRes.json();
     const empresa_id = contrato[0]?.empresa_id;
+    if (!empresa_id) return alert("❌ Não foi possível identificar a empresa vinculada.");
 
-    if (!empresa_id) {
-      alert("❌ Não foi possível identificar a empresa vinculada.");
-      return;
-    }
-
-    // Busca localização da empresa
+    // Localização da empresa
     const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresa_id}&select=latitude,longitude`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const empresa = await empresaRes.json();
     const latEmpresa = empresa[0]?.latitude;
     const lonEmpresa = empresa[0]?.longitude;
+    if (!latEmpresa || !lonEmpresa) return alert("❌ A empresa não possui coordenadas cadastradas.");
 
-    if (!latEmpresa || !lonEmpresa) {
-      alert("❌ A empresa não possui coordenadas cadastradas.");
-      return;
-    }
-
-    // Calcula distância (em metros)
+    // 📏 Verifica distância
     const distancia = calcularDistancia(latEntregador, lonEntregador, latEmpresa, lonEmpresa);
-
     console.log("📍 Distância do entregador até o restaurante:", distancia.toFixed(2), "metros");
-
-    // Só confirma se estiver dentro de 200m
     if (distancia > 100) {
-      alert("⚠️ Você está muito longe do restaurante para confirmar chegada.\nDistância: " + distancia.toFixed(0) + "m");
       return;
     }
 
-    // Continua o registro da chegada
+    // ⏱️ Checar se já existe confirmação HOJE para o mesmo turno
+    const hoje = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const confirmaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&select=data`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const registros = await confirmaRes.json();
+    const jaConfirmouHoje = registros.some(r => r.data.startsWith(hoje));
+    if (jaConfirmouHoje) {
+      btn.style.display = "none";
+      return;
+    }
+
+    // ✅ Registra chegada
     const payload = {
       entregador_id,
       contrato_id,
@@ -757,8 +758,19 @@ async function confirmarChegada() {
     });
 
     if (res.ok) {
+      const agora = new Date();
+      const dia = agora.toLocaleDateString('pt-BR');
+      const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
       document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
-      btn.style.display = "none";
+      document.getElementById("blocoConfirmarChegada").style.display = "none";
+
+      const p = document.createElement("p");
+      p.style.color = "white";
+      p.style.marginTop = "6px";
+      p.style.fontSize = "14px";
+      p.textContent = `Chegada em ${dia} às ${hora}`;
+      document.getElementById("blocoConfirmarChegada").after(p);
     } else {
       alert("❌ Erro ao confirmar chegada.");
     }
