@@ -415,8 +415,6 @@ if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
   window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
 }
 
-const obrigarInstalacao = false;
-
 document.addEventListener("DOMContentLoaded", async () => {
   const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   const isStandalone = window.navigator.standalone === true;
