@@ -249,20 +249,42 @@ input:checked + .slider:before {
 html += `
   <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
     <h3 style="margin-top: 0;">🚚 Contrato ${contrato.id.slice(0, 8)}...</h3>
-    ${entregadores.map(ent => `
-      <div class="linha-entregador">
-        <span>${ent.nome}</span>
-        <input type="number" placeholder="Simples" min="0" id="corridas_${contrato.id}_${ent.id}">
-        <input type="number" placeholder="Duplas" min="0" id="corridas_duplas_${contrato.id}_${ent.id}">
-        <label class="switch">
-          <input type="checkbox" id="noturno_${contrato.id}_${ent.id}">
-          <span class="slider"></span>
-        </label>
-      </div>
-    `).join("")}
-    <button class="salvar-btn" onclick="salvarCorridas('${contrato.id}', '${data}', '${turno}', [${entregadores.map(e => `'${e.id}'`).join(",")}])">
-      💾 Salvar Corridas
-    </button>
+    <table style="width:100%; border-collapse: collapse; color: white;">
+      <thead>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+          <th style="text-align:left; padding: 8px;">#</th>
+          <th style="text-align:left; padding: 8px;">Entregador</th>
+          <th style="text-align:left; padding: 8px;">Simples</th>
+          <th style="text-align:left; padding: 8px;">Duplas</th>
+          <th style="text-align:center; padding: 8px;">🌙 Noturno</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${entregadores.map((ent, i) => `
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 6px;">${i + 1}</td>
+            <td style="padding: 6px;">${ent.nome}</td>
+            <td style="padding: 6px;">
+              <input type="number" min="0" placeholder="0" id="corridas_${contrato.id}_${ent.id}" style="width: 70px; padding: 6px; border-radius: 6px;">
+            </td>
+            <td style="padding: 6px;">
+              <input type="number" min="0" placeholder="0" id="corridas_duplas_${contrato.id}_${ent.id}" style="width: 70px; padding: 6px; border-radius: 6px;">
+            </td>
+            <td style="text-align: center;">
+              <label class="switch">
+                <input type="checkbox" id="noturno_${contrato.id}_${ent.id}">
+                <span class="slider"></span>
+              </label>
+            </td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+    <div style="text-align: right;">
+      <button class="salvar-btn" onclick="salvarCorridas('${contrato.id}', '${data}', '${turno}', [${entregadores.map(e => `'${e.id}'`).join(",")}])">
+        💾 Salvar Corridas
+      </button>
+    </div>
   </div>
 `;
     }
