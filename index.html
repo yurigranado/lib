@@ -203,14 +203,6 @@ let API_KEY = "";
 
 document.addEventListener("DOMContentLoaded", async () => {
   await carregarChaves();
-  
-  // ✅ Só agora continua o código original
-<script>
-let SUPABASE_URL = "";
-let API_KEY = "";
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await carregarChaves();
 
   const empresa_id = localStorage.getItem("empresa_id");
   const empresa_nome = localStorage.getItem("empresa_nome");
@@ -235,83 +227,6 @@ async function carregarChaves() {
     console.error("Erro ao buscar /api/supabase:", e);
   }
 }
-
-function md5(str) {
-  return CryptoJS.MD5(str).toString();
-}
-
-document.getElementById("formLogin").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const email = form.email.value.trim();
-  const senha = md5(form.senha.value.trim());
-  const msg = document.getElementById("mensagem");
-  const overlay = document.getElementById("loading");
-  overlay.style.display = "flex";
-
-  try {
-    const resEmpresa = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
-    });
-    const dadosEmpresa = await resEmpresa.json();
-
-    if (dadosEmpresa.length === 1) {
-      const empresa = dadosEmpresa[0];
-      localStorage.setItem("empresa_id", empresa.id);
-      localStorage.setItem("empresa_nome", empresa.nome);
-
-      const contratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa.id}&status=eq.ativo`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-
-      const lista = await contratos.json();
-      console.log("📄 Contratos encontrados:", lista.length);
-      window.location.href = "painel_restaurante.html";
-      return;
-    }
-
-    const resTerceiro = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${email}&senha=eq.${senha}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
-    });
-    const dadosTerceiro = await resTerceiro.json();
-
-    if (dadosTerceiro.length === 1) {
-      const t = dadosTerceiro[0];
-      localStorage.setItem("terceirizada_id", t.id);
-      localStorage.setItem("terceirizada_nome", t.nome);
-      localStorage.setItem("session_token", API_KEY);
-      window.location.href = "painel_terceirizada.html";
-      return;
-    }
-
-    msg.textContent = "❌ Login ou senha inválidos.";
-    msg.style.color = "red";
-    overlay.style.display = "none";
-  } catch (err) {
-    msg.textContent = "Erro ao conectar.";
-    msg.style.color = "red";
-    overlay.style.display = "none";
-    console.error("❌ Erro ao logar:", err);
-  }
-});
-
-document.getElementById("btnCadastrarRestaurante").addEventListener("click", () => {
-  window.location.href = "cadastroEmpresaSupabase.html";
-});
-
-document.getElementById("btnCadastrarTerceirizada").addEventListener("click", () => {
-  window.location.href = "cadastroTerceirzada.html";
-});
-</script>
 
 
   function md5(str) {
