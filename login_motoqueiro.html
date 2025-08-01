@@ -104,25 +104,37 @@
 </head>
 <body>
 
+<!-- 🔒 BLOQUEIO POR MODO -->
+<div id="telaLogin" style="display: none;">
   <div class="login-container">
     <div class="logo">
       <img src="https://i.imgur.com/VpQtXGy.png" alt="Logo Motoqueiro">
     </div>
 
     <form id="f">
-<label for="login">CPF:</label>
-<input id="login" type="text" inputmode="numeric" placeholder="000.000.000-00" required>
+      <label for="login">CPF:</label>
+      <input id="login" type="text" inputmode="numeric" placeholder="000.000.000-00" required>
 
       <label for="senha">Senha:</label>
-<input id="senha" type="password" inputmode="numeric" placeholder="Digite sua senha" required>
+      <input id="senha" type="password" inputmode="numeric" placeholder="Digite sua senha" required>
+
       <button type="submit">Entrar</button>
-      
+
       <button type="button" onclick="window.location.href='cadastro_entregador.html'" style="background: transparent; color: white; margin-top: 12px; font-size: 14px; border: 1px solid white;">
-  Criar minha conta
-</button>
+        Criar minha conta
+      </button>
+
       <div id="msg"></div>
     </form>
   </div>
+</div>
+
+<!-- 📢 AVISO PARA INSTALAR -->
+<div id="avisoInstalacao" style="display: none; text-align: center; padding: 40px; color: white;">
+  <h2>📲 Aplicativo não instalado</h2>
+  <p>Para acessar o painel, instale o app na sua tela inicial.</p>
+  <button onclick="instalarPWA()" style="padding: 10px 20px; font-weight: bold; background: white; color: #003366; border: none; border-radius: 10px;">Instalar agora</button>
+</div>
 
 <script>
 let SUPABASE_URL = "";
@@ -154,8 +166,20 @@ function md5(str) {
 
 // 🔁 Aguarda DOM para carregar chaves antes de qualquer fetch
 document.addEventListener("DOMContentLoaded", async () => {
+  const modo = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  if (!modo) {
+    document.body.innerHTML = `
+      <div style="text-align: center; padding: 40px; color: white;">
+        <h2>📲 Aplicativo não instalado</h2>
+        <p>Para acessar o painel, instale o app na sua tela inicial.</p>
+        <button onclick="instalarPWA()" style="padding: 10px 20px; font-weight: bold; background: white; color: #003366; border: none; border-radius: 10px;">Instalar agora</button>
+      </div>
+    `;
+    return;
+  }
+
   await carregarChaves();
-  // 👇 Aqui você pode seguir com o restante da lógica que usa SUPABASE_URL/API_KEY
 });
 
   document.getElementById("login").addEventListener("input", (e) => {
@@ -210,6 +234,10 @@ localStorage.setItem("login_motoqueiro", entregador.cpf);
       msg.style.display = "block";
     }
   });
+  
+  function instalarPWA() {
+  alert("Para instalar o app, clique nos 3 pontinhos do navegador e selecione 'Adicionar à tela inicial'.");
+}
 </script>
 
 </body>
