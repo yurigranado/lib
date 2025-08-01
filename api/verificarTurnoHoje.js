@@ -118,7 +118,7 @@ return res.status(200).json({ status: "fora_do_horario" });
 
     return res.status(200).json({ status: "fora_do_horario" });
 
-  } catch (erro) {
-    return res.status(500).json({ erro: "Erro interno", detalhes: erro.message });
-  }
+} catch (erro) {
+  console.error("💥 Erro interno no verificarTurnoHoje:", erro.message);
+  return res.status(500).json({ erro: "Erro interno", detalhes: erro.message || String(erro) });
 }
