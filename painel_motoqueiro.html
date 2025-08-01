@@ -635,50 +635,62 @@ async function carregarEscalaSemanal() {
 }
 
 async function verificarTurnoHoje() {
-  // 🔍 Descobre empresa ativa
+  console.log("🚀 Iniciando verificação de chegada ativa...");
+
+  // 1. Buscar terceirizada ativa
   const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const empresaData = await empresaRes.json();
-  if (!empresaData.length) return;
+  console.log("🏢 Terceirizada ativa:", empresaData);
+
+  if (!empresaData.length) {
+    console.warn("❌ Nenhuma terceirizada ativa encontrada.");
+    return;
+  }
 
   const terceirizada_id = empresaData[0].terceirizada_id;
 
-  // 🔍 Pega contrato da empresa ativa
+  // 2. Buscar contrato ativo com essa terceirizada
   const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${terceirizada_id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const contrato = await contratoRes.json();
-  const contrato_id = contrato[0]?.id;
-  if (!contrato_id) return;
+  console.log("📄 Contrato localizado:", contrato);
 
-  // 🔍 Busca todas chegadas ativas (encerrado = false)
+  const contrato_id = contrato[0]?.id;
+  if (!contrato_id) {
+    console.warn("❌ Contrato não encontrado.");
+    return;
+  }
+
+  // 3. Buscar chegadas ativas (não encerradas)
   const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&encerrado=eq.false&select=data,turno`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const chegadas = await chegadaRes.json();
   console.log("📦 Chegadas ativas encontradas:", chegadas);
 
+  // 4. Lógica de exibição
   if (chegadas.length > 0) {
-    // 🔄 Ordena por data e mostra a mais recente (pode ser de ontem)
     const ultima = chegadas.sort((a, b) => new Date(b.data) - new Date(a.data))[0];
     const dataHora = new Date(ultima.data);
     const dia = dataHora.toLocaleDateString("pt-BR");
     const hora = dataHora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-    // Oculta botão e mostra a info
+    console.log(`✅ Última chegada ativa registrada em ${dia} às ${hora}`);
+
     document.getElementById("blocoConfirmarChegada").style.display = "none";
     document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
   } else {
-    // 🔓 Mostra botão se não houver nenhuma chegada
+    console.log("📭 Nenhuma chegada ativa. Exibindo botão.");
     const bloco = document.getElementById("blocoConfirmarChegada");
     bloco.style.display = "block";
-    bloco.dataset.turno = "jantar"; // opcional: detectar dinamicamente depois
+    bloco.dataset.turno = "jantar"; // pode ser adaptado dinamicamente
     bloco.dataset.contrato = contrato_id;
     document.getElementById("horarioChegada").innerText = "";
   }
 }
-
 
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
