@@ -233,11 +233,11 @@ input:checked + .slider:before {
 
     for (const contrato of contratos) {
 // 2. Buscar entregadores que realmente deram chegada
-const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id,data`, {
+const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id`, {
   headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
 });
-const chegadas = (await chegadaRes.json()).filter(c => c.data.startsWith(data));
-const ids = [...new Set(chegadas.map(e => e.entregador_id))]; // remove duplicatas
+const chegadas = await chegadaRes.json();
+const ids = [...new Set(chegadas.map(e => e.entregador_id))];
 
       if (!ids.length) continue;
 
