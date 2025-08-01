@@ -844,16 +844,14 @@ async function confirmarChegada() {
 
     // Registra chegada
 const payload = {
-  entregador_id,
-  contrato_id,
-  turno,
-  latitude: latEntregador,
-  longitude: lonEntregador,
-  data: new Date().toISOString(), // opcional, tem default
+  entregador_id: "75cd3a50-7042-411a-b4c6-2479a1e852de",
+  contrato_id: "fc086c67-8280-41e9-9327-356aa0cb031a",
+  turno: "jantar", // ou "almoco"
+  latitude: -23.5505,
+  longitude: -46.6333,
   encerrado: false,
   ativo: true
 };
-
     const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
       method: "POST",
       headers: {
