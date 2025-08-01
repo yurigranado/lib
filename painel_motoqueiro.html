@@ -270,6 +270,11 @@ button:focus, input:focus, select:focus, textarea:focus {
   </div>
   <p id="empresaAtiva" style="margin: 0;">Empresa: carregando...</p>
 </div>
+  
+  <div id="blocoConfirmarChegada" style="margin-top: 20px; display: none;">
+  <button class="painel-btn" onclick="confirmarChegada()">📍 Confirmar Chegada</button>
+  <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
+</div>
 
   <!-- Bloco da escala abaixo -->
   <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
@@ -311,27 +316,28 @@ async function carregarEntregadorId() {
     document.getElementById("nomeEntregador").innerText = dados[0].nome;
 
     await verificarEmpresaAtiva();
-    await carregarEscalaSemanal();
+    await carregarSemanal();
+    await verificarTurnoHoje();
     await ativarNotificacoes();
 
-    // ✅ Ativa Realtime da escala só depois de ter o ID
+    // ✅ Ativa Realtime da  só depois de ter o ID
     if (!window.supabaseClient) {
       window.supabaseClient = supabase.createClient(SUPABASE_URL, API_KEY);
     }
 
     window.supabaseClient
-      .channel(`escala_entregador_${entregador_id}`)
+      .channel(`_entregador_${entregador_id}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'escala_semana',
+          table: '_semana',
           filter: `entregador_id=eq.${entregador_id}`
         },
         payload => {
-          console.log("📡 Escala atualizada:", payload);
-          carregarEscalaSemanal(); // 🔁 atualiza o painel ao vivo
+          console.log("📡  atualizada:", payload);
+          carregarSemanal(); // 🔁 atualiza o painel ao vivo
         }
       )
       .subscribe();
@@ -623,6 +629,103 @@ async function carregarEscalaSemanal() {
   `;
 
   container.innerHTML = html;
+}
+
+    async function verificarTurnoHoje() {
+  const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+  const hoje = dias[new Date().getDay()];
+
+  const agora = new Date().toTimeString().slice(0, 5); // formato "HH:MM"
+
+  // Busca turnos da empresa
+  const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const empresaData = await empresaRes.json();
+  if (!empresaData.length) return;
+
+  const terceirizada_id = empresaData[0].terceirizada_id;
+
+  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${terceirizada_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const contrato = await contratoRes.json();
+  const contrato_id = contrato[0]?.id;
+  if (!contrato_id) return;
+
+  // Verifica se está escalado hoje
+  const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&entregador_id=eq.${entregador_id}&dia_semana=eq.${hoje}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const escalaHoje = await escalaRes.json();
+
+  if (!escalaHoje.length) return;
+
+  // Verifica se algum turno é válido pelo horário
+  let turnoAtual = null;
+  const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const turnos = await turnosRes.json();
+
+  for (const t of turnos) {
+    if (agora >= t.horario_inicio.slice(0, 5) && agora <= t.horario_fim.slice(0, 5)) {
+      turnoAtual = t.nome_turno.toLowerCase();
+      break;
+    }
+  }
+
+  // Exibe botão se o turno atual estiver na escala
+  const estaEscalado = escalaHoje.some(e => e.turno === turnoAtual);
+  if (estaEscalado) {
+    document.getElementById("blocoConfirmarChegada").style.display = "block";
+    document.getElementById("blocoConfirmarChegada").dataset.turno = turnoAtual;
+    document.getElementById("blocoConfirmarChegada").dataset.contrato = contrato_id;
+  }
+}
+
+    async function confirmarChegada() {
+  const btn = document.getElementById("blocoConfirmarChegada");
+  const turno = btn.dataset.turno;
+  const contrato_id = btn.dataset.contrato;
+
+  if (!navigator.geolocation) {
+    alert("Geolocalização não suportada.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    const payload = {
+      entregador_id,
+      contrato_id,
+      turno,
+      data: new Date().toISOString(),
+      latitude: lat,
+      longitude: lon
+    };
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
+      btn.style.display = "none";
+    } else {
+      alert("❌ Erro ao confirmar chegada.");
+    }
+  }, (erro) => {
+    alert("Erro ao obter localização: " + erro.message);
+  });
 }
 
 const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
