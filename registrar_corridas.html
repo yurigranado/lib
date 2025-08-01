@@ -232,19 +232,30 @@ input:checked + .slider:before {
     let html = "";
 
     for (const contrato of contratos) {
-// 2. Buscar entregadores que realmente deram chegada
-const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id`, {
+// 2. Buscar entregadores que realmente deram chegada hoje no turno
+const hoje = new Date();
+const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id,data`, {
   headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
 });
-const chegadas = await chegadaRes.json();
-const ids = [...new Set(chegadas.map(e => e.entregador_id))];
+const chegadasComData = await chegadaRes.json();
 
-      if (!ids.length) continue;
+const chegadasHoje = chegadasComData.filter(c => {
+  const dataChegada = new Date(c.data);
+  return (
+    dataChegada.getFullYear() === hoje.getFullYear() &&
+    dataChegada.getMonth() === hoje.getMonth() &&
+    dataChegada.getDate() === hoje.getDate()
+  );
+});
 
-      const entregadoresRes = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${ids.join(",")})&select=id,nome`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const entregadores = await entregadoresRes.json();
+const ids = [...new Set(chegadasHoje.map(e => e.entregador_id))];
+
+if (!ids.length) continue;
+
+const entregadoresRes = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${ids.join(",")})&select=id,nome`, {
+  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+});
+const entregadores = await entregadoresRes.json();
 
 html += `
   <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
