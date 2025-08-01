@@ -693,6 +693,7 @@ async function confirmarChegada() {
   btnChegada.disabled = true;
   btnChegada.style.background = "#888";
   btnChegada.style.cursor = "not-allowed";
+
   const turno = btn.dataset.turno;
   const contrato_id = btn.dataset.contrato;
 
@@ -705,50 +706,52 @@ async function confirmarChegada() {
     const latEntregador = pos.coords.latitude;
     const lonEntregador = pos.coords.longitude;
 
-    // Busca ID da empresa vinculada ao contrato
+    // Buscar empresa do contrato
     const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const contrato = await contratoRes.json();
     const empresa_id = contrato[0]?.empresa_id;
-    if (!empresa_id) return alert("❌ Não foi possível identificar a empresa vinculada.");
+    if (!empresa_id) return alert("❌ Empresa não identificada.");
 
-    // Localização da empresa
+    // Buscar coordenadas da empresa
     const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresa_id}&select=latitude,longitude`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
     const empresa = await empresaRes.json();
     const latEmpresa = empresa[0]?.latitude;
     const lonEmpresa = empresa[0]?.longitude;
-    if (!latEmpresa || !lonEmpresa) return alert("❌ A empresa não possui coordenadas cadastradas.");
+    if (!latEmpresa || !lonEmpresa) return alert("❌ Coordenadas da empresa não cadastradas.");
 
-    // 📏 Verifica distância
+    // Calcular distância
     const distancia = calcularDistancia(latEntregador, lonEntregador, latEmpresa, lonEmpresa);
-    console.log("📍 Distância do entregador até o restaurante:", distancia.toFixed(2), "metros");
+    console.log("📍 Distância:", distancia.toFixed(2), "m");
+
     if (distancia > 100) {
+      alert("⚠️ Você está longe do local para confirmar a chegada.");
       return;
     }
 
-    // ⏱️ Checar se já existe confirmação HOJE para o mesmo turno
-    const hoje = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-    const confirmaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&select=data`, {
+    // Verifica se já tem entrada ativa no mesmo turno
+    const jaExisteRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&ativo=eq.true`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const registros = await confirmaRes.json();
-    const jaConfirmouHoje = registros.some(r => r.data.startsWith(hoje));
-    if (jaConfirmouHoje) {
+    const existentes = await jaExisteRes.json();
+    if (existentes.length > 0) {
+      alert("⚠️ Você já deu entrada neste turno.");
       btn.style.display = "none";
       return;
     }
 
-    // ✅ Registra chegada
+    // Registra chegada
     const payload = {
       entregador_id,
       contrato_id,
       turno,
-      data: new Date().toISOString(),
+      data_inicio: new Date().toISOString(),
       latitude: latEntregador,
-      longitude: lonEntregador
+      longitude: lonEntregador,
+      ativo: true
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
@@ -767,7 +770,7 @@ async function confirmarChegada() {
       const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
-      document.getElementById("blocoConfirmarChegada").style.display = "none";
+      btn.style.display = "none";
 
       const p = document.createElement("p");
       p.style.color = "white";
