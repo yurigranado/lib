@@ -234,7 +234,7 @@ input:checked + .slider:before {
     for (const contrato of contratos) {
 // 2. Buscar entregadores que realmente deram chegada hoje no turno
 const hoje = new Date();
-const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id,data`, {
+const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&encerrado=eq.false&select=entregador_id,data`, {
   headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
 });
 const chegadasComData = await chegadaRes.json();
