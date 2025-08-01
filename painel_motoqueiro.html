@@ -672,7 +672,7 @@ async function verificarTurnoHoje() {
   console.log("📦 Chegadas ativas brutas:", todas);
 
   // 4. Filtrar somente as do entregador logado
-  const chegadas = todas.filter(c => c.entregador_id === entregador_id);
+const chegadas = todas.filter(c => String(c.entregador_id) === String(entregador_id));
   console.log("🧹 Chegadas filtradas para entregador:", entregador_id, chegadas);
 
   // 5. Exibição no painel
