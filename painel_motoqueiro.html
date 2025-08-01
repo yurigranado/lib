@@ -310,14 +310,18 @@ button:focus, input:focus, select:focus, textarea:focus {
   
     <!-- 📢 Anúncio no rodapé -->
 <div id="carrosselAnuncios" style="
-  width: 100%;
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
   max-width: 360px;
   aspect-ratio: 3 / 1;
   overflow: hidden;
   border-radius: 16px;
   box-shadow: 0 4px 14px rgba(0,0,0,0.2);
-  margin-top: 24px;
-  margin-bottom: 12px;
+  z-index: 9999;
+  background: white;
 ">
   <img id="imagemCarrossel" src="https://i.imgur.com/bp431Kk.png" alt="Anúncio" style="
     width: 100%;
