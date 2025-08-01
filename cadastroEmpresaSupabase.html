@@ -332,6 +332,8 @@ document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
   const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}`);
   const geoData = await geoRes.json();
 
+  document.getElementById("enderecoDetectado").value = enderecoCompleto;
+
   let latitude = null;
   let longitude = null;
   if (geoData.length > 0) {
