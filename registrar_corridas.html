@@ -321,7 +321,7 @@ async function salvarCorridas(contrato_id, turno, ids) {
     alert("✅ Corridas registradas com sucesso!");
 
     for (const p of payload) {
-      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&or=(encerrado.is.false,encerrado.is.null)`, {
+      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1//confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&ativo=eq.true&or=(encerrado.is.false,encerrado.is.null)`, {
         method: "PATCH",
         headers: {
           apikey: API_KEY,
