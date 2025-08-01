@@ -201,21 +201,22 @@ function md5(str) {
   return CryptoJS.MD5(str).toString();
 }
 
+const obrigarInstalacao = false; // 👈 Troque para true quando quiser forçar o modo PWA
+
 // 🔁 Aguarda DOM para carregar chaves antes de qualquer fetch
 document.addEventListener("DOMContentLoaded", async () => {
   const modo = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-  if (!modo) {
+  if (obrigarInstalacao && !modo) {
     document.getElementById("avisoInstalacao").style.display = "block";
     return;
   }
 
-  // ✅ Mostra o formulário de login se estiver em modo PWA
+  // ✅ Mostra o formulário de login se estiver em modo PWA ou se o bloqueio estiver desativado
   document.getElementById("telaLogin").style.display = "block";
 
   await carregarChaves();
 });
-
 
   document.getElementById("login").addEventListener("input", (e) => {
   let v = e.target.value.replace(/\D/g, '').slice(0, 11);
