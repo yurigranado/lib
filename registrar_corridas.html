@@ -231,7 +231,7 @@ input:checked + .slider:before {
 
       html += `
         <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
-          <h3 style="margin-top: 0;">🚚 Contrato ${contrato.id.slice(0, 8)}... | ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}</h3>
+<h3 style="margin-top: 0;">🚚 ${contrato.empresa.nome} | ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}</h3>
           <table style="width:100%; border-collapse: collapse; color: white;">
             <thead>
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
