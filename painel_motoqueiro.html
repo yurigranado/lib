@@ -316,7 +316,7 @@ async function carregarEntregadorId() {
     document.getElementById("nomeEntregador").innerText = dados[0].nome;
 
     await verificarEmpresaAtiva();
-    await carregarSemanal();
+    await carregarEscalaSemanal();
     await verificarTurnoHoje();
     await ativarNotificacoes();
 
