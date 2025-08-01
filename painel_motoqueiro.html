@@ -1028,6 +1028,21 @@ function urlBase64ToUint8Array(base64String) {
   document.getElementById("carrosselAnuncios").onclick = () => {
     window.open("https://shiitake-japa-lounge.goomer.app/menu", "_blank");
   };
+
+      function detectarSistema() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+
+  const isIos = /iphone|ipad|ipod/.test(userAgent);
+  const isAndroid = /android/.test(userAgent);
+
+  if (isIos) {
+    alert("📱 No iPhone, toque no botão de compartilhar e selecione 'Adicionar à Tela de Início'.");
+  } else if (isAndroid) {
+    alert("📱 No Android, toque nos 3 pontinhos do navegador e escolha 'Adicionar à Tela inicial'.");
+  } else {
+    alert("Sistema não identificado. A instalação pode não estar disponível.");
+  }
+}
     
   </script>
 </body>
