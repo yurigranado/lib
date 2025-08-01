@@ -168,8 +168,8 @@
 
     <div class="linha">
       <div class="coluna">
-        <label>WhatsApp</label>
-        <input type="tel" name="whatsapp" placeholder="(16) 99123-4567" />
+        <label>Entregas Fim de Semana</label>
+        <input type="number" name="entregas_fds" required />
       </div>
       <div class="coluna">
         <label>Entregas por Dia</label>
@@ -195,8 +195,8 @@
         <input type="text" name="complemento" id="complemento" />
       </div>
       <div class="coluna">
-        <label>Entregas Fim de Semana</label>
-        <input type="number" name="entregas_fds" required />
+        <label>WhatsApp</label>
+        <input type="tel" name="whatsapp" placeholder="(16) 99123-4567" />
       </div>
     </div>
 
@@ -286,98 +286,138 @@ whatsappInput.addEventListener("input", () => {
   whatsappInput.value = value;
 });
 
-  document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const msg = document.getElementById("mensagem");
+document.getElementById("cep").addEventListener("input", (e) => {
+  e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, "$1-$2");
+});
 
-    const tipos = [...document.querySelectorAll("#tiposVenda input:checked")].map(cb => cb.value);
-    const dias = [...document.querySelectorAll("#diasSemana input:checked")].map(cb => cb.value);
-    const turnos = [...document.querySelectorAll(".turno-item")].map(t => ({
-      nome: t.querySelector(".nome-turno").value,
-      inicio: t.querySelector(".hora-inicio").value,
-      fim: t.querySelector(".hora-fim").value
-    }));
+document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const msg = document.getElementById("mensagem");
 
-    const cnpjLimpo = form.cnpj.value.replace(/\D/g, "");
-    const empresaData = {
-  nome: form.nome.value,
-  cnpj: cnpjLimpo,
-  cidade: form.cidade.value,
-  estado: form.estado.value,
-  whatsapp: form.whatsapp.value.replace(/\D/g, ""),
-  entregas_dia: Number(form.entregas_dia.value),
-  entregas_fds: Number(form.entregas_fds.value),
-  email: form.email.value,
-  senha: md5(form.senha.value)
-};
+  const tipos = [...document.querySelectorAll("#tiposVenda input:checked")].map(cb => cb.value);
+  const dias = [...document.querySelectorAll("#diasSemana input:checked")].map(cb => cb.value);
+  const turnos = [...document.querySelectorAll(".turno-item")].map(t => ({
+    nome: t.querySelector(".nome-turno").value,
+    inicio: t.querySelector(".hora-inicio").value,
+    fim: t.querySelector(".hora-fim").value
+  }));
 
-    // 🛡️ Verificar duplicidade
-    const jaExiste = await fetch(`${SUPABASE_URL}/rest/v1/empresas?or=(cnpj.eq.${cnpjLimpo},email.eq.${empresaData.email})`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
-    });
-    const resultados = await jaExiste.json();
-    if (resultados.length > 0) {
-      msg.textContent = "❌ Já existe uma empresa com este CNPJ ou Email.";
-      msg.style.color = "red";
-      return;
+  const cep = form.cep.value.replace(/\D/g, '');
+  const numero = form.numero.value;
+  const complemento = form.complemento.value || "";
+
+  // 🔍 Busca endereço com ViaCEP
+  const enderecoRes = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const enderecoData = await enderecoRes.json();
+  if (enderecoData.erro) {
+    msg.textContent = "❌ CEP inválido.";
+    msg.style.color = "red";
+    return;
+  }
+
+  const rua = enderecoData.logradouro;
+  const bairro = enderecoData.bairro;
+  const cidade = enderecoData.localidade;
+  const estado = enderecoData.uf;
+
+  // 🌍 Gera latitude e longitude com Nominatim
+  const enderecoCompleto = `${rua}, ${numero}, ${bairro}, ${cidade} - ${estado}, Brasil`;
+  const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoCompleto)}`);
+  const geoData = await geoRes.json();
+
+  let latitude = null;
+  let longitude = null;
+  if (geoData.length > 0) {
+    latitude = parseFloat(geoData[0].lat);
+    longitude = parseFloat(geoData[0].lon);
+  }
+
+  const cnpjLimpo = form.cnpj.value.replace(/\D/g, "");
+  const empresaData = {
+    nome: form.nome.value,
+    cnpj: cnpjLimpo,
+    cidade,
+    estado,
+    rua,
+    bairro,
+    cep,
+    numero,
+    complemento,
+    latitude,
+    longitude,
+    whatsapp: form.whatsapp.value.replace(/\D/g, ""),
+    entregas_dia: Number(form.entregas_dia.value),
+    entregas_fds: Number(form.entregas_fds.value),
+    email: form.email.value,
+    senha: md5(form.senha.value)
+  };
+
+  // 🔒 Verifica duplicidade
+  const jaExiste = await fetch(`${SUPABASE_URL}/rest/v1/empresas?or=(cnpj.eq.${cnpjLimpo},email.eq.${empresaData.email})`, {
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`
     }
+  });
+  const resultados = await jaExiste.json();
+  if (resultados.length > 0) {
+    msg.textContent = "❌ Já existe uma empresa com este CNPJ ou Email.";
+    msg.style.color = "red";
+    return;
+  }
 
-    // ✅ Salvar empresa
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/restaurantes`, {
+  // ✅ Salvar empresa
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/restaurantes`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify(empresaData)
+  });
+
+  const dados = await res.json();
+  const id = dados[0]?.id;
+  if (!id) {
+    msg.textContent = "Erro ao salvar empresa.";
+    msg.style.color = "red";
+    return;
+  }
+
+  // 🔁 Salvar extras
+  const salvar = async (tabela, array) => {
+    if (!array.length) return;
+    const registros = array.map(item =>
+      item.tipo === "dia"
+        ? { empresa_id: id, dia: item.valor }
+        : item.tipo === "canal"
+          ? { empresa_id: id, canal: item.valor }
+          : { empresa_id: id, nome_turno: item.nome, horario_inicio: item.inicio, horario_fim: item.fim }
+    );
+
+    await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
       method: "POST",
       headers: {
         apikey: API_KEY,
         Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(empresaData)
+      body: JSON.stringify(registros)
     });
+  };
 
-    const dados = await res.json();
-    const id = dados[0]?.id;
-    if (!id) {
-      msg.textContent = "Erro ao salvar empresa.";
-      msg.style.color = "red";
-      return;
-    }
+  await salvar("empresa_dias_semana", dias.map(d => ({ tipo: "dia", valor: d })));
+  await salvar("empresa_tipos_venda", tipos.map(c => ({ tipo: "canal", valor: c })));
+  await salvar("empresa_turnos", turnos);
 
-    // 🔄 Salvar extras
-    const salvar = async (tabela, array) => {
-      if (!array.length) return;
-      const registros = array.map(item =>
-        item.tipo === "dia"
-          ? { empresa_id: id, dia: item.valor }
-          : item.tipo === "canal"
-            ? { empresa_id: id, canal: item.valor }
-            : { empresa_id: id, nome_turno: item.nome, horario_inicio: item.inicio, horario_fim: item.fim }
-      );
-
-      await fetch(`${SUPABASE_URL}/rest/v1/${tabela}`, {
-        method: "POST",
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(registros)
-      });
-    };
-
-    await salvar("empresa_dias_semana", dias.map(d => ({ tipo: "dia", valor: d })));
-    await salvar("empresa_tipos_venda", tipos.map(c => ({ tipo: "canal", valor: c })));
-    await salvar("empresa_turnos", turnos);
-
-    msg.textContent = "✅ Empresa cadastrada com sucesso!";
-    msg.style.color = "green";
-    form.reset();
-    document.getElementById("turnosContainer").innerHTML = "";
-  });
+  msg.textContent = "✅ Empresa cadastrada com sucesso!";
+  msg.style.color = "green";
+  form.reset();
+  document.getElementById("turnosContainer").innerHTML = "";
+});
 </script>
-
 </body>
 </html>
