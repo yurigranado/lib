@@ -635,13 +635,9 @@ async function carregarEscalaSemanal() {
 }
 
 async function verificarTurnoHoje() {
-  const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
-  const hojeIndex = new Date().getDay();
-  const hoje = dias[hojeIndex];
-  const ontem = dias[(hojeIndex + 6) % 7]; // pega o dia anterior
   const agora = new Date().toTimeString().slice(0, 5); // HH:MM
-  console.log("📅 Hoje:", hoje, "| Ontem:", ontem, "| ⏰ Agora:", agora);
 
+  // 🔍 Verifica empresa ativa
   const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -650,6 +646,7 @@ async function verificarTurnoHoje() {
 
   const terceirizada_id = empresaData[0].terceirizada_id;
 
+  // 🔍 Busca contrato
   const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${terceirizada_id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -657,60 +654,29 @@ async function verificarTurnoHoje() {
   const contrato_id = contrato[0]?.id;
   if (!contrato_id) return;
 
-const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&entregador_id=eq.${entregador_id}&dia_semana=in.("${hoje}","${ontem}")`, {
+  // 🔍 Busca chegada ativa (encerrado = false)
+  console.log("🔎 Entregador ID:", entregador_id);
+  const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&encerrado=eq.false&select=data`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
-  const escala = await escalaRes.json();
-  console.log("📋 Escala encontrada (hoje/ontem):", escala);
-  if (!escala.length) return;
+  const chegadas = await chegadaRes.json();
+  console.log("📦 Chegadas ativas encontradas:", chegadas);
 
-  const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
-  const turnos = await turnosRes.json();
-  console.log("🆔 Entregador ID (antes da busca de chegada):", entregador_id);
+  if (chegadas.length > 0) {
+    const ultima = chegadas.sort((a, b) => new Date(b.data) - new Date(a.data))[0];
+    const dataHora = new Date(ultima.data);
+    const dia = dataHora.toLocaleDateString("pt-BR");
+    const hora = dataHora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-  // Procurar chegada ativa não encerrada para esse entregador e contrato
-const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&encerrado=eq.false&select=data,turno`, {
-  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-});
-const chegadas = await chegadaRes.json();
-console.log("📦 Chegadas ativas encontradas:", chegadas);
-
-if (chegadas.length > 0) {
-  const ultima = chegadas.sort((a, b) => new Date(b.data) - new Date(a.data))[0];
-  const dataHora = new Date(ultima.data);
-  const dia = dataHora.toLocaleDateString("pt-BR");
-  const hora = dataHora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-
-  document.getElementById("blocoConfirmarChegada").style.display = "none";
-  document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
-  return;
+    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
+  } else {
+    const bloco = document.getElementById("blocoConfirmarChegada");
+    bloco.style.display = "block";
+    bloco.dataset.turno = "jantar"; // ou outro valor se quiser registrar
+    bloco.dataset.contrato = contrato_id;
   }
-
-  // Se não tiver chegada ativa, identificar se o turno atual está disponível para hoje
-  let turnoAtual = null;
-  for (const t of turnos) {
-    const inicio = t.horario_inicio.slice(0, 5);
-    const fim = t.horario_fim.slice(0, 5);
-    if (agora >= inicio && agora <= fim) {
-      turnoAtual = t.nome_turno.toLowerCase();
-      break;
-    }
-  }
-
-  if (!turnoAtual) return;
-
-  const estaEscalado = escala.some(e => e.turno === turnoAtual);
-  if (!estaEscalado) return;
-
-  // Exibe botão de chegada se não tiver chegada registrada
-  const bloco = document.getElementById("blocoConfirmarChegada");
-  bloco.style.display = "block";
-  bloco.dataset.turno = turnoAtual;
-  bloco.dataset.contrato = contrato_id;
 }
-
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
   const btnChegada = document.getElementById("btnChegada");
