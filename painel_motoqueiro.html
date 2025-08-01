@@ -871,7 +871,8 @@ async function ativarNotificacoes() {
   const resposta = await res.text();
   console.log("📥 Resultado do salvamento do token:", resposta);
 }
-    async function carregarResumoCorridas() {
+    
+ async function carregarResumoCorridas() {
   const container = document.getElementById("blocoResumoCorridas");
   container.innerHTML = "⏳ Carregando corridas...";
 
@@ -884,6 +885,7 @@ async function ativarNotificacoes() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/corridas?entregador_id=eq.${entregador_id}&data=gte.${dataSemana}&select=data,turno,qtd_corridas,qtd_corridas_duplas`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
+
   const corridas = await res.json();
 
   if (!corridas.length) {
@@ -891,9 +893,9 @@ async function ativarNotificacoes() {
     return;
   }
 
-  let totalSimples = 0, totalDuplas = 0;
-  let resumoHoje = "";
-  let diasResumo = {};
+  let totalSimples = 0;
+  let totalDuplas = 0;
+  const agrupado = {};
 
   for (const c of corridas) {
     const data = c.data.split("T")[0];
@@ -904,90 +906,44 @@ async function ativarNotificacoes() {
     totalSimples += simples;
     totalDuplas += duplas;
 
-    if (data === dataHoje) {
-      resumoHoje += `- ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}: ${simples} simples, ${duplas} duplas\n`;
-    }
-
-    if (!diasResumo[data]) diasResumo[data] = 0;
-    diasResumo[data] += simples + duplas;
+    if (!agrupado[data]) agrupado[data] = { simples: 0, duplas: 0 };
+    agrupado[data].simples += simples;
+    agrupado[data].duplas += duplas;
   }
 
-  const resumoDias = `
-    <table style="width:100%; border-collapse: collapse; color: white; font-size: 14px; text-align: center;">
-      <thead>
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-          <th>Data</th>
-          <th>Turno</th>
-          <th>Simples</th>
-          <th>Duplas</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${corridas.map(c => {
-          const d = new Date(c.data);
-          const dataFormatada = d.toLocaleDateString("pt-BR");
-          const turno = c.turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar";
-          return `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-              <td>${dataFormatada}</td>
-              <td>${turno}</td>
-              <td>${c.qtd_corridas}</td>
-              <td>${c.qtd_corridas_duplas}</td>
-            </tr>`;
-        }).join("")}
-      </tbody>
-    </table>
-  `;
+  const diasOrdenados = Object.keys(agrupado).sort((a, b) => new Date(b) - new Date(a));
 
   let tabelaHTML = `
-    <div class="card-painel">
-      <table>
+    <div class="card-painel" style="background: white; border-radius: 16px; padding: 16px; margin-top: 16px; color: #003366;">
+      <h3 style="margin: 0 0 12px; font-size: 16px;">📦 Corridas Recentes</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
         <thead>
-          <tr>
-            <th>Data</th>
-            <th>Turno</th>
-            <th>Simples</th>
-            <th>Duplas</th>
+          <tr style="border-bottom: 1px solid #ddd;">
+            <th style="text-align: left; padding: 6px 8px;">Data</th>
+            <th style="text-align: center; padding: 6px 8px;">Simples</th>
+            <th style="text-align: center; padding: 6px 8px;">Duplas</th>
           </tr>
         </thead>
         <tbody>
   `;
 
-  // Agrupando por dia+turno
-  const agrupado = {};
-  for (const c of corridas) {
-    const data = c.data.split("T")[0];
-    const turno = c.turno;
-    if (!agrupado[data]) agrupado[data] = {};
-    if (!agrupado[data][turno]) agrupado[data][turno] = { simples: 0, duplas: 0 };
-    agrupado[data][turno].simples += c.qtd_corridas || 0;
-    agrupado[data][turno].duplas += c.qtd_corridas_duplas || 0;
-  }
-
-  const diasOrdenados = Object.keys(agrupado).sort((a, b) => new Date(b) - new Date(a));
-
   for (const dia of diasOrdenados) {
-    const turnos = agrupado[dia];
-    for (const t in turnos) {
-      const label = t === "almoco" ? "☀️ Almoço" : "🌙 Jantar";
-      const simples = turnos[t].simples;
-      const duplas = turnos[t].duplas;
+    const { simples, duplas } = agrupado[dia];
+    const dataFormatada = new Date(dia).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 
-      tabelaHTML += `
-        <tr>
-          <td>${new Date(dia).toLocaleDateString("pt-BR")}</td>
-          <td>${label}</td>
-          <td>${simples}</td>
-          <td>${duplas}</td>
-        </tr>
-      `;
-    }
+    tabelaHTML += `
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 6px 8px;">${dataFormatada}</td>
+        <td style="text-align: center; padding: 6px 8px;">${simples}</td>
+        <td style="text-align: center; padding: 6px 8px;">${duplas}</td>
+      </tr>
+    `;
   }
 
   tabelaHTML += `
         </tbody>
       </table>
-      <div style="margin-top: 10px; text-align: center;">
+      <div style="margin-top: 10px; text-align: center; font-weight: bold;">
         📦 Total simples: ${totalSimples} | duplas: ${totalDuplas}
       </div>
     </div>
