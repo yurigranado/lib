@@ -269,6 +269,38 @@
   function md5(str) {
     return CryptoJS.MD5(str).toString();
   }
+  
+  async function atualizarEnderecoDetectado() {
+  const cep = document.getElementById("cep").value.replace(/\D/g, '');
+  const numero = document.getElementById("numero").value;
+  const campoEndereco = document.getElementById("enderecoDetectado");
+
+  if (cep.length < 8 || !numero) {
+    campoEndereco.value = "";
+    return;
+  }
+
+  try {
+    const enderecoRes = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const enderecoData = await enderecoRes.json();
+    if (enderecoData.erro) {
+      campoEndereco.value = "❌ CEP inválido";
+      return;
+    }
+
+    const rua = enderecoData.logradouro;
+    const bairro = enderecoData.bairro;
+    const cidade = enderecoData.localidade;
+    const estado = enderecoData.uf;
+
+    const enderecoCompleto = `${rua}, ${numero}, ${bairro}, ${cidade} - ${estado}, Brasil`;
+    campoEndereco.value = enderecoCompleto;
+
+  } catch (erro) {
+    campoEndereco.value = "Erro ao buscar endereço";
+  }
+}
+
 
   // Máscara de CNPJ enquanto digita
 const cnpjInput = document.querySelector('input[name="cnpj"]');
@@ -426,6 +458,10 @@ document.getElementById("formEmpresa").addEventListener("submit", async (e) => {
   form.reset();
   document.getElementById("turnosContainer").innerHTML = "";
 });
+
+  document.getElementById("cep").addEventListener("blur", atualizarEnderecoDetectado);
+  document.getElementById("numero").addEventListener("blur", atualizarEnderecoDetectado);
+  
 </script>
 </body>
 </html>
