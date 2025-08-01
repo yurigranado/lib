@@ -766,16 +766,15 @@ async function verificarTurnoHojeViaAPI() {
   const resultado = await resposta.json();
 
   if (resultado.status === "chegada_existente") {
-    document.getElementById("bloco").style.display = "none";
+    bloco.style.display = "none";
     document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
   } else if (resultado.status === "pode_confirmar") {
-    const bloco = document.getElementById("bloco");
     bloco.style.display = "block";
     bloco.dataset.turno = resultado.turno;
     bloco.dataset.contrato = resultado.contrato_id;
     document.getElementById("horarioChegada").innerText = "";
   } else {
-    document.getElementById("bloco").style.display = "none";
+    bloco.style.display = "none";
     document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
   }
 }
