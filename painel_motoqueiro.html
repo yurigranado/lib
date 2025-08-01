@@ -424,42 +424,40 @@ async function abrirSelecaoEmpresa() {
     return;
   }
 
-let temPendente = false;
+  let temPendente = false;
 
-// 🔁 Faz todas as chamadas em paralelo
-const promessas = lista.map(item =>
-  fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  }).then(res => res.json().then(data => ({ empresa: data[0], status: item.status })))
-);
+  // 🔄 Faz as requisições das empresas em paralelo
+  const resultados = await Promise.all(lista.map(async item => {
+    const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = (await empRes.json())[0];
+    return { ...item, nomeEmpresa: empresa?.nome || "Sem nome" };
+  }));
 
-const resultados = await Promise.all(promessas);
+  for (const item of resultados) {
+    const div = document.createElement("div");
+    div.style.marginBottom = "12px";
 
-// Agora monta os blocos
-for (const { empresa, status } of resultados) {
-  const div = document.createElement("div");
-  div.style.marginBottom = "12px";
+    if (item.status === "ativo") {
+      const btn = document.createElement("button");
+      btn.innerText = `✅ Ativar ${item.nomeEmpresa}`;
+      btn.onclick = () => ativarEmpresa(item.terceirizada_id, item.nomeEmpresa);
+      div.appendChild(btn);
+    } else if (item.status === "pendente") {
+      temPendente = true;
+      div.innerHTML = `
+        <p><strong>Convite:</strong> ${item.nomeEmpresa}</p>
+        <button onclick="aceitarConvite('${item.terceirizada_id}', '${item.nomeEmpresa}')">✅ Aceitar</button>
+        <button onclick="recusarConvite('${item.terceirizada_id}')">❌ Recusar</button>
+      `;
+    }
 
-  if (status === "ativo") {
-    const btn = document.createElement("button");
-    btn.innerText = `✅ Ativar ${empresa.nome}`;
-    btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
-    div.appendChild(btn);
-  } else if (status === "pendente") {
-    temPendente = true;
-    div.innerHTML = `
-      <p><strong>Convite:</strong> ${empresa.nome}</p>
-      <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
-      <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
-    `;
+    container.appendChild(div);
   }
-
-  container.appendChild(div);
-}
 
   document.getElementById("modalEmpresas").style.display = "flex";
 
-  // 🔔 Atualiza o botão principal conforme status
   const botao = document.querySelector(".painel-btn");
   if (temPendente) {
     botao.innerText = "📬 Convite Pendente! Verificar";
