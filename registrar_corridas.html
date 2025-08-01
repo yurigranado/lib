@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrar Corridas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 5vw;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .card-empresa {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .card-empresa h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .linha-entregador {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+    }
+
+    .linha-entregador span {
+      flex: 1;
+    }
+
+    .linha-entregador input {
+      width: 80px;
+      padding: 6px;
+      font-size: 14px;
+    }
+
+    button.salvar-btn {
+      background: #43a047;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button.salvar-btn:hover {
+      background: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛵 Registrar Corridas</h1>
+
+  <div class="filtros">
+    <label>
+      Data:
+      <input type="date" id="filtroData" />
+    </label>
+
+    <label>
+      Turno:
+      <select id="filtroTurno">
+        <option value="almoco">Almoço</option>
+        <option value="jantar">Jantar</option>
+      </select>
+    </label>
+
+    <button onclick="carregarEntregadores()">🔄 Carregar Entregadores</button>
+  </div>
+
+  <div id="blocoEmpresas"></div>
+
+  <script>
+    document.getElementById("filtroData").valueAsDate = new Date();
+
+    const empresa_id = localStorage.getItem("empresa_id");
+    if (!empresa_id) window.location.href = "index.html";
+
+    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+
+    function carregarEntregadores() {
+      const data = document.getElementById("filtroData").value;
+      const turno = document.getElementById("filtroTurno").value;
+      const container = document.getElementById("blocoEmpresas");
+
+      container.innerHTML = `<p>🔄 Carregando entregadores escalados para ${data} (${turno})...</p>`;
+
+      // Em breve: carregar contratos + entregadores da escala para esse dia/turno
+    }
+  </script>
+</body>
+</html>
