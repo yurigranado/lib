@@ -340,8 +340,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   <p id="empresaAtiva" style="margin: 0;">Empresa: carregando...</p>
 </div>
   
-<div id="blocoConfirmarChegada" style="margin-top: 10px; display: none;">
-  <button id="btnChegada" class="painel-btn" onclick="confirmarChegada()">📍 Confirmar Chegada</button>
+<div id="bloco" style="margin-top: 10px; display: none;">
+  <button id="btnChegada" class="painel-btn" onclick="()">📍 Confirmar Chegada</button>
   <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
 </div>
 <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
@@ -766,16 +766,16 @@ async function verificarTurnoHojeViaAPI() {
   const resultado = await resposta.json();
 
   if (resultado.status === "chegada_existente") {
-    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("bloco").style.display = "none";
     document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
   } else if (resultado.status === "pode_confirmar") {
-    const bloco = document.getElementById("blocoConfirmarChegada");
+    const bloco = document.getElementById("bloco");
     bloco.style.display = "block";
     bloco.dataset.turno = resultado.turno;
     bloco.dataset.contrato = resultado.contrato_id;
     document.getElementById("horarioChegada").innerText = "";
   } else {
-    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("bloco").style.display = "none";
     document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
   }
 }
@@ -837,15 +837,15 @@ async function confirmarChegada() {
     }
 
     // Registra chegada
-    const payload = {
-      entregador_id,
-      contrato_id,
-      turno,
-      data: new Date().toISOString(),
-      latitude: latEntregador,
-      longitude: lonEntregador,
-      ativo: true
-    };
+const payload = {
+  entregador_id,
+  contrato_id,
+  turno,
+  data: new Date().toISOString(),
+  latitude: latEntregador,
+  longitude: lonEntregador,
+  encerrado: false
+};
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
       method: "POST",
