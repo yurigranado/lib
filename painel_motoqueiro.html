@@ -240,6 +240,19 @@
 .bloco-escala-detalhada summary::-webkit-details-marker {
   display: none;
 }
+    .card-painel {
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  color: #003366;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  font-size: 15px;
+  text-align: left;
+}
     
   @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
@@ -927,7 +940,7 @@ async function ativarNotificacoes() {
   `;
 
   let tabelaHTML = `
-    <div class="bloco-escala-detalhada" style="margin-top: 20px;">
+    <div class="card-painel">
       <table>
         <thead>
           <tr>
