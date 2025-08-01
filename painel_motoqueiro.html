@@ -424,34 +424,38 @@ async function abrirSelecaoEmpresa() {
     return;
   }
 
-  let temPendente = false;
+let temPendente = false;
 
-  for (const item of lista) {
-    const empRes = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-    const empresa = (await empRes.json())[0];
-    const status = item.status;
+// 🔁 Faz todas as chamadas em paralelo
+const promessas = lista.map(item =>
+  fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?id=eq.${item.terceirizada_id}`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  }).then(res => res.json().then(data => ({ empresa: data[0], status: item.status })))
+);
 
-    const div = document.createElement("div");
-    div.style.marginBottom = "12px";
+const resultados = await Promise.all(promessas);
 
-    if (status === "ativo") {
-      const btn = document.createElement("button");
-      btn.innerText = `✅ Ativar ${empresa.nome}`;
-      btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
-      div.appendChild(btn);
-    } else if (status === "pendente") {
-      temPendente = true;
-      div.innerHTML = `
-        <p><strong>Convite:</strong> ${empresa.nome}</p>
-        <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
-        <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
-      `;
-    }
+// Agora monta os blocos
+for (const { empresa, status } of resultados) {
+  const div = document.createElement("div");
+  div.style.marginBottom = "12px";
 
-    container.appendChild(div);
+  if (status === "ativo") {
+    const btn = document.createElement("button");
+    btn.innerText = `✅ Ativar ${empresa.nome}`;
+    btn.onclick = () => ativarEmpresa(empresa.id, empresa.nome);
+    div.appendChild(btn);
+  } else if (status === "pendente") {
+    temPendente = true;
+    div.innerHTML = `
+      <p><strong>Convite:</strong> ${empresa.nome}</p>
+      <button onclick="aceitarConvite('${empresa.id}', '${empresa.nome}')">✅ Aceitar</button>
+      <button onclick="recusarConvite('${empresa.id}')">❌ Recusar</button>
+    `;
   }
+
+  container.appendChild(div);
+}
 
   document.getElementById("modalEmpresas").style.display = "flex";
 
