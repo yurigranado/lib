@@ -307,6 +307,11 @@ button:focus, input:focus, select:focus, textarea:focus {
   <div id="blocoResumoCorridas" style="margin-top: 2px; color:white; text-align:center;">
   Carregando corridas...
 </div>
+  
+    <!-- 📢 Anúncio no rodapé -->
+<div id="carrosselAnuncios" style="width: 100%; max-width: 360px; overflow: hidden; border-radius: 16px; margin-top: 20px; box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+  <img id="imagemCarrossel" src="https://i.imgur.com/bp431Kk.png" alt="Anúncio" style="width: 100%; height: auto; border-radius: 16px;">
+</div>
 
   <div id="modalEmpresas">
     <div class="box">
@@ -963,6 +968,25 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...raw].map(char => char.charCodeAt(0)));
 }
 
+      const imagens = [
+    "https://i.imgur.com/bp431Kk.png",
+    "https://i.imgur.com/vKhCeqA.png", // adicione mais se quiser
+    "https://i.imgur.com/Oe4sF4p.png"
+  ];
+
+  let indiceAtual = 0;
+  const imgEl = document.getElementById("imagemCarrossel");
+
+  setInterval(() => {
+    indiceAtual = (indiceAtual + 1) % imagens.length;
+    imgEl.src = imagens[indiceAtual];
+  }, 3000); // troca a cada 3 segundos
+
+  // clique para abrir link (mesmo pra várias imagens)
+  document.getElementById("carrosselAnuncios").onclick = () => {
+    window.open("https://shiitake-japa-lounge.goomer.app/menu", "_blank");
+  };
+    
   </script>
 </body>
 </html>
