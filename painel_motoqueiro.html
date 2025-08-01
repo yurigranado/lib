@@ -684,7 +684,7 @@ async function carregarEscalaSemanal() {
   }
 }
 
-    async function confirmarChegada() {
+async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
   const turno = btn.dataset.turno;
   const contrato_id = btn.dataset.contrato;
@@ -695,16 +695,53 @@ async function carregarEscalaSemanal() {
   }
 
   navigator.geolocation.getCurrentPosition(async (pos) => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
+    const latEntregador = pos.coords.latitude;
+    const lonEntregador = pos.coords.longitude;
 
+    // Busca ID da empresa vinculada ao contrato
+    const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const contrato = await contratoRes.json();
+    const empresa_id = contrato[0]?.empresa_id;
+
+    if (!empresa_id) {
+      alert("❌ Não foi possível identificar a empresa vinculada.");
+      return;
+    }
+
+    // Busca localização da empresa
+    const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresa_id}&select=latitude,longitude`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const empresa = await empresaRes.json();
+    const latEmpresa = empresa[0]?.latitude;
+    const lonEmpresa = empresa[0]?.longitude;
+
+    if (!latEmpresa || !lonEmpresa) {
+      alert("❌ A empresa não possui coordenadas cadastradas.");
+      return;
+    }
+
+    // Calcula distância (em metros)
+    const distancia = calcularDistancia(latEntregador, lonEntregador, latEmpresa, lonEmpresa);
+
+    console.log("📍 Distância do entregador até o restaurante:", distancia.toFixed(2), "metros");
+
+    // Só confirma se estiver dentro de 200m
+    if (distancia > 100) {
+      alert("⚠️ Você está muito longe do restaurante para confirmar chegada.\nDistância: " + distancia.toFixed(0) + "m");
+      return;
+    }
+
+    // Continua o registro da chegada
     const payload = {
       entregador_id,
       contrato_id,
       turno,
       data: new Date().toISOString(),
-      latitude: lat,
-      longitude: lon
+      latitude: latEntregador,
+      longitude: lonEntregador
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
@@ -726,6 +763,18 @@ async function carregarEscalaSemanal() {
   }, (erro) => {
     alert("Erro ao obter localização: " + erro.message);
   });
+}
+
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Raio da Terra em metros
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
