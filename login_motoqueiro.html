@@ -266,20 +266,35 @@ localStorage.setItem("login_motoqueiro", entregador.cpf);
     }
   });
   
-  function detectarSistema() {
+function detectarSistema() {
   const userAgent = window.navigator.userAgent.toLowerCase();
 
   const isIos = /iphone|ipad|ipod/.test(userAgent);
   const isAndroid = /android/.test(userAgent);
 
+  const msg = document.getElementById("mensagemSistema");
+  const bloco = document.getElementById("instrucoesInstalacao");
+
+  bloco.innerHTML = ""; // limpa antes
+  bloco.style.display = "block";
+
   if (isIos) {
-    alert("📱 No iPhone, toque no botão de compartilhar e selecione 'Adicionar à Tela de Início'.");
+    msg.innerText = "No iPhone, toque no botão de compartilhar:";
+    bloco.innerHTML = `
+      <img src="https://i.imgur.com/1fGGoDk.png" alt="Compartilhar iPhone" style="margin-top: 16px; width: 50px;">
+      <p style="margin-top: 10px;">Depois selecione <strong>“Adicionar à Tela de Início”</strong>.</p>
+    `;
   } else if (isAndroid) {
-    alert("📱 No Android, toque nos 3 pontinhos do navegador e escolha 'Adicionar à Tela inicial'.");
+    msg.innerText = "No Android, toque nos 3 pontinhos do navegador:";
+    bloco.innerHTML = `
+      <p style="margin-top: 10px;">Depois escolha <strong>“Adicionar à Tela inicial”</strong>.</p>
+    `;
   } else {
-    alert("Sistema não identificado. A instalação pode não estar disponível.");
+    msg.innerText = "Sistema não identificado. A instalação pode não estar disponível.";
+    bloco.style.display = "none";
   }
 }
+
   
 </script>
 </body>
