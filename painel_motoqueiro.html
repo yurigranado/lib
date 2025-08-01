@@ -199,18 +199,23 @@
   font-size: 15px;
   text-align: left;
 }
-        .bloco-escala-detalhada {
+    
+.bloco-escala-detalhada {
   background: rgba(255,255,255,0.12);
   padding: 8px 10px;
   border-radius: 10px;
+  width: 100%;              /* 👈 força todos a ocuparem a largura disponível */
   max-width: 360px;
+  min-width: 300px;         /* 👈 opcional para manter uma base */
   color: white;
   font-size: 15px;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  box-sizing: border-box;  /* 👈 evita overflow de padding */
+  display: inline-block;   /* 👈 ajuda a alinhar se tiver em linha */
 }
 
-.tabela-escala-entregador table {
+    .tabela-escala-entregador table {
   width: 100%;
   border-collapse: collapse;
 }
