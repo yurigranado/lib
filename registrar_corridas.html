@@ -152,22 +152,110 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById("filtroData").valueAsDate = new Date();
+<script>
+  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
+  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."; // sua API completa
+  const empresa_id = localStorage.getItem("empresa_id");
+  if (!empresa_id) window.location.href = "index.html";
 
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
+  document.getElementById("filtroData").valueAsDate = new Date();
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "index.html";
+  }
+
+  function normalizarDia(isoDateStr) {
+    const dias = ["domingo", "segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
+    const date = new Date(isoDateStr);
+    return dias[date.getDay()];
+  }
+
+  async function carregarEntregadores() {
+    const data = document.getElementById("filtroData").value;
+    const turno = document.getElementById("filtroTurno").value;
+    const container = document.getElementById("blocoEntregadores");
+    container.innerHTML = "🔄 Carregando...";
+
+    const diaSemana = normalizarDia(data);
+
+    // 1. Buscar contratos ativos da empresa
+    const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo&select=id,terceirizada_id`, {
+      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+    });
+    const contratos = await contratosRes.json();
+
+    if (!contratos.length) {
+      container.innerHTML = "<p>❌ Nenhum contrato ativo encontrado.</p>";
+      return;
     }
 
-    function carregarEntregadores() {
-      // Aqui virá a lógica Supabase de buscar contratos + entregadores
-      const data = document.getElementById("filtroData").value;
-      const turno = document.getElementById("filtroTurno").value;
-      const container = document.getElementById("blocoEntregadores");
+    let html = "";
 
-      container.innerHTML = `<p>🔄 Carregando entregadores para ${data} (${turno})...</p>`;
+    for (const contrato of contratos) {
+      // 2. Buscar entregadores escalados para esse contrato, dia e turno
+      const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato.id}&dia_semana=eq.${diaSemana}&turno=eq.${turno}&select=entregador_id`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const escalados = await escalaRes.json();
+      const ids = escalados.map(e => `'${e.entregador_id}'`);
+
+      if (!ids.length) continue;
+
+      const entregadoresRes = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${ids.join(",")})&select=id,nome`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const entregadores = await entregadoresRes.json();
+
+      html += `
+        <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
+          <h3 style="margin-top: 0;">🚚 Contrato ${contrato.id.slice(0, 8)}...</h3>
+          ${entregadores.map(ent => `
+            <div class="linha-entregador">
+              <span>${ent.nome}</span>
+              <input type="number" placeholder="Corridas" min="0" id="corridas_${contrato.id}_${ent.id}">
+            </div>
+          `).join("")}
+          <button class="salvar-btn" onclick="salvarCorridas('${contrato.id}', '${data}', '${turno}', [${entregadores.map(e => `'${e.id}'`).join(",")}])">
+            💾 Salvar Corridas
+          </button>
+        </div>
+      `;
     }
-  </script>
+
+    container.innerHTML = html || "<p>⚠️ Nenhum entregador escalado neste turno.</p>";
+  }
+
+  async function salvarCorridas(contrato_id, data, turno, ids) {
+    const payload = ids.map(id => {
+      const qtd = document.getElementById(`corridas_${contrato_id}_${id}`).value;
+      return {
+        contrato_id,
+        empresa_id,
+        entregador_id: id,
+        data,
+        turno,
+        qtd_corridas: Number(qtd || 0),
+        criado_em: new Date().toISOString()
+      };
+    });
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/corridas`, {
+      method: "POST",
+      headers: {
+        apikey: API_KEY,
+        Authorization: `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      alert("✅ Corridas registradas com sucesso!");
+    } else {
+      alert("❌ Erro ao salvar corridas.");
+    }
+  }
+</script>
 </body>
 </html>
