@@ -130,10 +130,43 @@
 </div>
 
 <!-- 📢 AVISO PARA INSTALAR -->
-<div id="avisoInstalacao" style="display: none; text-align: center; padding: 40px; color: white;">
-  <h2>📲 Aplicativo não instalado</h2>
-  <p>Para acessar o painel, instale o app na sua tela inicial.</p>
-  <button onclick="instalarPWA()" style="padding: 10px 20px; font-weight: bold; background: white; color: #003366; border: none; border-radius: 10px;">Instalar agora</button>
+<div id="avisoInstalacao" style="
+  display: none;
+  max-width: 360px;
+  margin: auto;
+  padding: 32px 20px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  backdrop-filter: blur(12px);
+  text-align: center;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+">
+  <img src="https://i.imgur.com/6oK2RUG.png" alt="Instalar App" style="width: 80px; margin-bottom: 16px;" />
+
+  <h2 style="margin: 0 0 12px;">📲 Instale o aplicativo</h2>
+  <p style="font-size: 15px; margin-bottom: 20px;">
+    Para acessar o painel de entregador, instale o app na tela inicial do seu celular.
+  </p>
+
+  <button onclick="instalarPWA()" style="
+    padding: 10px 22px;
+    font-weight: bold;
+    font-size: 15px;
+    background: white;
+    color: #003366;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+  "
+  onmouseover="this.style.transform='scale(1.05)'"
+  onmouseout="this.style.transform='scale(1)'"
+  >
+    Instalar agora
+  </button>
 </div>
 
 <script>
