@@ -762,8 +762,13 @@ async function verificarTurnoHojeViaAPI() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ entregador_id })
   });
-
   const resultado = await resposta.json();
+  const bloco = document.getElementById("blocoConfirmarChegada");
+
+  if (!bloco) {
+    console.warn("Elemento 'blocoConfirmarChegada' não encontrado.");
+    return;
+  }
 
   if (resultado.status === "chegada_existente") {
     bloco.style.display = "none";
@@ -775,9 +780,10 @@ async function verificarTurnoHojeViaAPI() {
     document.getElementById("horarioChegada").innerText = "";
   } else {
     bloco.style.display = "none";
-    document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
+    document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
   }
 }
+
 
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
