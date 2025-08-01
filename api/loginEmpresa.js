@@ -1,14 +1,16 @@
-// /api/loginEmpresa.js
-
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ erro: "Método não permitido" });
 
-  const { email, senha } = JSON.parse(req.body);
-
-  const API_KEY = process.env.SUPABASE_API_KEY;
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-
   try {
+    const { email, senha } = JSON.parse(req.body);
+
+    const API_KEY = process.env.SUPABASE_API_KEY;
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+
+    if (!API_KEY || !SUPABASE_URL) {
+      return res.status(500).json({ erro: "Variáveis de ambiente não configuradas" });
+    }
+
     // 1️⃣ Verifica como restaurante
     const resEmpresa = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
       headers: {
@@ -35,9 +37,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ tipo: "terceirizada", dados: dadosTerceira[0] });
     }
 
-    // ❌ Nenhum login válido
     return res.status(401).json({ erro: "Login inválido" });
-
   } catch (erro) {
     return res.status(500).json({ erro: "Erro interno", detalhes: erro.message });
   }
