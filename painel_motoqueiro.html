@@ -771,19 +771,21 @@ async function verificarTurnoHojeViaAPI() {
     return;
   }
 
-  if (resultado.status === "chegada_existente") {
-    bloco.style.display = "none";
-    document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
-  } else if (resultado.status === "pode_confirmar") {
-    bloco.style.display = "block";
-    bloco.dataset.turno = resultado.turno;
-    bloco.dataset.contrato = resultado.contrato_id;
-    document.getElementById("horarioChegada").innerText = "";
-  } else {
-    bloco.style.display = "none";
-    document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
-  }
+if (resultado.status === "chegada_existente") {
+  bloco.style.display = "none";
+  document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
+} else if (resultado.status === "pode_confirmar" && resultado.turno) {
+  bloco.style.display = "block";
+  bloco.dataset.turno = resultado.turno;
+  bloco.dataset.contrato = resultado.contrato_id;
+  document.getElementById("horarioChegada").innerText = "";
+  console.log("✅ Turno autorizado:", resultado.turno);
+} else {
+  bloco.style.display = "none";
+  document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
+  console.warn("⚠️ Turno não disponível ou inválido:", resultado);
 }
+
 
 
 async function confirmarChegada() {
