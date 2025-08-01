@@ -322,18 +322,22 @@ async function salvarCorridas(contrato_id, turno, ids) {
 
     // Agora vamos encerrar o turno desses entregadores
     for (const p of payload) {
-      await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&encerrado=is.false`, {
+      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&encerrado=is.false`, {
         method: "PATCH",
         headers: {
           apikey: API_KEY,
           Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
         },
         body: JSON.stringify({
           encerrado: true,
           encerrado_em: new Date().toISOString()
         })
       });
+
+      const result = await resUpdate.json();
+      console.log("🔒 Turno encerrado:", result);
     }
 
     carregarEntregadores(); // Atualiza visualmente
