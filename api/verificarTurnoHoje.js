@@ -75,7 +75,6 @@ const turnos = await empresaTurnoRes.json();
 
 const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
 const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
 const hoje = agora.toLocaleDateString("pt-BR", { weekday: "long" }).toLowerCase();
 
 for (const turno of turnos) {
