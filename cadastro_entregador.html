@@ -219,7 +219,7 @@
   if (res.ok) {
     localStorage.setItem("login_motoqueiro", cpf);
     localStorage.setItem("login_expira_em", (Date.now() + 12 * 60 * 60 * 1000));
-    window.location.href = "painel.html";
+    window.location.href = "painel_motoqueiro.html";
   } else {
     msg.innerText = "❌ Erro ao cadastrar.";
     msg.style.display = "block";
