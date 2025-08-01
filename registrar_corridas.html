@@ -232,12 +232,12 @@ input:checked + .slider:before {
     let html = "";
 
     for (const contrato of contratos) {
-      // 2. Buscar entregadores escalados para esse contrato, dia e turno
-      const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato.id}&dia_semana=eq.${diaSemana}&turno=eq.${turno}&select=entregador_id`, {
-        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-      });
-      const escalados = await escalaRes.json();
-      const ids = escalados.map(e => e.entregador_id);
+// 2. Buscar entregadores que realmente deram chegada
+const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&select=entregador_id,data`, {
+  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+});
+const chegadas = (await chegadaRes.json()).filter(c => c.data.startsWith(data));
+const ids = [...new Set(chegadas.map(e => e.entregador_id))]; // remove duplicatas
 
       if (!ids.length) continue;
 
