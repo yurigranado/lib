@@ -70,10 +70,12 @@ export default async function handler(req, res) {
       const fim = new Date(inicio);
       fim.setMinutes(fim.getMinutes() + 180);
 
-      if (agora >= inicio && agora <= fim) {
+      const nomeTurno = turno.nome?.toLowerCase();
+
+      if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
         return res.status(200).json({
           status: "pode_confirmar",
-          turno: turno.nome,
+          turno: nomeTurno,
           contrato_id
         });
       }
