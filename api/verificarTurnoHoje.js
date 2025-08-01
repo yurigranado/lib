@@ -19,7 +19,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ erro: "Chaves de acesso ausentes" });
     }
 
-    // 🔎 Buscar terceirizada ativa
+    // Buscar terceirizada ativa
     const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 
     const terceirizada_id = empresaData[0].terceirizada_id;
 
-    // 🔎 Buscar contrato
+    // Buscar contrato
     const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${terceirizada_id}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const empresa_id = contrato[0]?.empresa_id;
     if (!contrato_id || !empresa_id) return res.status(200).json({ status: "sem_contrato" });
 
-    //  Verificar chegada ativa
+    // Verificar chegada ativa
     const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato_id}&or=(encerrado.is.false,encerrado.is.null)&select=data,turno,entregador_id`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       });
     }
 
-    //  Buscar ESCALA do entregador
+    // Buscar escala do entregador
     const diaSemana = new Date().toLocaleString("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" }).toLowerCase();
     const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${diaSemana}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
@@ -67,57 +67,54 @@ export default async function handler(req, res) {
       return res.status(200).json({ status: "fora_do_horario" });
     }
 
-    // 🔎 Buscar horários da empresa
-const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
-  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-});
-const turnos = await empresaTurnoRes.json();
-
-const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
-const hoje = agora.toLocaleDateString("pt-BR", { weekday: "long" }).toLowerCase();
-
-for (const turno of turnos) {
-  const [horaStr, minutoStr] = turno.horario_inicio.split(":");
-  const [horaFim, minFim] = turno.horario_fim.split(":");
-
-  const inicio = new Date(agora);
-  inicio.setHours(+horaStr);
-  inicio.setMinutes(+minutoStr - 15); // margem de 15min antes
-
-  const fim = new Date(agora);
-  fim.setHours(+horaFim);
-  fim.setMinutes(+minFim);
-
-  const nomeTurno = turno.nome_turno?.toLowerCase();
-  console.log("⏳ Avaliando turno:", nomeTurno, "entre", inicio.toISOString(), "e", fim.toISOString());
-
-  if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
-    // 🔍 Verifica se está escalado nesse turno
-    const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${hoje}&turno=eq.${nomeTurno}`, {
+    // Buscar horários da empresa
+    const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${empresa_id}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const escalado = await escalaRes.json();
+    const turnos = await empresaTurnoRes.json();
 
-    if (escalado.length > 0) {
-      console.log("✅ Turno válido e entregador escalado:", nomeTurno);
-      return res.status(200).json({
-        status: "pode_confirmar",
-        turno: nomeTurno,
-        contrato_id
-      });
-    } else {
-      console.warn("⚠️ Entregador NÃO escalado para esse turno:", nomeTurno);
+    const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+
+    for (const turno of turnos) {
+      const [horaStr, minutoStr] = turno.horario_inicio.split(":");
+      const [horaFim, minFim] = turno.horario_fim.split(":");
+
+      const inicio = new Date(agora);
+      inicio.setHours(+horaStr);
+      inicio.setMinutes(+minutoStr - 15);
+
+      const fim = new Date(agora);
+      fim.setHours(+horaFim);
+      fim.setMinutes(+minFim);
+
+      const nomeTurno = turno.nome_turno?.toLowerCase();
+
+      console.log("⏳ Avaliando turno:", nomeTurno, "entre", inicio.toISOString(), "e", fim.toISOString());
+
+      if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
+        const escalaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${diaSemana}&turno=eq.${nomeTurno}`, {
+          headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+        });
+        const escalado = await escalaTurnoRes.json();
+
+        if (escalado.length > 0) {
+          console.log("✅ Turno válido e entregador escalado:", nomeTurno);
+          return res.status(200).json({
+            status: "pode_confirmar",
+            turno: nomeTurno,
+            contrato_id
+          });
+        } else {
+          console.warn("⚠️ Entregador NÃO escalado para esse turno:", nomeTurno);
+        }
+      }
     }
-  }
-}
 
-console.warn("⏳ Fora do horário ou não escalado");
-return res.status(200).json({ status: "fora_do_horario" });
-
+    console.warn("⏳ Fora do horário ou não escalado");
     return res.status(200).json({ status: "fora_do_horario" });
 
-} catch (erro) {
-  console.error("💥 Erro interno no verificarTurnoHoje:", erro.message);
-  return res.status(500).json({ erro: "Erro interno", detalhes: erro.message || String(erro) });
+  } catch (erro) {
+    console.error("💥 Erro interno no verificarTurnoHoje:", erro.message);
+    return res.status(500).json({ erro: "Erro interno", detalhes: erro.message || String(erro) });
+  }
 }
