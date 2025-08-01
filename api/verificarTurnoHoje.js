@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const empresa_id = contrato[0]?.empresa_id;
     if (!contrato_id || !empresa_id) return res.status(200).json({ status: "sem_contrato" });
 
-    // 🔎 Verificar chegada ativa
+    //  Verificar chegada ativa
     const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato_id}&or=(encerrado.is.false,encerrado.is.null)&select=data,turno,entregador_id`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // 🔎 Buscar ESCALA do entregador
+    //  Buscar ESCALA do entregador
     const diaSemana = new Date().toLocaleString("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" }).toLowerCase();
     const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${diaSemana}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
@@ -68,36 +68,46 @@ export default async function handler(req, res) {
     }
 
     // 🔎 Buscar horários da empresa
-    const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${empresa_id}`, {
+const empresaTurnoRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
+  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+});
+const turnos = await empresaTurnoRes.json();
+
+const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+const diasSemana = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+const hoje = diasSemana[agora.getDay()]; // exemplo: 'segunda'
+
+for (const turno of turnos) {
+  const [horaStr, minutoStr] = turno.horario_inicio.split(":");
+  const inicio = new Date(agora);
+  inicio.setHours(+horaStr);
+  inicio.setMinutes(+minutoStr - 15);
+
+  const fim = new Date(turno.horario_fim ? `${agora.toDateString()} ${turno.horario_fim}` : fim);
+  fim.setMinutes(fim.getMinutes() + 0); // segurança
+
+  const nomeTurno = turno.nome_turno?.toLowerCase();
+  console.log("⏳ Avaliando turno:", nomeTurno, "entre", inicio.toISOString(), "e", fim.toISOString());
+
+  if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
+    // 🔎 Verifica se o entregador está escalado hoje nesse turno
+    const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&dia_semana=eq.${hoje}&turno=eq.${nomeTurno}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const turnosEmpresa = await empresaTurnoRes.json();
+    const escalado = await escalaRes.json();
 
-    const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
-
-    for (const esc of escalaHoje) {
-      const turnoNome = esc.turno.toLowerCase();
-      const infoTurno = turnosEmpresa.find(t => t.nome_turno.toLowerCase() === turnoNome);
-      if (!infoTurno) continue;
-
-      const [h, m] = infoTurno.horario_inicio.split(":");
-      const inicio = new Date(agora);
-      inicio.setHours(+h);
-      inicio.setMinutes(+m - 15);
-
-      const [hf, mf] = infoTurno.horario_fim.split(":");
-      const fim = new Date(agora);
-      fim.setHours(+hf);
-      fim.setMinutes(+mf);
-
-      if (agora >= inicio && agora <= fim) {
-        return res.status(200).json({
-          status: "pode_confirmar",
-          turno: turnoNome,
-          contrato_id
-        });
-      }
+    if (escalado.length > 0) {
+      console.log("✅ Turno válido e entregador escalado:", nomeTurno);
+      return res.status(200).json({
+        status: "pode_confirmar",
+        turno: nomeTurno,
+        contrato_id
+      });
+    } else {
+      console.warn("⚠️ Entregador NÃO escalado para esse turno:", nomeTurno);
     }
+  }
+}
 
     return res.status(200).json({ status: "fora_do_horario" });
 
