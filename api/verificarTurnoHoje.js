@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     }
 
     // Buscar escala do entregador
-    const diaSemana = new Date().toLocaleString("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" }).toLowerCase();
+    const diaSemana = new Date()  .toLocaleString("pt-BR", { weekday: "long", timeZone: "America/Sao_Paulo" })  .toLowerCase()  .replace("-feira", "")  .trim();
     const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${diaSemana}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
