@@ -846,9 +846,9 @@ const payload = {
   entregador_id,
   contrato_id,
   turno,
-  data: new Date().toISOString(),
   latitude: latEntregador,
   longitude: lonEntregador,
+  data: new Date().toISOString(), // opcional, tem default
   encerrado: false,
   ativo: true
 };
