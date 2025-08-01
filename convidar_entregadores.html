@@ -284,7 +284,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("tituloPainel").innerText =
     `${localStorage.getItem("terceirizada_nome") || "Lib"} | Painel`;
 
-  // aqui você pode continuar as funções que dependem de SUPABASE_URL/API_KEY
+  await carregarVinculados();
+  await carregarEscalasPorRestaurante();
 });
 
 function normalizarDia(dia) {
