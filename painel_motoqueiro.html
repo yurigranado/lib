@@ -634,13 +634,12 @@ async function carregarEscalaSemanal() {
   container.innerHTML = html;
 }
 
-    async function verificarTurnoHoje() {
+async function verificarTurnoHoje() {
   const dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
   const hoje = dias[new Date().getDay()];
+  const agora = new Date().toTimeString().slice(0, 5); // "HH:MM"
 
-  const agora = new Date().toTimeString().slice(0, 5); // formato "HH:MM"
-
-  // Busca turnos da empresa
+  // 🔎 Buscar empresa ativa
   const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -656,21 +655,20 @@ async function carregarEscalaSemanal() {
   const contrato_id = contrato[0]?.id;
   if (!contrato_id) return;
 
-  // Verifica se está escalado hoje
+  // 🔎 Verifica se está escalado hoje
   const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?contrato_id=eq.${contrato_id}&entregador_id=eq.${entregador_id}&dia_semana=eq.${hoje}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const escalaHoje = await escalaRes.json();
-
   if (!escalaHoje.length) return;
 
-  // Verifica se algum turno é válido pelo horário
-  let turnoAtual = null;
+  // 🔍 Detectar turno atual
   const turnosRes = await fetch(`${SUPABASE_URL}/rest/v1/empresa_turnos?empresa_id=eq.${contrato[0].empresa_id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const turnos = await turnosRes.json();
 
+  let turnoAtual = null;
   for (const t of turnos) {
     if (agora >= t.horario_inicio.slice(0, 5) && agora <= t.horario_fim.slice(0, 5)) {
       turnoAtual = t.nome_turno.toLowerCase();
@@ -678,12 +676,30 @@ async function carregarEscalaSemanal() {
     }
   }
 
-  // Exibe botão se o turno atual estiver na escala
+  if (!turnoAtual) return;
+
   const estaEscalado = escalaHoje.some(e => e.turno === turnoAtual);
-  if (estaEscalado) {
-    document.getElementById("blocoConfirmarChegada").style.display = "block";
-    document.getElementById("blocoConfirmarChegada").dataset.turno = turnoAtual;
-    document.getElementById("blocoConfirmarChegada").dataset.contrato = contrato_id;
+  if (!estaEscalado) return;
+
+  // 🔐 Verificar se já confirmou chegada hoje neste turno e ainda está ativo
+  const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turnoAtual}&encerrado=eq.false&select=data_inicio`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const chegada = await chegadaRes.json();
+
+  if (chegada.length > 0) {
+    const dataHora = new Date(chegada[0].data_inicio);
+    const dia = dataHora.toLocaleDateString("pt-BR");
+    const hora = dataHora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
+  } else {
+    // Mostrar botão de chegada
+    const bloco = document.getElementById("blocoConfirmarChegada");
+    bloco.style.display = "block";
+    bloco.dataset.turno = turnoAtual;
+    bloco.dataset.contrato = contrato_id;
   }
 }
 
