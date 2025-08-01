@@ -279,7 +279,7 @@ const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_ter
 async function salvarCorridas(contrato_id, turno, ids) {
   const payload = [];
   const agora = new Date();
-  const dataHoje = agora.toISOString().split("T")[0]; // Apenas a data (AAAA-MM-DD)
+  const dataHoje = agora.toISOString().split("T")[0]; // AAAA-MM-DD
 
   for (const id of ids) {
     const qtdSimples = document.getElementById(`corridas_${contrato_id}_${id}_${turno}`).value;
@@ -320,9 +320,8 @@ async function salvarCorridas(contrato_id, turno, ids) {
   if (res.ok) {
     alert("✅ Corridas registradas com sucesso!");
 
-    // Agora vamos encerrar o turno desses entregadores
     for (const p of payload) {
-      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&encerrado=is.false`, {
+      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&or=(encerrado.is.false,encerrado.is.null)`, {
         method: "PATCH",
         headers: {
           apikey: API_KEY,
@@ -337,14 +336,19 @@ async function salvarCorridas(contrato_id, turno, ids) {
       });
 
       const result = await resUpdate.json();
-      console.log("🔒 Turno encerrado:", result);
+      if (!result.length) {
+        console.warn("⚠️ Turno não foi encerrado. Verifique os dados:", p);
+      } else {
+        console.log("🔒 Turno encerrado:", result);
+      }
     }
 
-    carregarEntregadores(); // Atualiza visualmente
+    carregarEntregadores(); // Atualiza a tela
   } else {
     alert("❌ Erro ao salvar corridas.");
   }
 }
+
   
 document.addEventListener("DOMContentLoaded", carregarEntregadores);
 
