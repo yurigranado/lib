@@ -150,7 +150,7 @@
     Para acessar o painel de entregador, instale o app na tela inicial do seu celular.
   </p>
 
-  <button onclick="instalarPWA()" style="
+  <button onclick="detectarSistema()" style="
     padding: 10px 22px;
     font-weight: bold;
     font-size: 15px;
@@ -266,10 +266,21 @@ localStorage.setItem("login_motoqueiro", entregador.cpf);
     }
   });
   
-  function instalarPWA() {
-  alert("Para instalar o app, clique nos 3 pontinhos do navegador e selecione 'Adicionar à tela inicial'.");
-}
-</script>
+  function detectarSistema() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
 
+  const isIos = /iphone|ipad|ipod/.test(userAgent);
+  const isAndroid = /android/.test(userAgent);
+
+  if (isIos) {
+    alert("📱 No iPhone, toque no botão de compartilhar e selecione 'Adicionar à Tela de Início'.");
+  } else if (isAndroid) {
+    alert("📱 No Android, toque nos 3 pontinhos do navegador e escolha 'Adicionar à Tela inicial'.");
+  } else {
+    alert("Sistema não identificado. A instalação pode não estar disponível.");
+  }
+}
+  
+</script>
 </body>
 </html>
