@@ -370,7 +370,8 @@ if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
 // 🔁 Aguarda DOM para carregar chaves e iniciar lógica
 document.addEventListener("DOMContentLoaded", async () => {
   await carregarChaves();
-  // 👇 a partir daqui pode continuar tudo (fetchs, etc)
+  await carregarEntregadorId();
+});
   
 async function carregarEntregadorId() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
@@ -615,7 +616,6 @@ async function recusarConvite(terceirizada_id) {
     alert("❌ Erro ao recusar o convite.");
   }
 }
-  document.addEventListener("DOMContentLoaded", carregarEntregadorId);
     
 async function carregarEscalaSemanal() {
   const container = document.getElementById("blocoEscalaEntregador");
