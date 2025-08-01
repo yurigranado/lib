@@ -201,15 +201,19 @@ button:hover {
   const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
   const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
 
-  // ✅ Verificação imediata: se já está logado, redireciona antes de exibir o login
-  document.addEventListener("DOMContentLoaded", () => {
-    const empresa_id = localStorage.getItem("empresa_id");
-    const empresa_nome = localStorage.getItem("empresa_nome");
+document.addEventListener("DOMContentLoaded", () => {
+  const empresa_id = localStorage.getItem("empresa_id");
+  const empresa_nome = localStorage.getItem("empresa_nome");
 
-    if (empresa_id && empresa_nome) {
-      window.location.href = "selecionar_terceirizada.html";
-    }
-  });
+  const terceirizada_id = localStorage.getItem("terceirizada_id");
+  const terceirizada_nome = localStorage.getItem("terceirizada_nome");
+
+  if (empresa_id && empresa_nome) {
+    window.location.href = "painel_restaurante.html";
+  } else if (terceirizada_id && terceirizada_nome) {
+    window.location.href = "painel_terceirizada.html";
+  }
+});
 
   function md5(str) {
     return CryptoJS.MD5(str).toString();
@@ -234,25 +238,27 @@ document.getElementById("formLogin").addEventListener("submit", async (e) => {
     });
     const dadosEmpresa = await resEmpresa.json();
 
-    if (dadosEmpresa.length === 1) {
-      const empresa = dadosEmpresa[0];
-      localStorage.setItem("empresa_id", empresa.id);
-      localStorage.setItem("empresa_nome", empresa.nome);
+if (dadosEmpresa.length === 1) {
+  const empresa = dadosEmpresa[0];
+  localStorage.setItem("empresa_id", empresa.id);
+  localStorage.setItem("empresa_nome", empresa.nome);
 
-      // Verifica contratos ativos
-      const contratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa.id}&status=eq.ativo`, {
-        headers: {
-          apikey: API_KEY,
-          Authorization: `Bearer ${API_KEY}`
-        }
-      });
-      const lista = await contratos.json();
-
-      window.location.href = lista.length === 0
-        ? "selecionar_terceirizada.html"
-        : "painel_restaurante.html";
-      return;
+  // Verifica contratos ativos
+  const contratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa.id}&status=eq.ativo`, {
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`
     }
+  });
+
+  // Você ainda pode manter essa verificação, se quiser logar o resultado
+  const lista = await contratos.json();
+  console.log("📄 Contratos encontrados:", lista.length);
+
+  // Sempre redireciona para o painel do restaurante, mesmo sem contrato
+  window.location.href = "painel_restaurante.html";
+  return;
+}
 
     // 🛵 Se não achou restaurante, tenta como terceirizada
     const resTerceiro = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${email}&senha=eq.${senha}`, {
