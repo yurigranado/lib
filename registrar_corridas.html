@@ -321,7 +321,7 @@ async function salvarCorridas(contrato_id, turno, ids) {
     alert("✅ Corridas registradas com sucesso!");
 
     for (const p of payload) {
-const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&ativo=eq.true&turno=ilike.${encodeURIComponent(`"${p.turno}"`)}`, {
+const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&ativo=eq.true&turno=eq.${p.turno}`, {
   method: "PATCH",
   headers: {
     apikey: API_KEY,
@@ -334,8 +334,6 @@ const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?cont
     encerrado_em: new Date().toISOString()
   })
 });
-
-
       const result = await resUpdate.json();
       if (!result.length) {
         console.warn("⚠️ Turno não foi encerrado. Verifique os dados:", p);
