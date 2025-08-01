@@ -733,9 +733,9 @@ async function confirmarChegada() {
     }
 
     // Verifica se já tem entrada ativa no mesmo turno
-    const jaExisteRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&ativo=eq.true`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
+    const jaExisteRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&encerrado=eq.false`, {
+  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+});
     const existentes = await jaExisteRes.json();
     if (existentes.length > 0) {
       alert("⚠️ Você já deu entrada neste turno.");
