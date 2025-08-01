@@ -407,6 +407,7 @@ async function carregarChaves() {
 // ⚡ Redireciona se a sessão expirou (antes mesmo de carregar as chaves)
 const login = localStorage.getItem("login_motoqueiro");
 const expiracao = localStorage.getItem("login_expira_em");
+const obrigarInstalacao = false;
 
 if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
   localStorage.removeItem("login_motoqueiro");
@@ -414,12 +415,14 @@ if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
   window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
 }
 
+const obrigarInstalacao = false;
+
 document.addEventListener("DOMContentLoaded", async () => {
   const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
   const isStandalone = window.navigator.standalone === true;
 
-  if (isIos && !isStandalone) {
-    // ❌ Bloqueia o acesso no Safari do iPhone
+  if (obrigarInstalacao && isIos && !isStandalone) {
+    // ❌ Bloqueia o acesso no Safari do iPhone se a variável estiver ativada
     document.getElementById("painelContainer").style.display = "none";
     document.getElementById("telaBloqueio").style.display = "block";
     return;
