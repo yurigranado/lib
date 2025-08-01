@@ -444,8 +444,6 @@ async function carregarVinculados() {
   cont.innerHTML = html;
 }
 
-carregarVinculados();
-
 async function carregarEscalasPorRestaurante() {
   const resContratos = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${TERCEIRIZADA_ID}&status=eq.ativo&select=id,empresa_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
@@ -491,8 +489,6 @@ async function carregarEscalasPorRestaurante() {
     container.appendChild(card);
   }
 }
-
-carregarEscalasPorRestaurante();
 
 async function abrirEscala(contrato_id, nomeEmpresa, almocoAtivo, jantarAtivo, diasSemana) {
   const container = document.getElementById(`alocacao_${contrato_id}`);
