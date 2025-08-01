@@ -340,20 +340,38 @@ button:focus, input:focus, select:focus, textarea:focus {
   </div>
 </div>
   <script>
-    const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+let SUPABASE_URL = "";
+let API_KEY = "";
+let entregador_id = null;
 
-  const login = localStorage.getItem("login_motoqueiro");
-  const expiracao = localStorage.getItem("login_expira_em");
-
-  // 🔐 Verifica se o login está presente e se ainda não expirou
-  if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
-    localStorage.removeItem("login_motoqueiro");
-    localStorage.removeItem("login_expira_em");
-    window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
+// 🔐 Carrega as chaves da Supabase
+async function carregarChaves() {
+  try {
+    const res = await fetch("/api/supabase");
+    const dados = await res.json();
+    SUPABASE_URL = dados.url;
+    API_KEY = dados.key;
+  } catch (e) {
+    console.error("❌ Erro ao carregar chaves:", e);
+    alert("Erro ao conectar com o servidor.");
   }
+}
 
-  let entregador_id = null;
+// ⚡ Redireciona se a sessão expirou (antes mesmo de carregar as chaves)
+const login = localStorage.getItem("login_motoqueiro");
+const expiracao = localStorage.getItem("login_expira_em");
+
+if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
+  localStorage.removeItem("login_motoqueiro");
+  localStorage.removeItem("login_expira_em");
+  window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
+}
+
+// 🔁 Aguarda DOM para carregar chaves e iniciar lógica
+document.addEventListener("DOMContentLoaded", async () => {
+  await carregarChaves();
+  // 👇 a partir daqui pode continuar tudo (fetchs, etc)
+});
 
 async function carregarEntregadorId() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
