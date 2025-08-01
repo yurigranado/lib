@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel do Motoqueiro</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -309,9 +310,31 @@ async function carregarEntregadorId() {
     entregador_id = dados[0].id;
     document.getElementById("nomeEntregador").innerText = dados[0].nome;
 
-    await verificarEmpresaAtiva(); // já atualiza o texto do painel
-    await carregarEscalaSemanal(); // carrega a escala logo após login
-    await ativarNotificacoes(); // 👈 aqui
+    await verificarEmpresaAtiva();
+    await carregarEscalaSemanal();
+    await ativarNotificacoes();
+
+    // ✅ Ativa Realtime da escala só depois de ter o ID
+    if (!window.supabaseClient) {
+      window.supabaseClient = supabase.createClient(SUPABASE_URL, API_KEY);
+    }
+
+    window.supabaseClient
+      .channel(`escala_entregador_${entregador_id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'escala_semana',
+          filter: `entregador_id=eq.${entregador_id}`
+        },
+        payload => {
+          console.log("📡 Escala atualizada:", payload);
+          carregarEscalaSemanal(); // 🔁 atualiza o painel ao vivo
+        }
+      )
+      .subscribe();
 
     // 🔍 Verifica vínculos existentes
     const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
@@ -322,12 +345,12 @@ async function carregarEntregadorId() {
     const botaoContainer = document.getElementById("blocoEscolherEmpresa");
     const botao = document.querySelector(".painel-btn");
 
-const temAtivoOuPendente = vinculos.some(v => v.status === "ativo" || v.status === "pendente");
+    const temAtivoOuPendente = vinculos.some(v => v.status === "ativo" || v.status === "pendente");
 
-if (!temAtivoOuPendente) {
-  botaoContainer.style.display = "none";
-} else {
-  botaoContainer.style.display = "block";
+    if (!temAtivoOuPendente) {
+      botaoContainer.style.display = "none";
+    } else {
+      botaoContainer.style.display = "block";
 
       const temPendente = vinculos.some(v => v.status === "pendente");
 
