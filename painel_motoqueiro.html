@@ -385,9 +385,9 @@ async function carregarEntregadorId() {
 
     await verificarEmpresaAtiva();
     await carregarEscalaSemanal();
-    await verificarTurnoHoje();
     await carregarResumoCorridas();
     await ativarNotificacoes();
+    await verificarTurnoHojeViaAPI();
 
     // ✅ Ativa Realtime da  só depois de ter o ID
     if (!window.supabaseClient) {
@@ -701,30 +701,28 @@ async function carregarEscalaSemanal() {
   container.innerHTML = html;
 }
 
-const resposta = await fetch("/api/verificarTurnoHoje", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ entregador_id })
-});
-const resultado = await resposta.json();
+async function verificarTurnoHojeViaAPI() {
+  const resposta = await fetch("/api/verificarTurnoHoje", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entregador_id })
+  });
 
-if (resultado.status === "chegada_existente") {
-  document.getElementById("blocoConfirmarChegada").style.display = "none";
-  document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
-} else if (resultado.status === "pode_confirmar") {
-  const bloco = document.getElementById("blocoConfirmarChegada");
-  bloco.style.display = "block";
-  bloco.dataset.turno = resultado.turno;
-  bloco.dataset.contrato = resultado.contrato_id;
-  document.getElementById("horarioChegada").innerText = "";
-} else {
-  document.getElementById("blocoConfirmarChegada").style.display = "none";
-  document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
-}
+  const resultado = await resposta.json();
 
-  // Fora do horário permitido
-  document.getElementById("blocoConfirmarChegada").style.display = "none";
-  document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
+  if (resultado.status === "chegada_existente") {
+    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
+  } else if (resultado.status === "pode_confirmar") {
+    const bloco = document.getElementById("blocoConfirmarChegada");
+    bloco.style.display = "block";
+    bloco.dataset.turno = resultado.turno;
+    bloco.dataset.contrato = resultado.contrato_id;
+    document.getElementById("horarioChegada").innerText = "";
+  } else {
+    document.getElementById("blocoConfirmarChegada").style.display = "none";
+    document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada 15 minutos antes do turno.";
+  }
 }
 
 async function confirmarChegada() {
