@@ -283,6 +283,10 @@ button:focus, input:focus, select:focus, textarea:focus {
   <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
     Carregando escala...
   </div>
+  
+  <div id="blocoResumoCorridas" style="margin-top: 20px; color:white; text-align:center;">
+  Carregando corridas...
+</div>
 
   <div id="modalEmpresas">
     <div class="box">
@@ -321,6 +325,7 @@ async function carregarEntregadorId() {
     await verificarEmpresaAtiva();
     await carregarEscalaSemanal();
     await verificarTurnoHoje();
+    await carregarResumoCorridas();
     await ativarNotificacoes();
 
     // ✅ Ativa Realtime da  só depois de ter o ID
@@ -847,6 +852,66 @@ async function ativarNotificacoes() {
   });
   const resposta = await res.text();
   console.log("📥 Resultado do salvamento do token:", resposta);
+}
+    async function carregarResumoCorridas() {
+  const container = document.getElementById("blocoResumoCorridas");
+  container.innerHTML = "⏳ Carregando corridas...";
+
+  const hoje = new Date();
+  const inicioSemana = new Date();
+  inicioSemana.setDate(hoje.getDate() - 6);
+  const dataHoje = hoje.toISOString().split("T")[0];
+  const dataSemana = inicioSemana.toISOString().split("T")[0];
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/corridas?entregador_id=eq.${entregador_id}&data=gte.${dataSemana}&select=data,turno,qtd_corridas,qtd_corridas_duplas`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const corridas = await res.json();
+
+  if (!corridas.length) {
+    container.innerHTML = "⚠️ Nenhuma corrida registrada nos últimos dias.";
+    return;
+  }
+
+  let totalSimples = 0, totalDuplas = 0;
+  let resumoHoje = "";
+  let diasResumo = {};
+
+  for (const c of corridas) {
+    const data = c.data.split("T")[0];
+    const turno = c.turno;
+    const simples = c.qtd_corridas || 0;
+    const duplas = c.qtd_corridas_duplas || 0;
+
+    totalSimples += simples;
+    totalDuplas += duplas;
+
+    if (data === dataHoje) {
+      resumoHoje += `- ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}: ${simples} simples, ${duplas} duplas\n`;
+    }
+
+    if (!diasResumo[data]) diasResumo[data] = 0;
+    diasResumo[data] += simples + duplas;
+  }
+
+  const resumoDias = Object.entries(diasResumo).sort((a, b) => new Date(b[0]) - new Date(a[0]))
+    .map(([data, qtd]) => {
+      const d = new Date(data);
+      const dia = d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+      return `- ${dia}: ${qtd}`;
+    }).join("<br>");
+
+  container.innerHTML = `
+    <div class="bloco-escala-detalhada">
+      <summary>📆 Hoje (${new Date().toLocaleDateString("pt-BR")})</summary>
+      <pre style="margin: 10px 0;">${resumoHoje || "Nenhuma corrida registrada hoje."}</pre>
+    </div>
+    <div class="bloco-escala-detalhada" style="margin-top: 12px;">
+      <summary>📊 Corridas da Semana</summary>
+      <div style="margin-top: 10px;">${resumoDias}</div>
+    </div>
+    <p style="margin-top: 16px;">📦 Total simples: ${totalSimples} | duplas: ${totalDuplas}</p>
+  `;
 }
     
 function urlBase64ToUint8Array(base64String) {
