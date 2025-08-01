@@ -849,7 +849,8 @@ const payload = {
   data: new Date().toISOString(),
   latitude: latEntregador,
   longitude: lonEntregador,
-  encerrado: false
+  encerrado: false,
+  ativo: true
 };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
