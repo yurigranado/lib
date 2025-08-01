@@ -250,21 +250,40 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
-  const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-  const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
-  
-  function adicionarTurno() {
-    const container = document.getElementById("turnosContainer");
-    const div = document.createElement("div");
-    div.className = "turno-item";
-    div.innerHTML = `
-      <input type="text" placeholder="Nome do Turno" class="nome-turno" required />
-      <input type="time" class="hora-inicio" required />
-      <input type="time" class="hora-fim" required />
-      <button type="button" onclick="this.parentElement.remove()">🗑️</button>
-    `;
-    container.appendChild(div);
+let SUPABASE_URL = "";
+let API_KEY = "";
+
+// 🔐 Carrega as chaves via backend seguro
+async function carregarChaves() {
+  try {
+    const res = await fetch("/api/supabase");
+    const dados = await res.json();
+    SUPABASE_URL = dados.url;
+    API_KEY = dados.key;
+  } catch (e) {
+    console.error("❌ Erro ao carregar chaves da API:", e);
+    alert("Erro ao carregar dados de conexão.");
   }
+}
+
+// 🕒 Garante que as chaves estão carregadas antes de usar
+document.addEventListener("DOMContentLoaded", async () => {
+  await carregarChaves();
+});
+
+// ✅ Sua função original continua igual
+function adicionarTurno() {
+  const container = document.getElementById("turnosContainer");
+  const div = document.createElement("div");
+  div.className = "turno-item";
+  div.innerHTML = `
+    <input type="text" placeholder="Nome do Turno" class="nome-turno" required />
+    <input type="time" class="hora-inicio" required />
+    <input type="time" class="hora-fim" required />
+    <button type="button" onclick="this.parentElement.remove()">🗑️</button>
+  `;
+  container.appendChild(div);
+}
 
   function md5(str) {
     return CryptoJS.MD5(str).toString();
