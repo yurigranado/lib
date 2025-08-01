@@ -211,129 +211,153 @@ input:checked + .slider:before {
   }
 
   async function carregarEntregadores() {
-    const data = document.getElementById("filtroData").value;
-    const turno = document.getElementById("filtroTurno").value;
-    const container = document.getElementById("blocoEntregadores");
-    container.innerHTML = "🔄 Carregando...";
+  const container = document.getElementById("blocoEntregadores");
+  container.innerHTML = "🔄 Carregando...";
 
-    const diaSemana = normalizarDia(data);
+  const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo&select=id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const contratos = await contratosRes.json();
+  if (!contratos.length) {
+    container.innerHTML = "<p>❌ Nenhum contrato ativo encontrado.</p>";
+    return;
+  }
 
-    // 1. Buscar contratos ativos da empresa
-    const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo&select=id,terceirizada_id`, {
+  let html = "";
+
+  for (const contrato of contratos) {
+    const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&or=(encerrado.is.false,encerrado.is.null)&select=entregador_id,turno`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
-    const contratos = await contratosRes.json();
+    const chegadas = await chegadaRes.json();
 
-    if (!contratos.length) {
-      container.innerHTML = "<p>❌ Nenhum contrato ativo encontrado.</p>";
-      return;
-    }
+    const porTurno = {
+      almoco: chegadas.filter(c => c.turno === "almoco"),
+      jantar: chegadas.filter(c => c.turno === "jantar")
+    };
 
-    let html = "";
+    for (const turno of ["almoco", "jantar"]) {
+      const ids = [...new Set(porTurno[turno].map(e => e.entregador_id))];
+      if (!ids.length) continue;
 
-    for (const contrato of contratos) {
-// 2. Buscar entregadores que realmente deram chegada hoje no turno
-const dataSelecionada = new Date(data + "T00:00:00");
+      const entregadoresRes = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${ids.join(",")})&select=id,nome`, {
+        headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+      });
+      const entregadores = await entregadoresRes.json();
 
-const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${contrato.id}&turno=eq.${turno}&encerrado=eq.false&select=entregador_id,data`, {
-  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-});
-const chegadasComData = await chegadaRes.json();
-
-const chegadasFiltradas = chegadasComData.filter(c => {
-  const dataChegada = new Date(c.data);
-  return (
-    dataChegada.getFullYear() === dataSelecionada.getFullYear() &&
-    dataChegada.getMonth() === dataSelecionada.getMonth() &&
-    dataChegada.getDate() === dataSelecionada.getDate()
-  );
-});
-
-const ids = [...new Set(chegadasFiltradas.map(e => e.entregador_id))];
-
-if (!ids.length) continue;
-
-const entregadoresRes = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?id=in.(${ids.join(",")})&select=id,nome`, {
-  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-});
-const entregadores = await entregadoresRes.json();
-
-html += `
-  <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
-    <h3 style="margin-top: 0;">🚚 Contrato ${contrato.id.slice(0, 8)}...</h3>
-    <table style="width:100%; border-collapse: collapse; color: white;">
-      <thead>
-        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-          <th style="text-align:left; padding: 8px;">#</th>
-          <th style="text-align:left; padding: 8px;">Entregador</th>
-          <th style="text-align:left; padding: 8px;">Simples</th>
-          <th style="text-align:left; padding: 8px;">Duplas</th>
-          <th style="text-align:center; padding: 8px;">🌙 Noturno</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${entregadores.map((ent, i) => `
-          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <td style="padding: 6px;">${i + 1}</td>
-            <td style="padding: 6px;">${ent.nome}</td>
-            <td style="padding: 6px;">
-              <input type="number" min="0" placeholder="0" id="corridas_${contrato.id}_${ent.id}" style="width: 70px; padding: 6px; border-radius: 6px;">
-            </td>
-            <td style="padding: 6px;">
-              <input type="number" min="0" placeholder="0" id="corridas_duplas_${contrato.id}_${ent.id}" style="width: 70px; padding: 6px; border-radius: 6px;">
-            </td>
-            <td style="text-align: center;">
-              <label class="switch">
-                <input type="checkbox" id="noturno_${contrato.id}_${ent.id}">
-                <span class="slider"></span>
-              </label>
-            </td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-    <div style="text-align: right;">
-      <button class="salvar-btn" onclick="salvarCorridas('${contrato.id}', '${data}', '${turno}', [${entregadores.map(e => `'${e.id}'`).join(",")}])">
-        💾 Salvar Corridas
-      </button>
-    </div>
-  </div>
-`;
-    }
-
-    container.innerHTML = html || "<p>⚠️ Nenhum entregador escalado neste turno.</p>";
-  }
-
-  async function salvarCorridas(contrato_id, data, turno, ids) {
-    const payload = ids.map(id => {
-      const qtd = document.getElementById(`corridas_${contrato_id}_${id}`).value;
-      return {
-        contrato_id,
-        empresa_id,
-        entregador_id: id,
-        data,
-        turno,
-        qtd_corridas: Number(qtd || 0),
-        criado_em: new Date().toISOString()
-      };
-    });
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/corridas`, {
-      method: "POST",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-      alert("✅ Corridas registradas com sucesso!");
-    } else {
-      alert("❌ Erro ao salvar corridas.");
+      html += `
+        <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
+          <h3 style="margin-top: 0;">🚚 Contrato ${contrato.id.slice(0, 8)}... | ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}</h3>
+          <table style="width:100%; border-collapse: collapse; color: white;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                <th style="text-align:left; padding: 8px;">#</th>
+                <th style="text-align:left; padding: 8px;">Entregador</th>
+                <th style="text-align:left; padding: 8px;">Simples</th>
+                <th style="text-align:left; padding: 8px;">Duplas</th>
+                <th style="text-align:center; padding: 8px;">🌙 Noturno</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entregadores.map((ent, i) => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                  <td style="padding: 6px;">${i + 1}</td>
+                  <td style="padding: 6px;">${ent.nome}</td>
+                  <td style="padding: 6px;">
+                    <input type="number" min="0" placeholder="0" id="corridas_${contrato.id}_${ent.id}_${turno}" style="width: 70px; padding: 6px; border-radius: 6px;">
+                  </td>
+                  <td style="padding: 6px;">
+                    <input type="number" min="0" placeholder="0" id="corridas_duplas_${contrato.id}_${ent.id}_${turno}" style="width: 70px; padding: 6px; border-radius: 6px;">
+                  </td>
+                  <td style="text-align: center;">
+                    <label class="switch">
+                      <input type="checkbox" id="noturno_${contrato.id}_${ent.id}_${turno}">
+                      <span class="slider"></span>
+                    </label>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          <div style="text-align: right;">
+            <button class="salvar-btn" onclick="salvarCorridas('${contrato.id}', '${turno}', [${entregadores.map(e => `'${e.id}'`).join(",")}])">
+              💾 Salvar Corridas
+            </button>
+          </div>
+        </div>
+      `;
     }
   }
+
+  container.innerHTML = html || "<p>⚠️ Nenhum entregador ativo no momento.</p>";
+}
+
+async function salvarCorridas(contrato_id, turno, ids) {
+  const payload = [];
+  const agora = new Date();
+  const dataHoje = agora.toISOString().split("T")[0]; // Apenas a data (AAAA-MM-DD)
+
+  for (const id of ids) {
+    const qtdSimples = document.getElementById(`corridas_${contrato_id}_${id}_${turno}`).value;
+    const qtdDuplas = document.getElementById(`corridas_duplas_${contrato_id}_${id}_${turno}`).value;
+    const noturno = document.getElementById(`noturno_${contrato_id}_${id}_${turno}`).checked;
+
+    const total = Number(qtdSimples || 0) + Number(qtdDuplas || 0);
+    if (total === 0) continue;
+
+    payload.push({
+      contrato_id,
+      empresa_id,
+      entregador_id: id,
+      data: dataHoje,
+      turno,
+      qtd_corridas: Number(qtdSimples || 0),
+      qtd_corridas_duplas: Number(qtdDuplas || 0),
+      adicional_noturno: noturno,
+      criado_em: agora.toISOString()
+    });
+  }
+
+  if (!payload.length) {
+    alert("⚠️ Nenhuma corrida preenchida.");
+    return;
+  }
+
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/corridas`, {
+    method: "POST",
+    headers: {
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (res.ok) {
+    alert("✅ Corridas registradas com sucesso!");
+
+    // Agora vamos encerrar o turno desses entregadores
+    for (const p of payload) {
+      await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&encerrado=is.false`, {
+        method: "PATCH",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          encerrado: true,
+          encerrado_em: new Date().toISOString()
+        })
+      });
+    }
+
+    carregarEntregadores(); // Atualiza visualmente
+  } else {
+    alert("❌ Erro ao salvar corridas.");
+  }
+}
+
 </script>
 </body>
 </html>
