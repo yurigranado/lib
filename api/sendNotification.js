@@ -1,12 +1,12 @@
 const webpush = require('web-push');
 const fetch = require('node-fetch');
 
-const SUPABASE_URL = "https://lamjkztvgxuivnsrpvnr.supabase.co";
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhbWprenR2Z3h1aXZuc3Jwdm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1MDI4MjcsImV4cCI6MjA2OTA3ODgyN30.2g1OX3rrUtA_KWrUqjI0ZFV3a8IhF-ydESnU5YBCY24";
+// 🔐 Protegido via variáveis de ambiente
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const API_KEY = process.env.SUPABASE_API_KEY;
 
-// ✅ Chaves VAPID (versão base64 segura - já gerada corretamente)
-const VAPID_PUBLIC_KEY = "BPuUL18Elquwb28c1OE8eukdH-SsRYVa11ybbjz-5a8Ce-amPPvhZZnKN6wQ6CS9xeFQy_mefnChvP0rm7CGSLM";
-const VAPID_PRIVATE_KEY = "6FJUJlaJd0EVdHsY8B0wHRXWj3dbc41F5_I8Gj9-pjA";
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 
 webpush.setVapidDetails(
   "mailto:yuri_granado@live.com",
