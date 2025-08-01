@@ -374,75 +374,76 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
   
 async function carregarEntregadorId() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/entregadores?cpf=eq.${login}`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  const resposta = await fetch("/api/carregarEntregador", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cpf: login })
   });
-  const dados = await res.json();
 
-  if (dados.length > 0) {
-    entregador_id = dados[0].id;
-    document.getElementById("nomeEntregador").innerText = dados[0].nome;
+  const retorno = await resposta.json();
 
-    await verificarEmpresaAtiva();
-    await carregarEscalaSemanal();
-    await carregarResumoCorridas();
-    await ativarNotificacoes();
-    await verificarTurnoHojeViaAPI();
+  if (retorno.status !== "ok") {
+    document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
+    document.getElementById("blocoEscolherEmpresa").style.display = "none";
+    return;
+  }
 
-    // ✅ Ativa Realtime da  só depois de ter o ID
-    if (!window.supabaseClient) {
-      window.supabaseClient = supabase.createClient(SUPABASE_URL, API_KEY);
-    }
+  entregador_id = retorno.entregador_id;
+  document.getElementById("nomeEntregador").innerText = retorno.nome;
 
-    window.supabaseClient
-      .channel(`_entregador_${entregador_id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: '_semana',
-          filter: `entregador_id=eq.${entregador_id}`
-        },
-        payload => {
-          console.log("📡  atualizada:", payload);
-          carregarSemanal(); // 🔁 atualiza o painel ao vivo
-        }
-      )
-      .subscribe();
+  await verificarEmpresaAtiva();
+  await carregarEscalaSemanal();
+  await carregarResumoCorridas();
+  await ativarNotificacoes();
+  await verificarTurnoHojeViaAPI();
 
-    // 🔍 Verifica vínculos existentes
-    const vinculosRes = await fetch(`${SUPABASE_URL}/rest/v1/vinculos_entregadores?entregador_id=eq.${entregador_id}`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-    const vinculos = await vinculosRes.json();
+  // Ativar realtime se ainda não estiver
+  if (!window.supabaseClient) {
+    window.supabaseClient = supabase.createClient(SUPABASE_URL, API_KEY);
+  }
 
-    const botaoContainer = document.getElementById("blocoEscolherEmpresa");
-    const botao = document.querySelector(".painel-btn");
-
-    const temAtivoOuPendente = vinculos.some(v => v.status === "ativo" || v.status === "pendente");
-
-    if (!temAtivoOuPendente) {
-      botaoContainer.style.display = "none";
-    } else {
-      botaoContainer.style.display = "block";
-
-      const temPendente = vinculos.some(v => v.status === "pendente");
-
-      if (temPendente) {
-        botao.innerText = "📬 Convite Pendente! Verificar";
-        botao.style.background = "#ffd54f";
-        botao.style.color = "#000";
-        botao.style.border = "2px solid #ffa000";
-        botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
-      } else {
-        botao.innerText = "🔄";
-        botao.style.background = "white";
-        botao.style.color = "#000";
-        botao.style.border = "none";
-        botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+  window.supabaseClient
+    .channel(`_entregador_${entregador_id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: '_semana',
+        filter: `entregador_id=eq.${entregador_id}`
+      },
+      payload => {
+        carregarSemanal();
       }
+    )
+    .subscribe();
+
+  const botaoContainer = document.getElementById("blocoEscolherEmpresa");
+  const botao = document.querySelector(".painel-btn");
+
+  const temAtivoOuPendente = retorno.vinculos.some(v => v.status === "ativo" || v.status === "pendente");
+
+  if (!temAtivoOuPendente) {
+    botaoContainer.style.display = "none";
+  } else {
+    botaoContainer.style.display = "block";
+    const temPendente = retorno.vinculos.some(v => v.status === "pendente");
+
+    if (temPendente) {
+      botao.innerText = "📬 Convite Pendente! Verificar";
+      botao.style.background = "#ffd54f";
+      botao.style.color = "#000";
+      botao.style.border = "2px solid #ffa000";
+      botao.style.boxShadow = "0 0 12px rgba(255, 193, 7, 0.8)";
+    } else {
+      botao.innerText = "🔄";
+      botao.style.background = "white";
+      botao.style.color = "#000";
+      botao.style.border = "none";
+      botao.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
     }
+  }
+}
 
   } else {
     document.getElementById("nomeEntregador").innerText = "Nome não encontrado";
