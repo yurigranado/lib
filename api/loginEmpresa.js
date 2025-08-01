@@ -4,49 +4,53 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = await req.json(); // 👈 aqui é o segredo!
-    const { email, senha } = body;
-
-    console.log("📧 Email:", email);
-    console.log("🔑 Senha:", senha);
-
-    const API_KEY = process.env.SUPABASE_API_KEY;
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-
-    if (!API_KEY || !SUPABASE_URL) {
-      return res.status(500).json({ erro: "Variáveis de ambiente não configuradas" });
-    }
-
-    // Verifica restaurante
-    const resEmpresa = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
-      }
+    // ✅ Compatível com Node.js no Vercel
+    let body = "";
+    req.on("data", chunk => {
+      body += chunk;
     });
-    const dadosEmpresa = await resEmpresa.json();
 
-    if (dadosEmpresa.length === 1) {
-      return res.status(200).json({ tipo: "empresa", dados: dadosEmpresa[0] });
-    }
+    req.on("end", async () => {
+      const { email, senha } = JSON.parse(body);
 
-    // Verifica terceirizada
-    const resTerceira = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${email}&senha=eq.${senha}`, {
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`
+      const API_KEY = process.env.SUPABASE_API_KEY;
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+
+      if (!API_KEY || !SUPABASE_URL) {
+        return res.status(500).json({ erro: "Variáveis de ambiente não configuradas" });
       }
+
+      // Verifica como restaurante
+      const resEmpresa = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`
+        }
+      });
+      const dadosEmpresa = await resEmpresa.json();
+
+      if (dadosEmpresa.length === 1) {
+        return res.status(200).json({ tipo: "empresa", dados: dadosEmpresa[0] });
+      }
+
+      // Verifica como terceirizada
+      const resTerceira = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${email}&senha=eq.${senha}`, {
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`
+        }
+      });
+      const dadosTerceira = await resTerceira.json();
+
+      if (dadosTerceira.length === 1) {
+        return res.status(200).json({ tipo: "terceirizada", dados: dadosTerceira[0] });
+      }
+
+      return res.status(401).json({ erro: "Login inválido" });
     });
-    const dadosTerceira = await resTerceira.json();
-
-    if (dadosTerceira.length === 1) {
-      return res.status(200).json({ tipo: "terceirizada", dados: dadosTerceira[0] });
-    }
-
-    return res.status(401).json({ erro: "Login inválido" });
 
   } catch (erro) {
-    console.error("❌ Erro no loginEmpresa:", erro);
+    console.error("❌ Erro loginEmpresa:", erro);
     return res.status(500).json({ erro: "Erro interno", detalhes: erro.message });
   }
 }
