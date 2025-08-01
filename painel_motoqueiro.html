@@ -276,6 +276,53 @@ button:focus, input:focus, select:focus, textarea:focus {
   </style>
 </head>
 <body>
+  <!-- 🔒 BLOQUEIO PARA SAFARI NO IPHONE -->
+<div id="telaBloqueio" style="display: none;">
+  <div class="login-container">
+    <div class="logo">
+      <img src="https://i.imgur.com/VpQtXGy.png" alt="Logo Motoqueiro">
+    </div>
+
+    <div id="avisoInstalacao" style="
+      max-width: 360px;
+      margin: auto;
+      padding: 32px 20px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      backdrop-filter: blur(12px);
+      text-align: center;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+    ">
+      <img src="https://i.imgur.com/6oK2RUG.png" alt="Instalar App" style="width: 80px; margin-bottom: 16px;" />
+
+      <h2 style="margin: 0 0 12px;">📲 Instale o aplicativo</h2>
+      <p style="font-size: 15px; margin-bottom: 20px;">
+        Para acessar o painel de entregador, instale o app na tela inicial do seu iPhone.
+      </p>
+
+      <button onclick="alert('Use o botão compartilhar do navegador e escolha \"Adicionar à Tela de Início\"')" style="
+        padding: 10px 22px;
+        font-weight: bold;
+        font-size: 15px;
+        background: white;
+        color: #003366;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        transition: transform 0.2s ease;
+      "
+      onmouseover="this.style.transform='scale(1.05)'"
+      onmouseout="this.style.transform='scale(1)'"
+      >
+        Como instalar
+      </button>
+    </div>
+  </div>
+</div>
+  
 <div id="painelContainer">
 <div id="topoUsuario">
   <span id="nomeEntregador">Carregando nome...</span>
@@ -367,8 +414,18 @@ if (!login || !expiracao || Date.now() > parseInt(expiracao)) {
   window.location.href = "login_motoqueiro.html?msg=sessao_expirada";
 }
 
-// 🔁 Aguarda DOM para carregar chaves e iniciar lógica
 document.addEventListener("DOMContentLoaded", async () => {
+  const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+  const isStandalone = window.navigator.standalone === true;
+
+  if (isIos && !isStandalone) {
+    // ❌ Bloqueia o acesso no Safari do iPhone
+    document.getElementById("painelContainer").style.display = "none";
+    document.getElementById("telaBloqueio").style.display = "block";
+    return;
+  }
+
+  // ✅ Carrega painel normalmente
   await carregarChaves();
   await carregarEntregadorId();
 });
