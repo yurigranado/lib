@@ -68,7 +68,7 @@ export default async function handler(req, res) {
       inicio.setMinutes(+minutoStr - 15);
 
       const fim = new Date(inicio);
-      fim.setMinutes(fim.getMinutes() + 90);
+      fim.setMinutes(fim.getMinutes() + 180);
 
       if (agora >= inicio && agora <= fim) {
         return res.status(200).json({
