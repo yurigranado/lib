@@ -785,9 +785,7 @@ if (resultado.status === "chegada_existente") {
   document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
   console.warn("⚠️ Turno não disponível ou inválido:", resultado);
 }
-
-
-
+}
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
   const btnChegada = document.getElementById("btnChegada");
