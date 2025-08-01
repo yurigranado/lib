@@ -198,9 +198,9 @@ input:checked + .slider:before {
   const container = document.getElementById("blocoEntregadores");
   container.innerHTML = "🔄 Carregando...";
 
-const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo&select=id,empresa:empresas(id,nome)`, {
-    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-  });
+const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?empresa_id=eq.${empresa_id}&status=eq.ativo&select=id,terceirizada:terceirizadas(id,nome)`, {
+  headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+});
   const contratos = await contratosRes.json();
   if (!contratos.length) {
     container.innerHTML = "<p>❌ Nenhum contrato ativo encontrado.</p>";
@@ -231,7 +231,7 @@ const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_ter
 
       html += `
         <div class="card" style="background: rgba(255,255,255,0.05); margin-bottom:20px;">
-<h3 style="margin-top: 0;">🚚 ${contrato.empresa.nome} | ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}</h3>
+<h3 style="margin-top: 0;">🚚 ${contrato.terceirizada.nome} | ${turno === "almoco" ? "☀️ Almoço" : "🌙 Jantar"}</h3>
           <table style="width:100%; border-collapse: collapse; color: white;">
             <thead>
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
