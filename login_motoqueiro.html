@@ -169,18 +169,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const modo = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
   if (!modo) {
-    document.body.innerHTML = `
-      <div style="text-align: center; padding: 40px; color: white;">
-        <h2>📲 Aplicativo não instalado</h2>
-        <p>Para acessar o painel, instale o app na sua tela inicial.</p>
-        <button onclick="instalarPWA()" style="padding: 10px 20px; font-weight: bold; background: white; color: #003366; border: none; border-radius: 10px;">Instalar agora</button>
-      </div>
-    `;
+    document.getElementById("avisoInstalacao").style.display = "block";
     return;
   }
 
+  // ✅ Mostra o formulário de login se estiver em modo PWA
+  document.getElementById("telaLogin").style.display = "block";
+
   await carregarChaves();
 });
+
 
   document.getElementById("login").addEventListener("input", (e) => {
   let v = e.target.value.replace(/\D/g, '').slice(0, 11);
