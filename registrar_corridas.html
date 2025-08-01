@@ -279,7 +279,7 @@ const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_ter
 async function salvarCorridas(contrato_id, turno, ids) {
   const payload = [];
   const agora = new Date();
-  const dataHoje = agora.toISOString().split("T")[0]; // AAAA-MM-DD
+  const dataHoje = agora.toISOString().split("T")[0];
 
   for (const id of ids) {
     const qtdSimples = document.getElementById(`corridas_${contrato_id}_${id}_${turno}`).value;
@@ -321,19 +321,21 @@ async function salvarCorridas(contrato_id, turno, ids) {
     alert("✅ Corridas registradas com sucesso!");
 
     for (const p of payload) {
-const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&ativo=eq.true&turno=eq.${p.turno}`, {
-  method: "PATCH",
-  headers: {
-    apikey: API_KEY,
-    Authorization: `Bearer ${API_KEY}`,
-    "Content-Type": "application/json",
-    Prefer: "return=representation"
-  },
-  body: JSON.stringify({
-    encerrado: true,
-    encerrado_em: new Date().toISOString()
-  })
-});
+      const resUpdate = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?contrato_id=eq.${p.contrato_id}&entregador_id=eq.${p.entregador_id}&turno=eq.${p.turno}&or=(ativo.is.true,ativo.is.null)`, {
+        method: "PATCH",
+        headers: {
+          apikey: API_KEY,
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify({
+          encerrado: true,
+          encerrado_em: new Date().toISOString(),
+          ativo: false
+        })
+      });
+
       const result = await resUpdate.json();
       if (!result.length) {
         console.warn("⚠️ Turno não foi encerrado. Verifique os dados:", p);
