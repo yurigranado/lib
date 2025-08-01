@@ -635,9 +635,6 @@ async function carregarEscalaSemanal() {
 }
 
 async function verificarTurnoHoje() {
-  const agora = new Date().toTimeString().slice(0, 5); // HH:MM
-
-  // 🔍 Verifica empresa ativa
   const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/status_entregador?entregador_id=eq.${entregador_id}&ativo=eq.true&select=terceirizada_id`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -646,7 +643,6 @@ async function verificarTurnoHoje() {
 
   const terceirizada_id = empresaData[0].terceirizada_id;
 
-  // 🔍 Busca contrato
   const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?terceirizada_id=eq.${terceirizada_id}`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -654,8 +650,6 @@ async function verificarTurnoHoje() {
   const contrato_id = contrato[0]?.id;
   if (!contrato_id) return;
 
-  // 🔍 Busca chegada ativa (encerrado = false)
-  console.log("🔎 Entregador ID:", entregador_id);
   const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&encerrado=eq.false&select=data`, {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
@@ -673,10 +667,11 @@ async function verificarTurnoHoje() {
   } else {
     const bloco = document.getElementById("blocoConfirmarChegada");
     bloco.style.display = "block";
-    bloco.dataset.turno = "jantar"; // ou outro valor se quiser registrar
+    bloco.dataset.turno = "jantar"; // pode ser fixo ou dinâmico, dependendo do contexto
     bloco.dataset.contrato = contrato_id;
   }
 }
+
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
   const btnChegada = document.getElementById("btnChegada");
