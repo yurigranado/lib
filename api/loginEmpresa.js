@@ -5,11 +5,9 @@ export default async function handler(req, res) {
 
   try {
     const buffers = [];
-
     for await (const chunk of req) {
       buffers.push(chunk);
     }
-
     const bodyString = Buffer.concat(buffers).toString();
     const { email, senha } = JSON.parse(bodyString);
 
@@ -20,7 +18,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ erro: "Variáveis de ambiente não configuradas" });
     }
 
-    // 1️⃣ Verifica como restaurante
+    // Verifica restaurante
     const resEmpresa = await fetch(`${SUPABASE_URL}/rest/v1/empresas?email=eq.${email}&senha=eq.${senha}`, {
       headers: {
         apikey: API_KEY,
@@ -28,11 +26,12 @@ export default async function handler(req, res) {
       }
     });
     const dadosEmpresa = await resEmpresa.json();
+
     if (dadosEmpresa.length === 1) {
       return res.status(200).json({ tipo: "empresa", dados: dadosEmpresa[0] });
     }
 
-    // 2️⃣ Verifica como terceirizada
+    // Verifica terceirizada
     const resTerceira = await fetch(`${SUPABASE_URL}/rest/v1/terceirizadas?email=eq.${email}&senha=eq.${senha}`, {
       headers: {
         apikey: API_KEY,
@@ -40,6 +39,7 @@ export default async function handler(req, res) {
       }
     });
     const dadosTerceira = await resTerceira.json();
+
     if (dadosTerceira.length === 1) {
       return res.status(200).json({ tipo: "terceirizada", dados: dadosTerceira[0] });
     }
@@ -47,6 +47,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ erro: "Login inválido" });
 
   } catch (erro) {
+    console.error("Erro loginEmpresa:", erro.message);
     return res.status(500).json({ erro: "Erro interno", detalhes: erro.message });
   }
 }
