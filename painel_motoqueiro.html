@@ -901,17 +901,61 @@ async function ativarNotificacoes() {
       return `- ${dia}: ${qtd}`;
     }).join("<br>");
 
-  container.innerHTML = `
-    <div class="bloco-escala-detalhada">
-      <summary>📆 Hoje (${new Date().toLocaleDateString("pt-BR")})</summary>
-      <pre style="margin: 10px 0;">${resumoHoje || "Nenhuma corrida registrada hoje."}</pre>
-    </div>
-    <div class="bloco-escala-detalhada" style="margin-top: 12px;">
-      <summary>📊 Corridas da Semana</summary>
-      <div style="margin-top: 10px;">${resumoDias}</div>
-    </div>
-    <p style="margin-top: 16px;">📦 Total simples: ${totalSimples} | duplas: ${totalDuplas}</p>
+  let tabelaHTML = `
+    <div class="tabela-escala-entregador" style="margin-top: 20px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Turno</th>
+            <th>Simples</th>
+            <th>Duplas</th>
+          </tr>
+        </thead>
+        <tbody>
   `;
+
+  // Agrupando por dia+turno
+  const agrupado = {};
+  for (const c of corridas) {
+    const data = c.data.split("T")[0];
+    const turno = c.turno;
+    if (!agrupado[data]) agrupado[data] = {};
+    if (!agrupado[data][turno]) agrupado[data][turno] = { simples: 0, duplas: 0 };
+    agrupado[data][turno].simples += c.qtd_corridas || 0;
+    agrupado[data][turno].duplas += c.qtd_corridas_duplas || 0;
+  }
+
+  const diasOrdenados = Object.keys(agrupado).sort((a, b) => new Date(b) - new Date(a));
+
+  for (const dia of diasOrdenados) {
+    const turnos = agrupado[dia];
+    for (const t in turnos) {
+      const label = t === "almoco" ? "☀️ Almoço" : "🌙 Jantar";
+      const simples = turnos[t].simples;
+      const duplas = turnos[t].duplas;
+
+      tabelaHTML += `
+        <tr>
+          <td>${new Date(dia).toLocaleDateString("pt-BR")}</td>
+          <td>${label}</td>
+          <td>${simples}</td>
+          <td>${duplas}</td>
+        </tr>
+      `;
+    }
+  }
+
+  tabelaHTML += `
+        </tbody>
+      </table>
+      <div style="margin-top: 10px; text-align: center;">
+        📦 Total simples: ${totalSimples} | duplas: ${totalDuplas}
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = tabelaHTML;
 }
     
 function urlBase64ToUint8Array(base64String) {
