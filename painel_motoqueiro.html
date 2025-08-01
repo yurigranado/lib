@@ -668,6 +668,7 @@ async function verificarTurnoHoje() {
     headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
   const turnos = await turnosRes.json();
+  console.log("🆔 Entregador ID (antes da busca de chegada):", entregador_id);
 
   // Procurar chegada ativa não encerrada para esse entregador e contrato
 const chegadaRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&encerrado=eq.false&select=data,turno`, {
