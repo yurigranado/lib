@@ -249,7 +249,7 @@ const chegadasFiltradas = chegadasComData.filter(c => {
   );
 });
 
-const ids = [...new Set(chegadasHoje.map(e => e.entregador_id))];
+const ids = [...new Set(chegadasFiltradas.map(e => e.entregador_id))];
 
 if (!ids.length) continue;
 
