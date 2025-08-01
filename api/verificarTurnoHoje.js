@@ -81,12 +81,13 @@ const hoje = agora.toLocaleDateString("pt-BR", { weekday: "long" }).toLowerCase(
 
 for (const turno of turnos) {
   const [horaStr, minutoStr] = turno.horario_inicio.split(":");
+  const [horaFim, minFim] = turno.horario_fim.split(":");
+
   const inicio = new Date(agora);
   inicio.setHours(+horaStr);
   inicio.setMinutes(+minutoStr - 15); // margem de 15min antes
 
   const fim = new Date(agora);
-  const [horaFim, minFim] = turno.horario_fim.split(":");
   fim.setHours(+horaFim);
   fim.setMinutes(+minFim);
 
@@ -94,7 +95,7 @@ for (const turno of turnos) {
   console.log("⏳ Avaliando turno:", nomeTurno, "entre", inicio.toISOString(), "e", fim.toISOString());
 
   if ((nomeTurno === "jantar" || nomeTurno === "almoco") && agora >= inicio && agora <= fim) {
-    // 🔎 Verifica se o entregador está escalado hoje nesse turno
+    // 🔍 Verifica se está escalado nesse turno
     const escalaRes = await fetch(`${SUPABASE_URL}/rest/v1/escala_semana?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&dia_semana=eq.${hoje}&turno=eq.${nomeTurno}`, {
       headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
     });
