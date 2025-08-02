@@ -1233,7 +1233,10 @@ async function carregarMensagensChat() {
   const res = await fetch("/api/chat/mensagens", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contrato_id: contrato_id_chat })
+    body: JSON.stringify({
+  contrato_id: contrato_id_chat,
+  entregador_id // 👈 novo
+})
   });
 
   const lista = await res.json();
@@ -1277,16 +1280,17 @@ async function enviarMensagem() {
 
   input.value = "";
 
-  await fetch("/api/chat/enviar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contrato_id: contrato_id_chat,
-      remetente_tipo: "entregador",
-      remetente_id: entregador_id,
-      mensagem: texto
-    })
-  });
+await fetch("/api/chat/enviar", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    contrato_id: contrato_id_chat,
+    entregador_id, // 👈 novo
+    remetente_tipo: "entregador",
+    remetente_id: entregador_id,
+    mensagem: texto
+  })
+});
 
   await carregarMensagensChat();
 }
