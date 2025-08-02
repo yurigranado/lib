@@ -4,13 +4,16 @@ export default async function handler(req, res) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const API_KEY = process.env.SUPABASE_API_KEY;
 
-  if (!SUPABASE_URL || !API_KEY) return res.status(500).json({ erro: "Chaves ausentes" });
+  const { contrato_id, entregador_id, remetente_tipo, remetente_id, mensagem } = req.body;
+
+  if (!contrato_id || !entregador_id || !remetente_tipo || !remetente_id || !mensagem) {
+    return res.status(400).json({ erro: "Campos obrigatórios ausentes" });
+  }
 
   try {
-    const { contrato_id, remetente_tipo, remetente_id, mensagem } = req.body;
-
     const payload = {
       contrato_id,
+      entregador_id,
       remetente_tipo,
       remetente_id,
       mensagem,
