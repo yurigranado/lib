@@ -392,6 +392,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   display: none;
   z-index: 9999;
+  touch-action: none;
+  cursor: grab;
 ">💬</button>
 
 <!-- 💬 Janela Flutuante do Chat -->
@@ -1237,6 +1239,42 @@ let contrato_id_chat = null;
 document.addEventListener("DOMContentLoaded", () => {
   setTimeout(verificarChatDisponivel, 1000); // pequeno delay após carregar ID
 });
+
+    // 💬 Botão arrastável
+(function () {
+  const btn = document.getElementById("botaoChat");
+  let pos = { x: 0, y: 0 };
+  let isDragging = false;
+
+  btn.addEventListener("pointerdown", (e) => {
+    isDragging = true;
+    pos.x = e.clientX - btn.offsetLeft;
+    pos.y = e.clientY - btn.offsetTop;
+    btn.setPointerCapture(e.pointerId);
+  });
+
+  btn.addEventListener("pointermove", (e) => {
+    if (!isDragging) return;
+    let left = e.clientX - pos.x;
+    let top = e.clientY - pos.y;
+
+    // limita dentro da tela
+    const maxX = window.innerWidth - btn.offsetWidth;
+    const maxY = window.innerHeight - btn.offsetHeight;
+    left = Math.max(0, Math.min(maxX, left));
+    top = Math.max(0, Math.min(maxY, top));
+
+    btn.style.left = left + "px";
+    btn.style.top = top + "px";
+    btn.style.right = "auto";
+    btn.style.bottom = "auto";
+    btn.style.position = "fixed";
+  });
+
+  btn.addEventListener("pointerup", () => {
+    isDragging = false;
+  });
+})();
   </script>
 </body>
 </html>
