@@ -377,7 +377,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   ">
 </div>
 
-<!-- 💬 Botão de Chat -->
+<!-- 💬 Botão Flutuante de Chat -->
 <button id="botaoChat" onclick="alternarChat()" style="
   position: fixed;
   bottom: 80px;
@@ -396,32 +396,58 @@ button:focus, input:focus, select:focus, textarea:focus {
   cursor: grab;
 ">💬</button>
 
-<!-- 💬 Janela Flutuante do Chat -->
+<!-- 💬 Janela de Chat -->
 <div id="chatFlutuante" style="
   position: fixed;
   bottom: 150px;
   right: 16px;
   width: 300px;
-  max-height: 400px;
-  display: none;
-  background: rgba(0,0,0,0.85);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  max-height: 420px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   z-index: 9999;
+  display: none;
   flex-direction: column;
-  display: flex;
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
 ">
-  <div style="background: #2e7d32; padding: 10px;">
-    <strong>Chat com Restaurante</strong>
+
+  <!-- 🟢 Cabeçalho -->
+  <div style="background: rgba(46, 125, 50, 0.9); padding: 10px 14px;">
+    <strong style="font-size: 14px;">💬 Chat com Restaurante</strong>
   </div>
-  <div id="chatMensagens" style="flex: 1; padding: 10px; overflow-y: auto; font-size: 14px;"></div>
-  <div style="display: flex; padding: 10px; background: rgba(255,255,255,0.05);">
-    <input id="mensagemChat" placeholder="Digite..." style="flex:1; padding: 6px; border-radius: 6px; border: none; font-size: 14px;">
-    <button onclick="enviarMensagem()" style="margin-left: 6px; background: #2e7d32; color: white; border: none; border-radius: 6px; padding: 6px 10px;">📤</button>
+
+  <!-- 💬 Mensagens -->
+  <div id="chatMensagens" style="flex: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.4;"></div>
+
+  <!-- 📝 Entrada -->
+  <div style="display: flex; padding: 8px; background: rgba(255,255,255,0.06);">
+    <input id="mensagemChat" placeholder="Digite..." style="
+      flex: 1;
+      padding: 8px;
+      border-radius: 12px;
+      border: none;
+      font-size: 13px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    ">
+    <button onclick="enviarMensagem()" style="
+      margin-left: 6px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    ">📤</button>
   </div>
 </div>
-
+  
   <div id="modalEmpresas">
     <div class="box">
       <h3>👥 Convites Pendentes</h3>
@@ -1183,21 +1209,41 @@ async function carregarMensagensChat() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ contrato_id: contrato_id_chat })
   });
-const lista = await res.json();
-const container = document.getElementById("chatMensagens");
 
-if (!Array.isArray(lista)) {
-  container.innerHTML = `<div style="color: red;">❌ Erro ao carregar mensagens.</div>`;
-  return;
+  const lista = await res.json();
+  const container = document.getElementById("chatMensagens");
+
+  if (!Array.isArray(lista)) {
+    container.innerHTML = `<div style="color: red;">❌ Erro ao carregar mensagens.</div>`;
+    return;
+  }
+
+  container.innerHTML = lista.map(m => {
+    const souEu = m.remetente_tipo === "entregador";
+
+    return `
+      <div style="
+        background: ${souEu ? '#66bb6a' : '#ffffff22'};
+        color: white;
+        padding: 8px 12px;
+        border-radius: 12px;
+        max-width: 80%;
+        margin: 6px ${souEu ? '0 0 auto' : 'auto 0 6px'};
+        font-size: 13px;
+        line-height: 1.4;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      ">
+        <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
+          ${souEu ? "Você" : "Restaurante"}
+        </div>
+        ${m.mensagem}
+      </div>
+    `;
+  }).join("");
+
+  container.scrollTop = container.scrollHeight;
 }
 
-container.innerHTML = lista.map(m => `
-  <div style="margin-bottom: 8px;">
-    <b>${m.remetente_tipo === "restaurante" ? "Restaurante" : "Você"}:</b> ${m.mensagem}
-  </div>
-`).join("");
-container.scrollTop = container.scrollHeight;
-}
 async function enviarMensagem() {
   const input = document.getElementById("mensagemChat");
   const texto = input.value.trim();
