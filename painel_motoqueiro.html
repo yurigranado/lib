@@ -1300,20 +1300,26 @@ await fetch("/api/chat/enviar", {
 
 // Supabase Realtime (após carregarEntregadorId)
 function iniciarRealtimeChat() {
-  if (!window.supabaseClient || !contrato_id_chat) return;
+  if (!window.supabaseClient) return;
 
-window.supabaseClient
-  .channel("chat_realtime_teste") // nome livre
-  .on('postgres_changes', {
-    event: 'INSERT',
-    schema: 'public',
-    table: 'mensagens_chat'
-  }, (payload) => {
-    console.log("✅ Chegou realtime bruto:", payload);
-    carregarMensagensChat(); // recarrega tudo
-  })
-  .subscribe();
+  const canal = window.supabaseClient
+    .channel("chat_mensagens_geral")
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'mensagens_chat'
+    }, (payload) => {
+      const nova = payload.new;
 
+      // garante que só carregue se a mensagem for para o entregador certo
+      if (nova.entregador_id === entregador_id && nova.contrato_id === contrato_id_chat) {
+        console.log("⚡ Realtime chegou no chat:", nova);
+        carregarMensagensChat();
+      } else {
+        console.log("⚠️ Ignorado - não é para esse entregador.");
+      }
+    })
+    .subscribe();
 }
 
 // ✅ Rodar após carregamento do entregador
