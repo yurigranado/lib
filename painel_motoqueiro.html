@@ -1303,19 +1303,14 @@ function iniciarRealtimeChat() {
   if (!window.supabaseClient || !contrato_id_chat) return;
 
 window.supabaseClient
-  .channel(`chat_${contrato_id_chat}_${entregador_id}`)
+  .channel("chat_realtime_teste") // nome livre
   .on('postgres_changes', {
     event: 'INSERT',
     schema: 'public',
     table: 'mensagens_chat'
   }, (payload) => {
-    const nova = payload.new;
-
-    // Verifica se a mensagem é para o entregador atual
-    if (nova.contrato_id === contrato_id_chat && nova.entregador_id === entregador_id) {
-      console.log("⚡ Realtime nova mensagem recebida:", nova);
-      carregarMensagensChat();
-    }
+    console.log("✅ Chegou realtime bruto:", payload);
+    carregarMensagensChat(); // recarrega tudo
   })
   .subscribe();
 
