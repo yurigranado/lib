@@ -1301,15 +1301,19 @@ await fetch("/api/chat/enviar", {
 function iniciarRealtimeChat() {
   if (!window.supabaseClient || !contrato_id_chat) return;
 
-  window.supabaseClient
-    .channel(`chat_${contrato_id_chat}`)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'mensagens_chat',
-      filter: `contrato_id=eq.${contrato_id_chat}`
-    }, carregarMensagensChat)
-    .subscribe();
+window.supabaseClient
+  .channel(`chat_${contrato_id_chat}_${entregador_id}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'mensagens_chat',
+    filter: `contrato_id=eq.${contrato_id_chat},entregador_id=eq.${entregador_id}`
+  }, (payload) => {
+    if (payload.eventType === "INSERT") {
+      carregarMensagensChat();
+    }
+  })
+  .subscribe();
 }
 
 // ✅ Rodar após carregamento do entregador
