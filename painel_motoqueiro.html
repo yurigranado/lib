@@ -343,7 +343,7 @@ button:focus, input:focus, select:focus, textarea:focus {
 <div id="blocoConfirmarChegada" style="display: none; margin-top: 10px;">
   <button id="btnChegada" class="painel-btn" onclick="confirmarChegada()">📍 Confirmar Chegada</button>
   <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
-  <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
+  <p id="textoHorarioChegada" style="color: white; font-size: 13px; margin-top: 6px;"></p>
 </div>
   
   <!-- Bloco da escala abaixo -->
@@ -769,7 +769,7 @@ try {
   console.error("❌ Erro ao interpretar resposta JSON:", e);
   const texto = await resposta.text();
   console.error("💬 Resposta bruta:", texto);
-  document.getElementById("horarioChegada").innerText = "❌ Erro interno ao verificar turno.";
+  document.getElementById("textoHorarioChegada").innerText = "❌ Erro interno ao verificar turno.";
   return;
 }
   const bloco = document.getElementById("blocoConfirmarChegada");
@@ -781,16 +781,16 @@ try {
 
 if (resultado.status === "chegada_existente") {
   bloco.style.display = "none";
-  document.getElementById("horarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
+  document.getElementById("textoHorarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
 } else if (resultado.status === "pode_confirmar" && resultado.turno) {
   bloco.style.display = "block";
   bloco.dataset.turno = resultado.turno;
   bloco.dataset.contrato = resultado.contrato_id;
-  document.getElementById("horarioChegada").innerText = "";
+  document.getElementById("textoHorarioChegada").innerText = "";
   console.log("✅ Turno autorizado:", resultado.turno);
 } else {
   bloco.style.display = "none";
-  document.getElementById("horarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
+  document.getElementById("textoHorarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
   console.warn("⚠️ Turno não disponível ou inválido:", resultado);
 }
 }
@@ -894,10 +894,9 @@ async function confirmarChegada() {
       const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
-      document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
+      document.getElementById("textoHorarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
       btn.style.display = "none";
-
-      document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
+      
     } else {
       console.error("❌ Erro Supabase:", respostaTexto);
       alert("❌ Erro ao confirmar chegada.\n\n" + respostaTexto);
