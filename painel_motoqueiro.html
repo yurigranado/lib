@@ -1165,16 +1165,20 @@ async function carregarMensagensChat() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ contrato_id: contrato_id_chat })
   });
-  const lista = await res.json();
+const lista = await res.json();
+const container = document.getElementById("chatMensagens");
 
-  const container = document.getElementById("chatMensagens");
-  container.innerHTML = lista.map(m => `
-    <div style="margin-bottom: 8px;">
-      <b>${m.remetente_tipo === "restaurante" ? "Restaurante" : "Você"}:</b> ${m.mensagem}
-    </div>
-  `).join("");
-  container.scrollTop = container.scrollHeight;
+if (!Array.isArray(lista)) {
+  container.innerHTML = `<div style="color: red;">❌ Erro ao carregar mensagens.</div>`;
+  return;
 }
+
+container.innerHTML = lista.map(m => `
+  <div style="margin-bottom: 8px;">
+    <b>${m.remetente_tipo === "restaurante" ? "Restaurante" : "Você"}:</b> ${m.mensagem}
+  </div>
+`).join("");
+container.scrollTop = container.scrollHeight;
 
 async function enviarMensagem() {
   const input = document.getElementById("mensagemChat");
