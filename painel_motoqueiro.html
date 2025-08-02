@@ -1312,10 +1312,18 @@ function iniciarRealtimeChat() {
     }, (payload) => {
       const nova = payload.new;
 
-      if (nova.entregador_id === entregador_id && nova.contrato_id === contrato_id_chat) {
-        console.log("⚡ Mensagem recebida via Realtime:", nova);
-        carregarMensagensChat();
-      }
+console.log("🧪 Comparando realtime:");
+console.log("↪️ entregador_id esperado:", entregador_id);
+console.log("↪️ contrato_id_chat esperado:", contrato_id_chat);
+console.log("↩️ entregador_id recebido:", nova.entregador_id);
+console.log("↩️ contrato_id recebido:", nova.contrato_id);
+
+if (nova.entregador_id === entregador_id && nova.contrato_id === contrato_id_chat) {
+  console.log("✅ Atualizando chat!");
+  carregarMensagensChat();
+} else {
+  console.log("❌ Ignorado - não é do mesmo contrato ou entregador.");
+}
     })
     .subscribe();
 }
