@@ -757,19 +757,19 @@ async function carregarEscalaSemanal() {
 }
 
 async function verificarTurnoHojeViaAPI() {
-  const resposta = await fetch("/api/verificarTurnoHoje", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ entregador_id })
-  });
-  let resultado;
+const resposta = await fetch("/api/verificarTurnoHoje", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ entregador_id })
+});
+let resultado;
 try {
   resultado = await resposta.json();
+  console.log("✅ [verificarTurnoHojeViaAPI] Horário detectado:", resultado);
 } catch (e) {
   console.error("❌ Erro ao interpretar resposta JSON:", e);
   const texto = await resposta.text();
   console.error("💬 Resposta bruta:", texto);
-  console.log("✅ [verificarTurnoHojeViaAPI] Horário detectado:", resultado.data, resultado.hora);
   document.getElementById("textoHorarioChegada").innerText = "❌ Erro interno ao verificar turno.";
   return;
 }
