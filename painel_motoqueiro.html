@@ -424,16 +424,34 @@ button:focus, input:focus, select:focus, textarea:focus {
   color: white;
 ">
 
-  <!-- 🟢 Cabeçalho -->
-  <div style="background: rgba(46, 125, 50, 0.9); padding: 10px 14px;">
-    <strong style="font-size: 14px;">💬 Chat com Restaurante</strong>
+  <!-- 🟢 Cabeçalho (clicável para fechar) -->
+  <div onclick="alternarChat()" style="
+    background: rgba(46, 125, 50, 0.9);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  ">
+    <img src="https://i.imgur.com/vIftRSs.png" alt="Chat" style="width: 18px; height: 18px;">
+    <strong style="font-size: 14px;">Chat com Restaurante</strong>
   </div>
 
   <!-- 💬 Mensagens -->
-  <div id="chatMensagens" style="flex: 1; padding: 10px; overflow-y: auto; font-size: 13px; line-height: 1.4;"></div>
+  <div id="chatMensagens" style="
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.4;
+  "></div>
 
   <!-- 📝 Entrada -->
-  <div style="display: flex; padding: 8px; background: rgba(255,255,255,0.06);">
+  <div style="
+    display: flex;
+    padding: 8px;
+    background: rgba(255,255,255,0.06);
+  ">
     <input id="mensagemChat" placeholder="Digite..." style="
       flex: 1;
       padding: 8px;
