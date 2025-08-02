@@ -377,8 +377,8 @@ button:focus, input:focus, select:focus, textarea:focus {
   ">
 </div>
 
-  <!-- 💬 Botão de Chat -->
-<button id="botaoChat" onclick="abrirChat()" style="
+<!-- 💬 Botão de Chat -->
+<button id="botaoChat" onclick="alternarChat()" style="
   position: fixed;
   bottom: 80px;
   right: 16px;
@@ -407,12 +407,11 @@ button:focus, input:focus, select:focus, textarea:focus {
   box-shadow: 0 6px 20px rgba(0,0,0,0.5);
   overflow: hidden;
   z-index: 9999;
-  display: flex;
   flex-direction: column;
+  display: flex;
 ">
-  <div style="background: #2e7d32; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="background: #2e7d32; padding: 10px;">
     <strong>Chat com Restaurante</strong>
-    <button onclick="fecharChat()" style="background:none;border:none;color:white;font-size:16px;cursor:pointer;">❌</button>
   </div>
   <div id="chatMensagens" style="flex: 1; padding: 10px; overflow-y: auto; font-size: 14px;"></div>
   <div style="display: flex; padding: 10px; background: rgba(255,255,255,0.05);">
@@ -1151,12 +1150,10 @@ async function verificarChatDisponivel() {
   }
 }
 
-function abrirChat() {
-  document.getElementById("chatFlutuante").style.display = "flex";
-}
-
-function fecharChat() {
-  document.getElementById("chatFlutuante").style.display = "none";
+function alternarChat() {
+  const chat = document.getElementById("chatFlutuante");
+  const visivel = chat.style.display === "flex";
+  chat.style.display = visivel ? "none" : "flex";
 }
 
 async function carregarMensagensChat() {
