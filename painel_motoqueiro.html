@@ -1193,8 +1193,7 @@ function detectarSistema() {
 async function verificarChatDisponivel() {
   try {
     if (!entregador_id || typeof entregador_id !== "string") {
-      console.warn("⚠️ Entregador ID ainda não definido. Aguardando...");
-      setTimeout(verificarChatDisponivel, 1000); // tenta de novo daqui 1s
+      setTimeout(verificarChatDisponivel, 1000);
       return;
     }
 
@@ -1204,27 +1203,20 @@ async function verificarChatDisponivel() {
       body: JSON.stringify({ entregador_id })
     });
 
-    if (!res.ok) {
-      const erroTexto = await res.text();
-      console.error("❌ Erro na resposta da API:", erroTexto);
-      return;
-    }
+    if (!res.ok) return;
 
     const dados = await res.json();
 
     if (dados.status === "autorizado") {
-  contrato_id_chat = dados.contrato_id;
-  document.getElementById("botaoChat").style.display = "block";
-  carregarMensagensChat();
-  iniciarRealtimeChat();
-  carregarNomeRestaurante();
-} else {
-      console.log("🔒 Chat não autorizado ainda.");
+      contrato_id_chat = dados.contrato_id;
+      document.getElementById("botaoChat").style.display = "block";
+      carregarMensagensChat();
+      iniciarRealtimeChat();
+      carregarNomeRestaurante();
     }
-  } catch (erro) {
-    console.error("❌ Erro ao verificar chat:", erro);
-  }
+  } catch (erro) {}
 }
+
 
 function alternarChat() {
   const chat = document.getElementById("chatFlutuante");
@@ -1233,8 +1225,6 @@ function alternarChat() {
 }
 
 async function carregarMensagensChat() {
-  console.log("🔁 carregando mensagens do chat...");
-
   const res = await fetch("/api/chat/mensagens", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1251,7 +1241,6 @@ async function carregarMensagensChat() {
     container.innerHTML = `<div style="color: red;">❌ Erro ao carregar mensagens.</div>`;
     return;
   }
-
   container.innerHTML = lista.map(m => {
     const souEu = m.remetente_tipo === "entregador";
     return `
@@ -1273,7 +1262,6 @@ async function carregarMensagensChat() {
       </div>
     `;
   }).join("");
-
   container.scrollTop = container.scrollHeight;
 }
 
@@ -1301,13 +1289,10 @@ await fetch("/api/chat/enviar", {
 
 // Supabase Realtime (após carregarEntregadorId)
 function iniciarRealtimeChat() {
-if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
-  console.warn("⚠️ Esperando Supabase ou dados carregarem...");
-  setTimeout(iniciarRealtimeChat, 500); // tenta de novo até carregar
-  return;
-}
-
-  console.log("✅ Iniciando canal Realtime para o chat...");
+  if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
+    setTimeout(iniciarRealtimeChat, 500);
+    return;
+  }
 
   window.supabaseClient
     .channel("chat_mensagens_geral")
@@ -1318,23 +1303,15 @@ if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
     }, (payload) => {
       const nova = payload.new;
 
-      console.log("📡 Nova mensagem no realtime:", nova);
-
       if (
         nova.entregador_id === entregador_id &&
         nova.contrato_id === contrato_id_chat
       ) {
-        console.log("✅ Realtime é do meu contrato, atualizando chat...");
         carregarMensagensChat();
-      } else {
-        console.log("⏭️ Ignorado: outra empresa ou entregador.");
       }
     })
-    .subscribe(status => {
-      console.log("🔄 Canal Realtime status:", status);
-    });
+    .subscribe();
 }
-
 
 // ✅ Rodar após carregamento do entregador
 let contrato_id_chat = null;
