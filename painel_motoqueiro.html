@@ -1276,12 +1276,7 @@ async function carregarMensagensChat() {
 }
 
 async function enviarMensagem() {
-  const input = document.getElementById("mensagemChat").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    enviarMensagem();
-  }
-});
+  const input = document.getElementById("mensagemChat");
   const texto = input.value.trim();
   if (!texto) return;
 
