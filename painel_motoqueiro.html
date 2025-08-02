@@ -1300,10 +1300,13 @@ await fetch("/api/chat/enviar", {
 
 // Supabase Realtime (após carregarEntregadorId)
 function iniciarRealtimeChat() {
-  if (!window.supabaseClient) return;
+  if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
+    console.warn("❌ Supabase não inicializado ou contrato_id/entregador_id ausente.");
+    return;
+  }
 
-  window.supabaseClient
-    .channel(`chat_mensagens_geral`)
+  const canal = window.supabaseClient
+    .channel("chat_mensagens_geral") // canal global
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -1311,18 +1314,20 @@ function iniciarRealtimeChat() {
     }, (payload) => {
       const nova = payload.new;
 
-      // ✅ Atualiza o chat somente se a mensagem for para este entregador
+      // ✅ Garante que só atualize se for pro entregador + contrato corretos
       if (
         nova.entregador_id === entregador_id &&
         nova.contrato_id === contrato_id_chat
       ) {
-        console.log("⚡ Realtime chegou no chat:", nova);
-        carregarMensagensChat();
+        console.log("⚡ Nova mensagem recebida via Realtime:", nova);
+        carregarMensagensChat(); // <- isso deve disparar corretamente
       } else {
-        console.log("⚠️ Ignorado (outra conversa):", nova);
+        console.log("⏭️ Ignorado: mensagem para outro entregador ou contrato");
       }
     })
-    .subscribe();
+    .subscribe((status) => {
+      console.log("📡 Canal realtime status:", status);
+    });
 }
 
 // ✅ Rodar após carregamento do entregador
