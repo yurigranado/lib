@@ -1365,6 +1365,16 @@ document.getElementById("mensagemChat").addEventListener("keydown", function (e)
   }
 });
     
+async function carregarNomeRestaurante() {
+  const res = await fetch("/api/chat/nomeRestaurante", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contrato_id: contrato_id_chat })
+  });
+
+  const json = await res.json();
+  document.getElementById("tituloChatRestaurante").innerText = `Chat com ${json.nome}`;
+}    
   </script>
 </body>
 </html>
