@@ -250,25 +250,21 @@ const contratosRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_ter
           <table style="width:100%; border-collapse: collapse; color: white;">
             <thead>
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                <th style="text-align:left; padding: 8px;">#</th>
-                <th style="text-align:left; padding: 8px;">Entregador</th>
-                <th style="text-align:left; padding: 8px;">Simples</th>
-                <th style="text-align:left; padding: 8px;">Duplas</th>
-                <th style="text-align:center; padding: 8px;">🌙 Noturno</th>
+<th style="text-align:left; padding: 8px; width: 40px;">#</th>
+<th style="text-align:left; padding: 8px;">Entregador</th>
+<th style="text-align:left; padding: 8px; width: 70px;">Simples</th>
+<th style="text-align:left; padding: 8px; width: 70px;">Duplas</th>
+<th style="text-align:center; padding: 8px; width: 70px;">🌙 Noturno</th>
               </tr>
             </thead>
             <tbody>
               ${entregadores.map((ent, i) => `
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                  <td style="padding: 6px;">${i + 1}</td>
-                  <td style="padding: 6px;">${ent.nome}</td>
-                  <td style="padding: 6px;">
-                    <input type="number" min="0" placeholder="0" id="corridas_${contrato.id}_${ent.id}_${turno}" style="width: 70px; padding: 6px; border-radius: 6px;">
-                  </td>
-                  <td style="padding: 6px;">
-                    <input type="number" min="0" placeholder="0" id="corridas_duplas_${contrato.id}_${ent.id}_${turno}" style="width: 70px; padding: 6px; border-radius: 6px;">
-                  </td>
-                  <td style="text-align: center;">
+<td style="padding: 6px; width: 40px;">${i + 1}</td>
+<td style="padding: 6px;">${ent.nome}</td>
+<td style="padding: 6px; width: 70px;">
+<td style="padding: 6px; width: 70px;">
+<td style="text-align: center; width: 70px;">
                     <label class="switch">
                       <input type="checkbox" id="noturno_${contrato.id}_${ent.id}_${turno}">
                       <span class="slider"></span>
