@@ -1221,30 +1221,33 @@ async function carregarMensagensChat() {
     container.innerHTML = `<div style="color: red;">❌ Erro ao carregar mensagens.</div>`;
     return;
   }
-  container.innerHTML = lista.map(m => {
-    const souEu = m.remetente_tipo === "entregador";
-    return `
-      <div style="
-        background: ${souEu ? '#66bb6a' : '#ffffff22'};
-        color: white;
-        padding: 8px 12px;
-        border-radius: 12px;
-        max-width: 80%;
-        margin: 6px ${souEu ? '0 0 auto' : 'auto 0 6px'};
-        font-size: 13px;
-        line-height: 1.4;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      ">
-        <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
-          ${souEu ? nomePrimeiro : "Restaurante"}
-        </div>
-        ${m.mensagem}
+container.innerHTML = lista.map(m => {
+  const souEu = m.remetente_tipo === "entregador";
+  return `
+    <div style="
+      background: ${souEu ? '#66bb6a' : '#ffffff22'};
+      color: white;
+      padding: 8px 12px;
+      border-radius: 12px;
+      max-width: 80%;
+      margin: 6px ${souEu ? '0 0 auto' : 'auto 0 6px'};
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    ">
+      <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
+        ${souEu ? nomePrimeiro : "Restaurante"}
       </div>
-    `;
+      ${m.mensagem}
+    </div>
+  `;
 }).join("");
-// 🧷 Scroll após renderização
+
+// ✅ Duplo requestAnimationFrame para garantir o scroll após renderização total
 requestAnimationFrame(() => {
-  container.scrollTop = container.scrollHeight;
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
 });
 }
 async function enviarMensagem() {
