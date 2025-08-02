@@ -1237,10 +1237,9 @@ async function carregarMensagensChat() {
       </div>
     `;
   }).join("");
-  // scroll garantido após renderizar
-  requestAnimationFrame(() => {
+  setTimeout(() => {
   container.scrollTop = container.scrollHeight;
-});
+}, 50);
 }
 
 async function enviarMensagem() {
