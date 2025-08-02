@@ -1301,10 +1301,11 @@ await fetch("/api/chat/enviar", {
 
 // Supabase Realtime (após carregarEntregadorId)
 function iniciarRealtimeChat() {
-  if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
-    console.warn("❌ Supabase não inicializado ou contrato_id/entregador_id ausente.");
-    return;
-  }
+if (!window.supabaseClient || !contrato_id_chat || !entregador_id) {
+  console.warn("⚠️ Esperando Supabase ou dados carregarem...");
+  setTimeout(iniciarRealtimeChat, 500); // tenta de novo até carregar
+  return;
+}
 
   console.log("✅ Iniciando canal Realtime para o chat...");
 
