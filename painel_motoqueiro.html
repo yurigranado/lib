@@ -855,44 +855,37 @@ async function carregarEscalaSemanal() {
 }
 
 async function verificarTurnoHojeViaAPI() {
-const resposta = await fetch("/api/verificarTurnoHoje", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ entregador_id })
-});
-let resultado;
-try {
-  resultado = await resposta.json();
-  console.log("✅ [verificarTurnoHojeViaAPI] Horário detectado:", resultado);
-} catch (e) {
-  console.error("❌ Erro ao interpretar resposta JSON:", e);
-  const texto = await resposta.text();
-  console.error("💬 Resposta bruta:", texto);
-  document.getElementById("textoHorarioChegada").innerText = "❌ Erro interno ao verificar turno.";
-  return;
-}
-  const bloco = document.getElementById("blocoConfirmarChegada");
+  const resposta = await fetch("/api/verificarTurnoHoje", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entregador_id })
+  });
 
-  if (!bloco) {
-    console.warn("Elemento 'blocoConfirmarChegada' não encontrado.");
+  let resultado;
+  try {
+    resultado = await resposta.json();
+  } catch (e) {
+    const texto = await resposta.text();
+    document.getElementById("textoHorarioChegada").innerText = "❌ Erro interno ao verificar turno.";
     return;
   }
 
-if (resultado.status === "chegada_existente") {
-  bloco.style.display = "block";
-  document.getElementById("textoHorarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
-  document.getElementById("btnChegada").style.display = "none"; // oculta o botão, se quiser
-} else if (resultado.status === "pode_confirmar" && resultado.turno) {
-  bloco.style.display = "block";
-  bloco.dataset.turno = resultado.turno;
-  bloco.dataset.contrato = resultado.contrato_id;
-  document.getElementById("textoHorarioChegada").innerText = "";
-  console.log("✅ Turno autorizado:", resultado.turno);
-} else {
-  bloco.style.display = "none";
-  document.getElementById("textoHorarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
-  console.warn("⚠️ Turno não disponível ou inválido:", resultado);
-}
+  const bloco = document.getElementById("blocoConfirmarChegada");
+  if (!bloco) return;
+
+  if (resultado.status === "chegada_existente") {
+    bloco.style.display = "block";
+    document.getElementById("textoHorarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
+    document.getElementById("btnChegada").style.display = "none";
+  } else if (resultado.status === "pode_confirmar" && resultado.turno) {
+    bloco.style.display = "block";
+    bloco.dataset.turno = resultado.turno;
+    bloco.dataset.contrato = resultado.contrato_id;
+    document.getElementById("textoHorarioChegada").innerText = "";
+  } else {
+    bloco.style.display = "none";
+    document.getElementById("textoHorarioChegada").innerText = "⏳ Você só pode confirmar sua chegada no horário do turno.";
+  }
 }
     
 async function confirmarChegada() {
