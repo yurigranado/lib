@@ -1237,7 +1237,9 @@ async function carregarMensagensChat() {
       </div>
     `;
   }).join("");
+  setTimeout(() => {
   container.scrollTop = container.scrollHeight;
+}, 50);
 }
 
 async function enviarMensagem() {
