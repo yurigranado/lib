@@ -1222,6 +1222,7 @@ async function carregarMensagensChat() {
     return;
   }
 
+  // Inserção das mensagens
   container.innerHTML = lista.map(m => {
     const souEu = m.remetente_tipo === "entregador";
     return `
@@ -1244,17 +1245,11 @@ async function carregarMensagensChat() {
     `;
   }).join("");
 
-  // ✅ Garantir scroll para última mensagem visível
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      container.scrollTop = container.scrollHeight;
+  // Aguarda duas "frames" de renderização para garantir que tudo foi exibido
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-      // 🕒 Fallback com timeout (caso renderização seja mais lenta)
-      setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-      }, 100);
-    });
-  });
+  // 🔽 Faz o scroll pro final
+  container.scrollTop = container.scrollHeight;
 }
     
 async function enviarMensagem() {
