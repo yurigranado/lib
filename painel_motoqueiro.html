@@ -377,6 +377,49 @@ button:focus, input:focus, select:focus, textarea:focus {
   ">
 </div>
 
+  <!-- 💬 Botão de Chat -->
+<button id="botaoChat" onclick="abrirChat()" style="
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  background: #2e7d32;
+  border: none;
+  color: white;
+  font-size: 26px;
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 9999;
+">💬</button>
+
+<!-- 💬 Janela Flutuante do Chat -->
+<div id="chatFlutuante" style="
+  position: fixed;
+  bottom: 150px;
+  right: 16px;
+  width: 300px;
+  max-height: 400px;
+  display: none;
+  background: rgba(0,0,0,0.85);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  overflow: hidden;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+">
+  <div style="background: #2e7d32; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+    <strong>Chat com Restaurante</strong>
+    <button onclick="fecharChat()" style="background:none;border:none;color:white;font-size:16px;cursor:pointer;">❌</button>
+  </div>
+  <div id="chatMensagens" style="flex: 1; padding: 10px; overflow-y: auto; font-size: 14px;"></div>
+  <div style="display: flex; padding: 10px; background: rgba(255,255,255,0.05);">
+    <input id="mensagemChat" placeholder="Digite..." style="flex:1; padding: 6px; border-radius: 6px; border: none; font-size: 14px;">
+    <button onclick="enviarMensagem()" style="margin-left: 6px; background: #2e7d32; color: white; border: none; border-radius: 6px; padding: 6px 10px;">📤</button>
+  </div>
+</div>
 
   <div id="modalEmpresas">
     <div class="box">
@@ -1091,6 +1134,89 @@ function detectarSistema() {
   }
 }
 
+  // 🔁 Verifica se entregador tem chegada registrada para mostrar o chat
+async function verificarChatDisponivel() {
+  const res = await fetch("/api/chat/chegada", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entregador_id })
+  });
+  const dados = await res.json();
+
+  if (dados.status === "autorizado") {
+    contrato_id_chat = dados.contrato_id;
+    document.getElementById("botaoChat").style.display = "block";
+    carregarMensagensChat();
+    iniciarRealtimeChat();
+  }
+}
+
+function abrirChat() {
+  document.getElementById("chatFlutuante").style.display = "flex";
+}
+
+function fecharChat() {
+  document.getElementById("chatFlutuante").style.display = "none";
+}
+
+async function carregarMensagensChat() {
+  const res = await fetch("/api/chat/mensagens", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contrato_id: contrato_id_chat })
+  });
+  const lista = await res.json();
+
+  const container = document.getElementById("chatMensagens");
+  container.innerHTML = lista.map(m => `
+    <div style="margin-bottom: 8px;">
+      <b>${m.remetente_tipo === "restaurante" ? "Restaurante" : "Você"}:</b> ${m.mensagem}
+    </div>
+  `).join("");
+  container.scrollTop = container.scrollHeight;
+}
+
+async function enviarMensagem() {
+  const input = document.getElementById("mensagemChat");
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.value = "";
+
+  await fetch("/api/chat/enviar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contrato_id: contrato_id_chat,
+      remetente_tipo: "entregador",
+      remetente_id: entregador_id,
+      mensagem: texto
+    })
+  });
+
+  await carregarMensagensChat();
+}
+
+// Supabase Realtime (após carregarEntregadorId)
+function iniciarRealtimeChat() {
+  if (!window.supabaseClient || !contrato_id_chat) return;
+
+  window.supabaseClient
+    .channel(`chat_${contrato_id_chat}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'mensagens_chat',
+      filter: `contrato_id=eq.${contrato_id_chat}`
+    }, carregarMensagensChat)
+    .subscribe();
+}
+
+// ✅ Rodar após carregamento do entregador
+let contrato_id_chat = null;
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(verificarChatDisponivel, 1000); // pequeno delay após carregar ID
+});
   </script>
 </body>
 </html>
