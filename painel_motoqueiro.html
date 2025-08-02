@@ -486,6 +486,7 @@ button:focus, input:focus, select:focus, textarea:focus {
 let SUPABASE_URL = "";
 let API_KEY = "";
 let entregador_id = null;
+let nomePrimeiro = "";
 
 // 🔐 Carrega as chaves da Supabase
 async function carregarChaves() {
@@ -544,6 +545,7 @@ async function carregarEntregadorId() {
 
   entregador_id = retorno.entregador_id;
   document.getElementById("nomeEntregador").innerText = retorno.nome;
+  nomePrimeiro = retorno.nome.split(" ")[0]; // 👈 pega só o primeiro nome
 
   await verificarEmpresaAtiva();
   await carregarEscalaSemanal();
@@ -1263,7 +1265,7 @@ async function carregarMensagensChat() {
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       ">
         <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
-          ${souEu ? "Você" : "Restaurante"}
+          ${souEu ? nomePrimeiro : "Restaurante"}
         </div>
         ${m.mensagem}
       </div>
