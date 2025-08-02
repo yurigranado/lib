@@ -1305,7 +1305,7 @@ function iniciarRealtimeChat() {
     return;
   }
 
-  const canal = window.supabaseClient
+  window.supabaseClient
     .channel("chat_mensagens_geral") // canal global
     .on('postgres_changes', {
       event: 'INSERT',
@@ -1314,13 +1314,37 @@ function iniciarRealtimeChat() {
     }, (payload) => {
       const nova = payload.new;
 
-      // ✅ Garante que só atualize se for pro entregador + contrato corretos
       if (
         nova.entregador_id === entregador_id &&
         nova.contrato_id === contrato_id_chat
       ) {
-        console.log("⚡ Nova mensagem recebida via Realtime:", nova);
-        carregarMensagensChat(); // <- isso deve disparar corretamente
+        console.log("⚡ Realtime OK. Adicionando direto no HTML:", nova);
+
+        const container = document.getElementById("chatMensagens");
+        const souEu = nova.remetente_tipo === "entregador";
+        const nome = souEu ? nomePrimeiro : "Restaurante";
+
+        const msgHTML = `
+          <div style="
+            background: ${souEu ? '#66bb6a' : '#ffffff22'};
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 80%;
+            margin: 6px ${souEu ? '0 0 auto' : 'auto 0 6px'};
+            font-size: 13px;
+            line-height: 1.4;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          ">
+            <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
+              ${nome}
+            </div>
+            ${nova.mensagem}
+          </div>
+        `;
+
+        container.innerHTML += msgHTML;
+        container.scrollTop = container.scrollHeight;
       } else {
         console.log("⏭️ Ignorado: mensagem para outro entregador ou contrato");
       }
