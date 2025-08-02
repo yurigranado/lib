@@ -781,8 +781,9 @@ try {
   }
 
 if (resultado.status === "chegada_existente") {
-  bloco.style.display = "none";
+  bloco.style.display = "block";
   document.getElementById("textoHorarioChegada").innerText = `Chegada em ${resultado.data} às ${resultado.hora}`;
+  document.getElementById("btnChegada").style.display = "none"; // oculta o botão, se quiser
 } else if (resultado.status === "pode_confirmar" && resultado.turno) {
   bloco.style.display = "block";
   bloco.dataset.turno = resultado.turno;
