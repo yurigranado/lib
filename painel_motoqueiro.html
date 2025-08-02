@@ -1135,18 +1135,37 @@ function detectarSistema() {
 
   // 🔁 Verifica se entregador tem chegada registrada para mostrar o chat
 async function verificarChatDisponivel() {
-  const res = await fetch("/api/chat/chegada", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ entregador_id })
-  });
-  const dados = await res.json();
+  try {
+    if (!entregador_id || typeof entregador_id !== "string") {
+      console.warn("⚠️ Entregador ID ainda não definido. Aguardando...");
+      setTimeout(verificarChatDisponivel, 1000); // tenta de novo daqui 1s
+      return;
+    }
 
-  if (dados.status === "autorizado") {
-    contrato_id_chat = dados.contrato_id;
-    document.getElementById("botaoChat").style.display = "block";
-    carregarMensagensChat();
-    iniciarRealtimeChat();
+    const res = await fetch("/api/chat/chegada", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entregador_id })
+    });
+
+    if (!res.ok) {
+      const erroTexto = await res.text();
+      console.error("❌ Erro na resposta da API:", erroTexto);
+      return;
+    }
+
+    const dados = await res.json();
+
+    if (dados.status === "autorizado") {
+      contrato_id_chat = dados.contrato_id;
+      document.getElementById("botaoChat").style.display = "block";
+      carregarMensagensChat();
+      iniciarRealtimeChat();
+    } else {
+      console.log("🔒 Chat não autorizado ainda.");
+    }
+  } catch (erro) {
+    console.error("❌ Erro ao verificar chat:", erro);
   }
 }
 
