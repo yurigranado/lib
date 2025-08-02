@@ -1233,13 +1233,15 @@ function alternarChat() {
 }
 
 async function carregarMensagensChat() {
+  console.log("🔁 carregando mensagens do chat...");
+
   const res = await fetch("/api/chat/mensagens", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-  contrato_id: contrato_id_chat,
-  entregador_id // 👈 novo
-})
+      contrato_id: contrato_id_chat,
+      entregador_id
+    })
   });
 
   const lista = await res.json();
@@ -1252,7 +1254,6 @@ async function carregarMensagensChat() {
 
   container.innerHTML = lista.map(m => {
     const souEu = m.remetente_tipo === "entregador";
-
     return `
       <div style="
         background: ${souEu ? '#66bb6a' : '#ffffff22'};
@@ -1305,8 +1306,10 @@ function iniciarRealtimeChat() {
     return;
   }
 
+  console.log("✅ Iniciando canal Realtime para o chat...");
+
   window.supabaseClient
-    .channel("chat_mensagens_geral") // canal global
+    .channel("chat_mensagens_geral")
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -1314,45 +1317,23 @@ function iniciarRealtimeChat() {
     }, (payload) => {
       const nova = payload.new;
 
+      console.log("📡 Nova mensagem no realtime:", nova);
+
       if (
         nova.entregador_id === entregador_id &&
         nova.contrato_id === contrato_id_chat
       ) {
-        console.log("⚡ Realtime OK. Adicionando direto no HTML:", nova);
-
-        const container = document.getElementById("chatMensagens");
-        const souEu = nova.remetente_tipo === "entregador";
-        const nome = souEu ? nomePrimeiro : "Restaurante";
-
-        const msgHTML = `
-          <div style="
-            background: ${souEu ? '#66bb6a' : '#ffffff22'};
-            color: white;
-            padding: 8px 12px;
-            border-radius: 12px;
-            max-width: 80%;
-            margin: 6px ${souEu ? '0 0 auto' : 'auto 0 6px'};
-            font-size: 13px;
-            line-height: 1.4;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          ">
-            <div style="font-weight:bold; font-size:12px; opacity:0.8; margin-bottom:4px;">
-              ${nome}
-            </div>
-            ${nova.mensagem}
-          </div>
-        `;
-
-        container.innerHTML += msgHTML;
-        container.scrollTop = container.scrollHeight;
+        console.log("✅ Realtime é do meu contrato, atualizando chat...");
+        carregarMensagensChat();
       } else {
-        console.log("⏭️ Ignorado: mensagem para outro entregador ou contrato");
+        console.log("⏭️ Ignorado: outra empresa ou entregador.");
       }
     })
-    .subscribe((status) => {
-      console.log("📡 Canal realtime status:", status);
+    .subscribe(status => {
+      console.log("🔄 Canal Realtime status:", status);
     });
 }
+
 
 // ✅ Rodar após carregamento do entregador
 let contrato_id_chat = null;
