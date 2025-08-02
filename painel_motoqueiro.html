@@ -1213,11 +1213,12 @@ async function verificarChatDisponivel() {
     const dados = await res.json();
 
     if (dados.status === "autorizado") {
-      contrato_id_chat = dados.contrato_id;
-      document.getElementById("botaoChat").style.display = "block";
-      carregarMensagensChat();
-      iniciarRealtimeChat();
-    } else {
+  contrato_id_chat = dados.contrato_id;
+  document.getElementById("botaoChat").style.display = "block";
+  carregarMensagensChat();
+  iniciarRealtimeChat();
+  carregarNomeRestaurante();
+} else {
       console.log("🔒 Chat não autorizado ainda.");
     }
   } catch (erro) {
