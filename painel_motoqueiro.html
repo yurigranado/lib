@@ -1305,16 +1305,17 @@ function iniciarRealtimeChat() {
 window.supabaseClient
   .channel(`chat_${contrato_id_chat}_${entregador_id}`)
   .on('postgres_changes', {
-    event: '*',
+    event: 'INSERT',
     schema: 'public',
-    table: 'mensagens_chat',
-    filter: `contrato_id=eq.${contrato_id_chat},entregador_id=eq.${entregador_id}`
+    table: 'mensagens_chat'
   }, (payload) => {
-    if (payload.eventType === "INSERT") {
+    const nova = payload.new;
+    if (nova.contrato_id === contrato_id_chat && nova.entregador_id === entregador_id) {
       carregarMensagensChat();
     }
   })
   .subscribe();
+
 }
 
 // ✅ Rodar após carregamento do entregador
