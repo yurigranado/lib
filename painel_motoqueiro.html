@@ -345,8 +345,7 @@ button:focus, input:focus, select:focus, textarea:focus {
   <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
   <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
 </div>
-
-
+  
   <!-- Bloco da escala abaixo -->
   <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
     Carregando escala...
@@ -895,14 +894,10 @@ async function confirmarChegada() {
       const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
       document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
+      document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
       btn.style.display = "none";
 
-      const p = document.createElement("p");
-      p.style.color = "white";
-      p.style.marginTop = "6px";
-      p.style.fontSize = "14px";
-      p.textContent = `Chegada em ${dia} às ${hora}`;
-      document.getElementById("blocoConfirmarChegada").after(p);
+      document.getElementById("horarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
     } else {
       console.error("❌ Erro Supabase:", respostaTexto);
       alert("❌ Erro ao confirmar chegada.\n\n" + respostaTexto);
@@ -1093,8 +1088,7 @@ function detectarSistema() {
     bloco.style.display = "none";
   }
 }
-    document.getElementById("blocoConfirmarChegada").style.display = "block";
-    document.getElementById("blocoConfirmarChegada").style.display = "none"; 
+
   </script>
 </body>
 </html>
