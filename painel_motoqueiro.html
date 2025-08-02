@@ -340,11 +340,12 @@ button:focus, input:focus, select:focus, textarea:focus {
   <p id="empresaAtiva" style="margin: 0;">Empresa: carregando...</p>
 </div>
   
-<div id="blocoConfirmarChegada" style="margin-top: 10px; display: none;">
+<div id="blocoConfirmarChegada" style="display: none; margin-top: 10px;">
   <button id="btnChegada" class="painel-btn" onclick="confirmarChegada()">📍 Confirmar Chegada</button>
   <p id="mensagemChegada" style="color: white; font-size: 14px; margin-top: 10px;"></p>
+  <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
 </div>
-    <p id="horarioChegada" style="color: #fff; font-size: 13px; margin-top: 6px;"></p>
+
 
   <!-- Bloco da escala abaixo -->
   <div id="blocoEscalaEntregador" style="color:white;text-align:center;margin-top:12px;">
@@ -1092,8 +1093,8 @@ function detectarSistema() {
     bloco.style.display = "none";
   }
 }
-
-    
+    document.getElementById("blocoConfirmarChegada").style.display = "block";
+    document.getElementById("blocoConfirmarChegada").style.display = "none"; 
   </script>
 </body>
 </html>
