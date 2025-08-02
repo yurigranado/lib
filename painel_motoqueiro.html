@@ -1357,6 +1357,14 @@ document.addEventListener("DOMContentLoaded", () => {
     isDragging = false;
   });
 })();
+
+document.getElementById("mensagemChat").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    enviarMensagem();
+  }
+});
+    
   </script>
 </body>
 </html>
