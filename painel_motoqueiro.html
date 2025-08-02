@@ -894,6 +894,7 @@ if (resultado.status === "chegada_existente") {
   console.warn("⚠️ Turno não disponível ou inválido:", resultado);
 }
 }
+    
 async function confirmarChegada() {
   const btn = document.getElementById("blocoConfirmarChegada");
   const btnChegada = document.getElementById("btnChegada");
@@ -904,109 +905,90 @@ async function confirmarChegada() {
   const turno = btn.dataset.turno;
   const contrato_id = btn.dataset.contrato;
 
-  console.log("🔄 Iniciando confirmação...");
-  console.log("🔎 Turno:", turno);
-  console.log("🔎 Contrato ID:", contrato_id);
-  console.log("🔎 Entregador ID:", entregador_id);
-
   if (!navigator.geolocation) {
     alert("Geolocalização não suportada.");
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    const latEntregador = pos.coords.latitude;
-    const lonEntregador = pos.coords.longitude;
+navigator.geolocation.getCurrentPosition(async (pos) => {
+  const latEntregador = pos.coords.latitude;
+  const lonEntregador = pos.coords.longitude;
 
-    console.log("📍 Localização capturada:");
-    console.log("Latitude:", latEntregador, "Longitude:", lonEntregador);
-
-    // Buscar empresa do contrato
-    const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-    const contrato = await contratoRes.json();
-    const empresa_id = contrato[0]?.empresa_id;
-
-    console.log("🏢 Empresa ID do contrato:", empresa_id);
-    if (!empresa_id) return alert("❌ Empresa não identificada.");
-
-    // Buscar coordenadas da empresa
-    const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresa_id}&select=latitude,longitude`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-    const empresa = await empresaRes.json();
-    const latEmpresa = empresa[0]?.latitude;
-    const lonEmpresa = empresa[0]?.longitude;
-
-    console.log("📍 Coordenadas da empresa:", latEmpresa, lonEmpresa);
-    if (!latEmpresa || !lonEmpresa) return alert("❌ Coordenadas da empresa não cadastradas.");
-
-    // Calcular distância
-    const distancia = calcularDistancia(latEntregador, lonEntregador, latEmpresa, lonEmpresa);
-    console.log("📏 Distância calculada:", distancia.toFixed(2), "m");
-
-    if (distancia > 100) {
-      alert("⚠️ Você está longe do local para confirmar a chegada.");
-      return;
-    }
-
-    // Verifica se já tem entrada ativa no mesmo turno
-    const jaExisteRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&encerrado=eq.false`, {
-      headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
-    });
-    const existentes = await jaExisteRes.json();
-    if (existentes.length > 0) {
-      alert("⚠️ Você já deu entrada neste turno.");
-      btn.style.display = "none";
-      return;
-    }
-
-    // Registra chegada
-    const payload = {
-      entregador_id,
-      contrato_id,
-      turno,
-      latitude: latEntregador,
-      longitude: lonEntregador,
-      encerrado: false,
-      ativo: true
-    };
-
-    console.log("📦 Enviando payload para Supabase:", payload);
-
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
-      method: "POST",
-      headers: {
-        apikey: API_KEY,
-        Authorization: `Bearer ${API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const respostaTexto = await res.text();
-
-    if (res.ok) {
-      console.log("✅ Supabase respondeu:", respostaTexto);
-      const agora = new Date();
-      const dia = agora.toLocaleDateString('pt-BR');
-      const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-      document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
-      console.log("✅ [confirmarChegada] Chegada confirmada em:", dia, hora);
-      document.getElementById("textoHorarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
-      btn.style.display = "none";
-      
-    } else {
-      console.error("❌ Erro Supabase:", respostaTexto);
-      alert("❌ Erro ao confirmar chegada.\n\n" + respostaTexto);
-    }
-
-  }, (erro) => {
-    alert("Erro ao obter localização: " + erro.message);
-    console.error("❌ Erro de geolocalização:", erro);
+  // Buscar empresa do contrato
+  const contratoRes = await fetch(`${SUPABASE_URL}/rest/v1/contratos_empresas_terceirizadas?id=eq.${contrato_id}&select=empresa_id`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
   });
+  const contrato = await contratoRes.json();
+  const empresa_id = contrato[0]?.empresa_id;
+  if (!empresa_id) return alert("❌ Empresa não identificada.");
+
+  // Buscar coordenadas da empresa
+  const empresaRes = await fetch(`${SUPABASE_URL}/rest/v1/empresas?id=eq.${empresa_id}&select=latitude,longitude`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const empresa = await empresaRes.json();
+  const latEmpresa = empresa[0]?.latitude;
+  const lonEmpresa = empresa[0]?.longitude;
+  if (!latEmpresa || !lonEmpresa) return alert("❌ Coordenadas da empresa não cadastradas.");
+
+  // Calcular distância
+  const distancia = calcularDistancia(latEntregador, lonEntregador, latEmpresa, lonEmpresa);
+
+  if (distancia > 100) {
+    alert("⚠️ Você está longe do local para confirmar a chegada.");
+    return;
+  }
+
+  // Verifica se já tem entrada ativa no mesmo turno
+  const jaExisteRes = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada?entregador_id=eq.${entregador_id}&contrato_id=eq.${contrato_id}&turno=eq.${turno}&encerrado=eq.false`, {
+    headers: { apikey: API_KEY, Authorization: `Bearer ${API_KEY}` }
+  });
+  const existentes = await jaExisteRes.json();
+  if (existentes.length > 0) {
+    alert("⚠️ Você já deu entrada neste turno.");
+    btn.style.display = "none";
+    return;
+  }
+  
+// Registra chegada
+const payload = {
+  entregador_id,
+  contrato_id,
+  turno,
+  latitude: latEntregador,
+  longitude: lonEntregador,
+  encerrado: false,
+  ativo: true
+};
+
+const res = await fetch(`${SUPABASE_URL}/rest/v1/confirmacoes_chegada`, {
+  method: "POST",
+  headers: {
+    apikey: API_KEY,
+    Authorization: `Bearer ${API_KEY}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+});
+
+const respostaTexto = await res.text();
+
+if (res.ok) {
+  const agora = new Date();
+  const dia = agora.toLocaleDateString('pt-BR');
+  const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  document.getElementById("mensagemChegada").innerText = "✅ Chegada confirmada!";
+  document.getElementById("textoHorarioChegada").innerText = `Chegada em ${dia} às ${hora}`;
+  btn.style.display = "none";
+} else {
+  alert("❌ Erro ao confirmar chegada.\n\n" + respostaTexto);
+}
+
+
+}, (erro) => {
+  alert("Erro ao obter localização: " + erro.message);
+});
 }
 
     function calcularDistancia(lat1, lon1, lat2, lon2) {
