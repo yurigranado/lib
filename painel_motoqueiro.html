@@ -272,7 +272,12 @@ button, input, select, textarea {
 button:focus, input:focus, select:focus, textarea:focus {
   outline: none !important;
   box-shadow: none !important;
-}    
+} 
+    #chatMensagens {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
   </style>
 </head>
 <body>
@@ -1236,12 +1241,12 @@ async function carregarMensagensChat() {
         ${m.mensagem}
       </div>
     `;
-  }).join("");
-  setTimeout(() => {
+}).join("");
+// 🧷 Scroll após renderização
+requestAnimationFrame(() => {
   container.scrollTop = container.scrollHeight;
-}, 50);
+});
 }
-
 async function enviarMensagem() {
   const input = document.getElementById("mensagemChat");
   const texto = input.value.trim();
