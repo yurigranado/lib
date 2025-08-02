@@ -1310,7 +1310,10 @@ window.supabaseClient
     table: 'mensagens_chat'
   }, (payload) => {
     const nova = payload.new;
+
+    // Verifica se a mensagem é para o entregador atual
     if (nova.contrato_id === contrato_id_chat && nova.entregador_id === entregador_id) {
+      console.log("⚡ Realtime nova mensagem recebida:", nova);
       carregarMensagensChat();
     }
   })
